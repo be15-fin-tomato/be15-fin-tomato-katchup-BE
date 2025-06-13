@@ -19,7 +19,7 @@ public class SignupRequest {
     private String loginId;
 
     @ValidEmail
-    private String email;
+    private String  email;
 
     @NotBlank
     private String password;
