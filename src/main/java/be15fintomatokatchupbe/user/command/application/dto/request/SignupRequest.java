@@ -33,4 +33,7 @@ public class SignupRequest {
     @NotNull
     private Date birth;
 
+    @NotBlank
+    private String position;
+
 }

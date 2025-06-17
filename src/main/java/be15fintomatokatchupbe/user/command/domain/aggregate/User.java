@@ -47,6 +47,8 @@ public class User {
     @Builder.Default
     private StatusType isDeleted = StatusType.N;
 
+    private String position;
+
     public void update(String randomString) {
         this.password = randomString;
     }
