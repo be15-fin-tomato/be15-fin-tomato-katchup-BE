@@ -17,7 +17,8 @@ public enum UserErrorCode implements ErrorCode {
     INVALID_PASSWORD_REQUEST("10004", "잘못된 비밀번호 입니다.", HttpStatus.BAD_REQUEST),
     PASSWORD_MISMATCH("10005", "비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
     EMAIL_NOT_FOUND("10006", "이메일이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
-    USER_NOT_FOUND("10006", "회원이 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
+    USER_NOT_FOUND("10007", "회원이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
+    NEW_PASSWORD_MISMATCH("10008", "두 비밀번호가 서로 일치하지않습니다.", HttpStatus.BAD_REQUEST);
 
 
     private final String code;

@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.auth.command.dto.request;
+package be15fintomatokatchupbe.user.command.application.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
@@ -9,11 +9,11 @@ import lombok.Getter;
 public class ChangePasswordRequest {
 
     @NotBlank
-    public String uuid;
-
-    @NotBlank
     public String password;
 
     @NotBlank
-    public String confirmPassword;
+    public String newPassword;
+
+    @NotBlank
+    public String confirmNewPassword;
 }
