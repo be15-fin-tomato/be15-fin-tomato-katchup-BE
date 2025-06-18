@@ -38,15 +38,6 @@ public class AuthCommandController {
                 .body(ApiResponse.success(null));
     }
 
-//    @PostMapping("/change/password")
-//    public ResponseEntity<ApiResponse<Void>> changePassword(
-//            @RequestBody @Valid ChangePasswordRequest request
-//    ){
-//        authCommandService.changePassword(request);
-//
-//        return ResponseEntity.ok(ApiResponse.success(null));
-//    }
-
     /* 쿠키 삭제용*/
     private ResponseCookie createDeleteRefreshTokenCookie() {
         return ResponseCookie.from("refreshToken", "")
