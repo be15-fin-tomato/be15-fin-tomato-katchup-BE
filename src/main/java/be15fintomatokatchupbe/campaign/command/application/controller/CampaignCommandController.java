@@ -15,10 +15,13 @@ public class CampaignCommandController {
 
     public ResponseEntity<ApiResponse<Void>> createChance(
             @AuthenticationPrincipal CustomUserDetail user,
-@RequestBody CreateChanceRequest request
-            ){
+            @RequestBody CreateChanceRequest request
+    ){
         Long userId =user.getUserId();
 
+
+
+        return ResponseEntity.ok(ApiResponse.success(null));
 
     }
 
