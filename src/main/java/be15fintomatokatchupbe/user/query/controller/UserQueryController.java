@@ -32,4 +32,10 @@ public class UserQueryController {
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    /* 내 인플루언서 목록 조회 */
+    @GetMapping("/me/influencer")
+    public ResponseEntity<ApiResponse<UserAccountQueryResponse>> getMyInfluencer(
+            @AuthenticationPrincipal CustomUserDetail userDetail
+    )
 }
