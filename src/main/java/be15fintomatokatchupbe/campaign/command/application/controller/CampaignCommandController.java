@@ -20,6 +20,9 @@ public class CampaignCommandController {
         Long userId =user.getUserId();
 
 
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+
     }
 
 }
