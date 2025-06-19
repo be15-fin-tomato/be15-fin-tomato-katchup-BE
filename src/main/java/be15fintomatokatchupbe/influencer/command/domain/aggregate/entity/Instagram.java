@@ -22,9 +22,6 @@ public class Instagram {
     @Column(name = "account_id", length = 255)
     private String accountId;
 
-    @Column(name = "instagram_token", length = 255)
-    private String instagramToken;
-
     @Column(name = "follower")
     private Long follower;
 }
