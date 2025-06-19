@@ -28,7 +28,7 @@ public class SignupRequest {
     private String name;
 
     @NotBlank
-    private String phoneNumber;
+    private String phone;
 
     @NotNull
     private Date birth;
