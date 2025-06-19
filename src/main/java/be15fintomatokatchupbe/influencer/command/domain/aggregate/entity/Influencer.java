@@ -36,7 +36,8 @@ public class Influencer {
     @Enumerated(EnumType.STRING)
     private National national;
 
-    @Column(name = "is_deleted")
+    @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
     private String isDeleted = "N";
 
     @Column(name = "created_at", updatable = false)

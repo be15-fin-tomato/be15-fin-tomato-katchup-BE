@@ -1,0 +1,10 @@
+package be15fintomatokatchupbe.influencer.command.domain.repository;
+
+import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Category;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface CategoryRepository extends JpaRepository<Category, Long> {
+}
+

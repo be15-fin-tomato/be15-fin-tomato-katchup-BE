@@ -22,9 +22,6 @@ public class Youtube {
     @Column(name = "account_id", length = 255)
     private String accountId;
 
-    @Column(name = "youtube_token", length = 255)
-    private String youtubeToken;
-
     @Column(name = "subscriber")
     private Long subscriber;
 }
