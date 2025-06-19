@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.user.command.domain.aggregate;
 
+import be15fintomatokatchupbe.common.domain.GenderType;
 import be15fintomatokatchupbe.common.domain.StatusType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -48,6 +49,9 @@ public class User {
     private StatusType isDeleted = StatusType.N;
 
     private String position;
+
+    @Enumerated(EnumType.STRING)
+    private GenderType gender;
 
     public void update(String randomString) {
         this.password = randomString;

@@ -36,4 +36,7 @@ public class SignupRequest {
     @NotBlank
     private String position;
 
+    @NotBlank
+    private String gender;
+
 }
