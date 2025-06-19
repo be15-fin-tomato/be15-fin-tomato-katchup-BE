@@ -41,3 +41,7 @@ mybatis:
   configuration:
     map-underscore-to-camel-case: true
   mapper-locations: mappers/**/*.xml
+
+youtube:
+  api:
+    key: ${YOUTUBE_API_KEY}

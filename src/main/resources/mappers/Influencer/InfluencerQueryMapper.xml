@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.influencer.query.mapper.InfluencerMapper">
+
+    <resultMap id="InfluencerCardMap" type="be15fintomatokatchupbe.influencer.query.dto.response.InfluencerCardResponse">
+        <id property="influencerId" column="influencer_id"/>
+        <result property="name" column="name"/>
+        <result property="manager" column="manager"/>
+
+        <association property="youtube" javaType="be15fintomatokatchupbe.influencer.query.dto.response.YoutubeInfoResponse">
+            <result property="accountId" column="youtube_account_id"/>
+            <result property="name" column="youtube_name"/>
+            <result property="subscriber" column="youtube_subscriber"/>
+        </association>
+
+        <association property="instagram" javaType="be15fintomatokatchupbe.influencer.query.dto.response.InstagramInfoResponse">
+            <result property="accountId" column="instagram_account_id"/>
+            <result property="follower" column="instagram_follower"/>
+        </association>
+
+        <collection property="tags" ofType="be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto">
+            <result property="categoryId" column="category_id"/>
+            <result property="categoryName" column="category_name"/>
+        </collection>
+    </resultMap>
+
+    <select id="findInfluencers" resultMap="InfluencerCardMap">
+        SELECT
+        i.influencer_id,
+        i.name,
+        u.name AS manager,
+
+        c.category_id,
+        c.category_name,
+
+        y.account_id AS youtube_account_id,
+        y.subscriber AS youtube_subscriber,
+
+        ig.account_id AS instagram_account_id,
+        ig.follower AS instagram_follower
+
+        FROM influencer i
+        LEFT JOIN user u ON i.user_id = u.user_id
+        LEFT JOIN youtube y ON i.influencer_id = y.influencer_id
+        LEFT JOIN instagram ig ON i.influencer_id = ig.influencer_id
+        LEFT JOIN hashtag_influencer_campaign h ON i.influencer_id = h.influencer_id
+        LEFT JOIN category c ON h.category_id = c.category_id
+
+        WHERE i.is_deleted = 'N'
+        ORDER BY i.influencer_id DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countInfluencers" resultType="int">
+        SELECT COUNT(DISTINCT i.influencer_id)
+        FROM influencer i
+        WHERE i.is_deleted = 'N'
+    </select>
+
+</mapper>
