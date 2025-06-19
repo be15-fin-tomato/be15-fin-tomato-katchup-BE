@@ -3,6 +3,7 @@ package be15fintomatokatchupbe.user.query.controller;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import be15fintomatokatchupbe.user.query.dto.response.UserAccountQueryResponse;
+import be15fintomatokatchupbe.user.query.dto.response.UserInfluencerListResponse;
 import be15fintomatokatchupbe.user.query.service.UserQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +36,13 @@ public class UserQueryController {
 
     /* 내 인플루언서 목록 조회 */
     @GetMapping("/me/influencer")
-    public ResponseEntity<ApiResponse<UserAccountQueryResponse>> getMyInfluencer(
+    public ResponseEntity<ApiResponse<UserInfluencerListResponse>> getMyInfluencer(
             @AuthenticationPrincipal CustomUserDetail userDetail
-    )
+    ) {
+        Long userId = userDetail.getUserId();
+
+        UserInfluencerListResponse response = userQueryService.getMyInfluencer(userId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 }

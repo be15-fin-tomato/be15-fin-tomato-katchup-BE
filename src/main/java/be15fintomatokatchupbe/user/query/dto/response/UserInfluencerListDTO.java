@@ -12,8 +12,6 @@ public class UserInfluencerListDTO {
     private Long influencerId;
 
     @NotBlank
-    private String name;
-
-    private String
+    private Long userId;
 
 }

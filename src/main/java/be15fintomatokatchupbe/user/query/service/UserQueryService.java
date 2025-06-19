@@ -1,6 +1,8 @@
 package be15fintomatokatchupbe.user.query.service;
 
 import be15fintomatokatchupbe.user.query.dto.response.UserAccountQueryResponse;
+import be15fintomatokatchupbe.user.query.dto.response.UserInfluencerListDTO;
+import be15fintomatokatchupbe.user.query.dto.response.UserInfluencerListResponse;
 import be15fintomatokatchupbe.user.query.mapper.UserQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,5 +19,13 @@ public class UserQueryService {
     public UserAccountQueryResponse getMyAccount(Long userId) {
 
         return userQueryMapper.getMyAccount(userId);
+    }
+
+    /* 내 인플루언서 목록 조회 */
+    public UserInfluencerListResponse getMyInfluencer(Long userId) {
+        List<UserInfluencerListDTO> response = userQueryMapper.getMyInfluencer(userId);
+        return UserInfluencerListResponse.builder()
+                .userInfluencerList(response)
+                .build();
     }
 }
