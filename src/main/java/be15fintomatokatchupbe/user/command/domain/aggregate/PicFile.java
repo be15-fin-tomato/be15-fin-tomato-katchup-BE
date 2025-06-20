@@ -16,7 +16,7 @@ import lombok.Setter;
 @Table(name = "`pic_file`")
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 @AllArgsConstructor
 @Builder
 public class PicFile {
@@ -28,4 +28,9 @@ public class PicFile {
     private String fileName;
 
     private String fileRoute;
+
+    public void profileImage(String fileName, String fileRoute) {
+        this.fileName = fileName;
+        this.fileRoute = fileRoute;
+    }
 }
