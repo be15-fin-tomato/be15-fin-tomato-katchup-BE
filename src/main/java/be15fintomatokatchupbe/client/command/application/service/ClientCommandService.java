@@ -27,7 +27,7 @@ public class ClientCommandService {
                 .orElseThrow(() -> new RuntimeException("존재X"));
     }
 
-    public ClientManager finalValidClientManager(Long id){
+    public ClientManager findValidClientManager(Long id){
         return clientManagerRepository.findByClientManagerIdAndIsDeleted(id, StatusType.N)
                 .orElseThrow(() -> new RuntimeException("존재X"));
     }
