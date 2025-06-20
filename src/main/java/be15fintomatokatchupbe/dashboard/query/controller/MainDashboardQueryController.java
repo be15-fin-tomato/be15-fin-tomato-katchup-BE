@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.dashboard.query.controller;
 
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
+import be15fintomatokatchupbe.dashboard.query.dto.response.ProposalResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.ClientCompanyResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.ListupResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.SalesActivityResponse;
@@ -48,6 +49,13 @@ public class MainDashboardQueryController {
     public ResponseEntity<ApiResponse<List<ListupResponse>>> getListup(@AuthenticationPrincipal CustomUserDetail user) {
         Long userId = user.getUserId();
         List<ListupResponse> response = mainDashboardQueryService.getListupByUserId(userId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/proposal")
+    public ResponseEntity<ApiResponse<List<ProposalResponse>>> getProposal(@AuthenticationPrincipal CustomUserDetail user) {
+        Long userId = user.getUserId();
+        List<ProposalResponse> response = mainDashboardQueryService.getProposalByUserId(userId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

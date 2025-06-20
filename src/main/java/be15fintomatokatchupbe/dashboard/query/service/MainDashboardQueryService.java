@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.dashboard.query.service;
 
+import be15fintomatokatchupbe.dashboard.query.dto.response.ProposalResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.ClientCompanyResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.ListupResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.SalesActivityResponse;
@@ -29,5 +30,9 @@ public class MainDashboardQueryService {
 
     public List<ListupResponse> getListupByUserId(Long userId) {
         return mainDashboardQueryMapper.findListupByUserId(userId);
+    }
+
+    public List<ProposalResponse> getProposalByUserId(Long userId) {
+        return mainDashboardQueryMapper.findProposalByUserId(userId);
     }
 }
