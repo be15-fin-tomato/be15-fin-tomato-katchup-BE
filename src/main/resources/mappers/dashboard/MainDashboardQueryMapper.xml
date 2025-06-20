@@ -94,6 +94,29 @@
             AND p.is_deleted = 'N';
     </select>
 
+    <!--  내 제안 조회  -->
+    <select id="findProposalByUserId" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.ProposalResponse">
+        SELECT
+            cc.client_company_name AS company_name,
+            c.campaign_name AS contract_name,
+            p.name AS proposal_title,
+            cm.name AS client_manager_name,
+            cm.position AS client_manager_position,
+            pss.status_name,
+            p.created_at
+        FROM pipeline p
+        JOIN pipeline_user pu ON pu.pipeline_id = p.pipeline_id
+        JOIN campaign c ON p.campaign_id = c.campaign_id
+        JOIN client_company cc ON c.client_company_id = cc.client_company_id
+        JOIN pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
+        JOIN pipeline_status pss ON p.pipeline_status_id = pss.pipeline_status_id
+        LEFT JOIN pipeline_influencer_client_manager picm ON picm.pipeline_id = p.pipeline_id
+        LEFT JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
+        WHERE pu.user_id = #{userId}
+            AND ps.step_name = '제안'
+            AND p.is_deleted = 'N';
+    </select>
+
 
 
 </mapper>

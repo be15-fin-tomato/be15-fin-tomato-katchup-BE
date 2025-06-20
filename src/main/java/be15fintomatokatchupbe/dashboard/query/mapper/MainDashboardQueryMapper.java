@@ -1,9 +1,6 @@
 package be15fintomatokatchupbe.dashboard.query.mapper;
 
-import be15fintomatokatchupbe.dashboard.query.dto.response.ClientCompanyResponse;
-import be15fintomatokatchupbe.dashboard.query.dto.response.ListupResponse;
-import be15fintomatokatchupbe.dashboard.query.dto.response.SalesActivityResponse;
-import be15fintomatokatchupbe.dashboard.query.dto.response.TodayScheduleResponse;
+import be15fintomatokatchupbe.dashboard.query.dto.response.*;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -14,4 +11,5 @@ public interface MainDashboardQueryMapper {
     List<ClientCompanyResponse> findClientCompanyByUserId(Long userId);
     List<TodayScheduleResponse> findTodaySchedule(Long userId);
     List<ListupResponse> findListupByUserId(Long userId);
+    List<ProposalResponse> findProposalByUserId(Long userId);
 }
