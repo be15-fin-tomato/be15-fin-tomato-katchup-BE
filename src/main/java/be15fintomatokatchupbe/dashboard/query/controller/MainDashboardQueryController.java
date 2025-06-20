@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.dashboard.query.controller;
 
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
+import be15fintomatokatchupbe.dashboard.query.dto.response.QuotationResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.*;
 import be15fintomatokatchupbe.dashboard.query.service.MainDashboardQueryService;
 import lombok.RequiredArgsConstructor;
@@ -59,6 +60,13 @@ public class MainDashboardQueryController {
     public ResponseEntity<ApiResponse<List<ContractResponse>>> getContract(@AuthenticationPrincipal CustomUserDetail user) {
         Long userId = user.getUserId();
         List<ContractResponse> response = mainDashboardQueryService.getContractByUserId(userId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/quotation")
+    public ResponseEntity<ApiResponse<List<QuotationResponse>>> getQuotation(@AuthenticationPrincipal CustomUserDetail user) {
+        Long userId = user.getUserId();
+        List<QuotationResponse> response = mainDashboardQueryService.getQuotationByUserId(userId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
