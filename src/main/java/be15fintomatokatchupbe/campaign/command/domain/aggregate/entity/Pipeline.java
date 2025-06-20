@@ -4,7 +4,7 @@ import be15fintomatokatchupbe.common.domain.StatusType;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "pipeline")
@@ -20,26 +20,28 @@ public class Pipeline {
     private Long pipelineId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "campaign_id", nullable = false)
     private Campaign campaign;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "pipeline_step_id", nullable = false)
     private PipelineStep pipelineStep;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "file_id")
     private File file;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pipeline_status_id")
     private PipelineStatus pipelineStatus;
 
-    private String title;
+    private String name;
 
-    private Timestamp startedAt;
+    private LocalDateTime startedAt;
 
-    private Timestamp endedAt;
+    private LocalDateTime endedAt;
 
-    private Timestamp presentedAt;
+    private LocalDateTime presentedAt;
 
     private String notes;
 
@@ -47,7 +49,7 @@ public class Pipeline {
 
     private BigDecimal expectedProfitMargin;
 
-    private Timestamp requestAt;
+    private LocalDateTime requestAt;
 
     private String content;
 
@@ -55,11 +57,11 @@ public class Pipeline {
 
     private Long totalProfit;
 
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
-    private Timestamp updatedAt;
+    private LocalDateTime updatedAt;
 
-    private Timestamp deletedAt;
+    private LocalDateTime deletedAt;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

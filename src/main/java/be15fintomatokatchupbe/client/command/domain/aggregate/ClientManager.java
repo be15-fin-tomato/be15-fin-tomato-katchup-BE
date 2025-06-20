@@ -3,7 +3,8 @@ package be15fintomatokatchupbe.client.command.domain.aggregate;
 import be15fintomatokatchupbe.common.domain.StatusType;
 import jakarta.persistence.*;
 import lombok.*;
-import java.sql.Timestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "client_manager")
@@ -19,11 +20,11 @@ public class ClientManager {
     private Long clientManagerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "client_company_id")
     private ClientCompany clientCompany;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "client_manager_status_id")
     private ClientManagerStatus clientManagerStatus;
 
     private String name;
@@ -45,10 +46,10 @@ public class ClientManager {
     private StatusType isDeleted = StatusType.N;
 
     @Column(nullable = false)
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
     @Column(nullable = false)
-    private Timestamp updatedAt;
+    private LocalDateTime updatedAt;
 
-    private Timestamp deletedAt;
+    private LocalDateTime deletedAt;
 }

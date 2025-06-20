@@ -7,19 +7,15 @@ import java.util.List;
 
 @Getter
 @Setter
-public class InfluencerRegisterRequestDTO {
+public class InfluencerEditRequestDTO {
+
+    private Long influencerId;
+
     private String name;
     private String gender;
     private Long price;
     private String national;
-    private Long userId;
-
-    private boolean youtubeConnected;
-    private String youtubeAccountId;
-
-    private boolean instagramConnected;
-    private String instagramAccountId;
-    private Long instagramFollower;
+    private String userName;
 
     private List<Long> categoryIds;
 }

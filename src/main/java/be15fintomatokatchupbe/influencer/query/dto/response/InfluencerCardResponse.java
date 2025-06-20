@@ -1,6 +1,5 @@
 package be15fintomatokatchupbe.influencer.query.dto.response;
 
-import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
 import lombok.*;
 
 import java.util.List;
@@ -14,7 +13,12 @@ public class InfluencerCardResponse {
 
     private Long influencerId;
     private String name;
+    private String gender;
     private String manager;
+    private String national;
+    private Long price;
+    private boolean instagramIsConnected;
+    private boolean youtubeIsConnected;
 
     private List<CategoryDto> tags;
 

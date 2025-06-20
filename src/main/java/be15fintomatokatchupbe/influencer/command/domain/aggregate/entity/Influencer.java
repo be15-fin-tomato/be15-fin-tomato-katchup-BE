@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.influencer.command.domain.aggregate.entity;
 
+import be15fintomatokatchupbe.common.domain.StatusType;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -24,9 +25,6 @@ public class Influencer {
     @Column(length = 100, nullable = false)
     private String name;
 
-    @Column(length = 50)
-    private String email;
-
     @Enumerated(EnumType.STRING)
     @Column(length = 1)
     private Gender gender;
@@ -48,6 +46,16 @@ public class Influencer {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @Column(name = "instagram_is_connected", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private StatusType instagramIsConnected = StatusType.N;
+
+    @Column(name = "youtube_is_connected", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private StatusType youtubeIsConnected = StatusType.N;
 
     @PrePersist
     protected void onCreate() {

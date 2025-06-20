@@ -16,12 +16,7 @@ public class Youtube {
     @Column(name = "influencer_id")
     private Long influencerId;
 
-    @Column(name = "is_connected")
-    private String isConnected = "N";
-
     @Column(name = "account_id", length = 255)
     private String accountId;
 
-    @Column(name = "subscriber")
-    private Long subscriber;
 }

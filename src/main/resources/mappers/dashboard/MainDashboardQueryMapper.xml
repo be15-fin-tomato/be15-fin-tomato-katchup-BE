@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.dashboard.query.mapper.MainDashboardQueryMapper">
+
+    <select id="countSalesActivities" parameterType="long" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.SalesActivityResponse">
+        SELECT
+            (
+                SELECT COUNT(*)
+                FROM client_company cc
+                JOIN client_company_user ccu ON cc.client_company_id = ccu.client_company_id
+                WHERE ccu.user_id = #{userId}
+                AND cc.is_deleted = 'N'
+                AND cc.created_at >= NOW() - INTERVAL 30 DAY
+            ) AS clientCompanyCount,
+
+            (
+                SELECT COUNT(*)
+                FROM influencer i
+                WHERE i.user_id = #{userId}
+                AND i.is_deleted = 'N'
+                AND i.created_at >= NOW() - INTERVAL 30 DAY
+            ) AS influencerCount,
+
+            (
+                SELECT COUNT(*)
+                FROM contract c
+                JOIN influencer i ON c.influencer_id = i.influencer_id
+                WHERE i.user_id = #{userId}
+                    AND c.created_at >= NOW() - INTERVAL 30 DAY
+            ) AS contractCount,
+
+            (
+                SELECT COUNT(*)
+                FROM pipeline p
+                JOIN pipeline_user pu ON p.pipeline_id = pu.pipeline_id
+                JOIN pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
+                WHERE pu.user_id = #{userId}
+                    AND ps.step_name = '계약'
+                    AND p.created_at >= NOW() - INTERVAL 30 DAY
+                    AND p.is_deleted = 'N'
+            ) AS pipelineCount
+    </select>
+
+    <select id="findClientCompanyByUserId" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.ClientCompanyResponse">
+        SELECT
+            cc.client_company_name,
+            cc.telephone,
+            cc.created_at,
+            ccs.status_name
+        FROM client_company cc
+        JOIN client_company_status ccs ON cc.client_company_status_id = ccs.client_company_status_id
+        JOIN client_company_user ccu ON cc.client_company_id = ccu.client_company_id
+        WHERE cc.is_deleted = 'N'
+            AND ccu.user_id = #{userId}
+            AND cc.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    </select>
+
+    <select id="findTodaySchedule" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.TodayScheduleResponse">
+        SELECT
+            s.content,
+            s.schedule_date,
+            s.start_time,
+            s.end_time,
+            sc.hex_code
+        FROM schedule s
+        JOIN schedule_color sc ON s.schedule_color_id = sc.schedule_color_id
+        JOIN user u ON s.user_id = u.user_id
+        WHERE s.user_id = #{userId}
+            AND s.schedule_date = CURDATE()
+    </select>
+
+</mapper>

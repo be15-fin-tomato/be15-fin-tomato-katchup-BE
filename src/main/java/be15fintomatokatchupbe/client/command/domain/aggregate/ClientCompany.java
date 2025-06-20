@@ -4,7 +4,8 @@ import be15fintomatokatchupbe.common.domain.StatusType;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name = "client_company")
@@ -20,7 +21,7 @@ public class ClientCompany {
     private Long clientCompanyId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "client_company_status_id")
     private ClientCompanyStatus clientCompanyStatus;
 
     private String clientCompanyName;
@@ -45,10 +46,10 @@ public class ClientCompany {
     @Builder.Default
     private StatusType isDeleted = StatusType.N;
 
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
-    private Timestamp updatedAt;
+    private LocalDateTime updatedAt;
 
-    private Timestamp deletedAt;
+    private LocalDateTime deletedAt;
 }
 

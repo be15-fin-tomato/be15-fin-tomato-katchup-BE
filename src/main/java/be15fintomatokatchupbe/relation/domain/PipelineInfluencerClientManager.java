@@ -19,12 +19,15 @@ public class PipelineInfluencerClientManager {
     private Long pipelineInfluencerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "client_manager_id") // ✅ DB 컬럼명 명시
     private ClientManager clientManager;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pipeline_id")
     private Pipeline pipeline;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "influencer_id")
     private Influencer influencer;
 
     private Long adPrice;
