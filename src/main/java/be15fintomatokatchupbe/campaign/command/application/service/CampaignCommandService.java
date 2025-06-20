@@ -14,6 +14,8 @@ import be15fintomatokatchupbe.client.command.application.service.ClientCommandSe
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientCompany;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManager;
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.relation.domain.HashtagInfluencerCampaign;
+import be15fintomatokatchupbe.relation.service.HashInfCampService;
 import be15fintomatokatchupbe.relation.service.PipeInfClientManagerService;
 import be15fintomatokatchupbe.relation.service.PipeUserService;
 import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
@@ -34,6 +36,7 @@ public class CampaignCommandService {
     private final ClientCommandService clientCommandService;
     private final PipeUserService pipeUserService;
     private final PipeInfClientManagerService pipeInfClientManagerService;
+    private final HashInfCampService hashInfCampService;
 
     private final CampaignRepository campaignRepository;
     private final CampaignStatusRepository campaignStatusRepository;
@@ -92,6 +95,6 @@ public class CampaignCommandService {
         pipeUserService.saveUserList(request.getUserList(), pipeline);
 
         // 5. 해시태그 입력하기
-
+        hashInfCampService.updateCampaignTags(campaign, request.getCategoryList());
     }
 }
