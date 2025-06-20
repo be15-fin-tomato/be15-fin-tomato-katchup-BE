@@ -51,7 +51,7 @@ class UserCommendServiceTest {
 
         when(userRepository.existsByEmail(request.getEmail())).thenReturn(false);
         when(userRepository.existsByLoginId(request.getLoginId())).thenReturn(false);
-        when(passwordEncoder.encode("password")).thenReturn("encodedPwd");
+        when(passwordEncoder.encode("password")).thenReturn("encodedPwd1");
 
         User user = User.builder().build();
         when(modelMapper.map(request, User.class)).thenReturn(user);
@@ -59,7 +59,7 @@ class UserCommendServiceTest {
         userCommendService.signup(request);
 
         verify(userRepository).save(user);
-        assertEquals("encodedPwd", user.getPassword());
+        assertEquals("encodedPwd1", user.getPassword());
     }
 
     @Test
