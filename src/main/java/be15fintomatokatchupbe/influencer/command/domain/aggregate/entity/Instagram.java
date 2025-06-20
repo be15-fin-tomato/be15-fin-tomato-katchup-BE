@@ -16,9 +16,6 @@ public class Instagram {
     @Column(name = "influencer_id")
     private Long influencerId;
 
-    @Column(name = "is_connected", columnDefinition = "ENUM('Y','N') DEFAULT 'N'")
-    private String isConnected = "N";
-
     @Column(name = "account_id", length = 255)
     private String accountId;
 
