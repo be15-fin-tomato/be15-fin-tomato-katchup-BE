@@ -14,4 +14,6 @@ public interface HashtagInfluencerCampaignRepository extends JpaRepository<Hasht
     @Transactional
     @Query("DELETE FROM HashtagInfluencerCampaign h WHERE h.influencerId = :influencerId")
     void deleteByInfluencerId(Long influencerId);
+
+    void deleteByCampaignId(Long campaignId);
 }

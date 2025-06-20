@@ -21,7 +21,7 @@ public class ClientCompany {
     private Long clientCompanyId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "client_company_status_id")
     private ClientCompanyStatus clientCompanyStatus;
 
     private String clientCompanyName;
