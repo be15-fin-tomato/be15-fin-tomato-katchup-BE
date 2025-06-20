@@ -44,9 +44,18 @@
             ) AS pipelineCount
     </select>
 
-
-
-
-
+    <select id="findClientCompanyByUserId" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.ClientCompanyResponse">
+        SELECT
+            cc.client_company_name,
+            cc.telephone,
+            cc.created_at,
+            ccs.status_name
+        FROM client_company cc
+        JOIN client_company_status ccs ON cc.client_company_status_id = ccs.client_company_status_id
+        JOIN client_company_user ccu ON cc.client_company_id = ccu.client_company_id
+        WHERE cc.is_deleted = 'N'
+            AND ccu.user_id = #{userId}
+            AND cc.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    </select>
 
 </mapper>
