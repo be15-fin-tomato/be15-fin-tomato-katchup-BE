@@ -10,6 +10,7 @@ import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.*;
 import be15fintomatokatchupbe.influencer.command.domain.repository.*;
 import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
 import be15fintomatokatchupbe.relation.domain.HashtagInfluencerCampaign;
+import be15fintomatokatchupbe.relation.service.HashInfCampService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,14 +27,15 @@ public class InfluencerCommandServiceImpl implements InfluencerCommandService {
     private final InstagramRepository instagramRepository;
     private final HashtagInfluencerCampaignRepository hashtagRepository;
     private final CategoryRepository categoryRepository;
+    private final HashInfCampService hashInfCampService;
 
+    // 인플루언서 등록
     @Override
     @Transactional
     public InfluencerRegisterResponse registerInfluencer(InfluencerRegisterRequestDTO dto) {
         // 1. 인플루언서 저장
         Influencer influencer = Influencer.builder()
                 .name(dto.getName())
-                .email(dto.getEmail())
                 .gender(Influencer.Gender.valueOf(dto.getGender()))
                 .price(dto.getPrice())
                 .national(Influencer.National.valueOf(dto.getNational()))
@@ -86,35 +88,22 @@ public class InfluencerCommandServiceImpl implements InfluencerCommandService {
                 .build();
     }
 
+    // 인플루언서 수정
     @Override
     @Transactional
     public InfluencerEditResponse editInfluencer(InfluencerEditRequestDTO dto) {
-        // 1. 인플루언서 조회
         Influencer influencer = influencerRepository.findById(dto.getInfluencerId())
                 .orElseThrow(() -> new BusinessException(InfluencerErrorCode.INFLUENCER_NOT_FOUND));
 
-        // 2. 인플루언서 기본 정보 업데이트
         influencer.setName(dto.getName());
         influencer.setGender(Influencer.Gender.valueOf(dto.getGender()));
         influencer.setPrice(dto.getPrice());
         influencer.setNational(Influencer.National.valueOf(dto.getNational()));
 
-        // 3. 기존 해시태그 삭제 후 재등록
-        hashtagRepository.deleteByInfluencerId(dto.getInfluencerId());
+        List<Category> categories = hashInfCampService.updateInfluencerTags(dto.getInfluencerId(), dto.getCategoryIds());
 
-        List<Category> categories = categoryRepository.findAllById(dto.getCategoryIds());
-        for (Category category : categories) {
-            HashtagInfluencerCampaign mapping = HashtagInfluencerCampaign.builder()
-                    .influencerId(dto.getInfluencerId())
-                    .categoryId(category.getCategoryId())
-                    .build();
-            hashtagRepository.save(mapping);
-        }
-
-        // 4. 응답 생성
         return InfluencerEditResponse.builder()
                 .influencerId(influencer.getId())
-//                .userName(dto.getUserName())
                 .gender(influencer.getGender().name())
                 .price(influencer.getPrice())
                 .categoryNames(
@@ -124,7 +113,5 @@ public class InfluencerCommandServiceImpl implements InfluencerCommandService {
                 )
                 .build();
     }
-
-
 
 }

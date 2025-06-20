@@ -25,9 +25,6 @@ public class Influencer {
     @Column(length = 100, nullable = false)
     private String name;
 
-    @Column(length = 50)
-    private String email;
-
     @Enumerated(EnumType.STRING)
     @Column(length = 1)
     private Gender gender;
