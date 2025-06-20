@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import be15fintomatokatchupbe.dashboard.query.dto.response.ClientCompanyResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.SalesActivityResponse;
+import be15fintomatokatchupbe.dashboard.query.dto.response.TodayScheduleResponse;
 import be15fintomatokatchupbe.dashboard.query.service.MainDashboardQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,13 @@ public class MainDashboardQueryController {
     public ResponseEntity<ApiResponse<List<ClientCompanyResponse>>> getClientCompany(@AuthenticationPrincipal CustomUserDetail user) {
         Long userId = user.getUserId();
         List<ClientCompanyResponse> response = mainDashboardQueryService.getClientCompany(userId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/schedule")
+    public ResponseEntity<ApiResponse<List<TodayScheduleResponse>>> getTodaySchedule(@AuthenticationPrincipal CustomUserDetail user) {
+        Long userId = user.getUserId();
+        List<TodayScheduleResponse> response = mainDashboardQueryService.getTodaySchedule(userId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
