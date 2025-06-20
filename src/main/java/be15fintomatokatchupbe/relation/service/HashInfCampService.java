@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.relation.service;
 
+import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Campaign;
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Category;
 import be15fintomatokatchupbe.influencer.command.domain.repository.CategoryRepository;
 import be15fintomatokatchupbe.influencer.command.domain.repository.HashtagInfluencerCampaignRepository;
@@ -34,4 +35,24 @@ public class HashInfCampService {
 
         return categories;
     }
+
+    @Transactional
+    public void updateCampaignTags(Campaign campaign, List<Long> categoryIdList){
+        // 관련 해시태그 다 지우기
+        hashtagRepository.deleteByCampaignId(campaign.getCampaignId());
+
+        // 객체 생성 하기
+        List<HashtagInfluencerCampaign> hashtagInfluencerCampaignList =
+                categoryIdList.stream().map(categoryId ->
+            HashtagInfluencerCampaign.builder()
+                    .campaignId(campaign.getCampaignId())
+                    .categoryId(categoryId)
+                    .build()
+        ).toList();
+
+        // 저장하기
+        hashtagRepository.saveAll(hashtagInfluencerCampaignList);
+    }
+
+
 }

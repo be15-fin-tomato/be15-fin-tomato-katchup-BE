@@ -20,11 +20,11 @@ public class ClientManager {
     private Long clientManagerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "client_company_id")
     private ClientCompany clientCompany;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "client_manager_status_id")
     private ClientManagerStatus clientManagerStatus;
 
     private String name;

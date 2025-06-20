@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.user.command.application.service;
 
+import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.user.command.application.dto.request.ChangePasswordRequest;
 import be15fintomatokatchupbe.user.command.application.dto.request.SignupRequest;
@@ -11,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -58,5 +61,19 @@ public class UserCommendService {
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+    }
+
+
+    /* 참조용 */
+    
+    // 삭제되지 않은 유저 찾기
+    public User findValidUser(Long id){
+        return userRepository.findByUserIdAndIsDeleted(id, StatusType.N)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+    }
+
+    // 유저 목록으로 찾기
+    public List<User> findValidUserList(List<Long> userId){
+        return userRepository.findByUserIdInAndIsDeleted(userId, StatusType.N);
     }
 }

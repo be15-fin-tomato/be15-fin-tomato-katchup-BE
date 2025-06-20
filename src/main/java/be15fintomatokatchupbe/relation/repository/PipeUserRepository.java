@@ -1,4 +1,7 @@
 package be15fintomatokatchupbe.relation.repository;
 
-public interface PipeUserRepository {
+import be15fintomatokatchupbe.relation.domain.PipelineUser;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface PipeUserRepository extends JpaRepository<PipelineUser, Long> {
 }
