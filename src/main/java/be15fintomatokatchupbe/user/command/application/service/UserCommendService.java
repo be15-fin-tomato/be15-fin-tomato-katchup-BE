@@ -104,14 +104,18 @@ public class UserCommendService {
             PicFile pic = new PicFile();
             pic.setFileName(fileName);
             pic.setFileRoute(fileRoute);
-            user.setFileId(pic.getFileId());
+
             picFileRepository.save(pic);
+
+            user.setFileId(pic.getFileId());
             userRepository.save(user);
         } else {
             /* null이 아니면 pic_file 테이블에서 해당 file_id 에있는 이미지를 원하는 이미지로 변경 */
             PicFile profile = picFileRepository.findById(user.getFileId())
                     .orElseThrow( () -> new BusinessException(UserErrorCode.IMAGE_NOT_FOUND));
+
             profile.profileImage(fileName, fileRoute);
+            picFileRepository.save(profile);
         }
     }
 }
