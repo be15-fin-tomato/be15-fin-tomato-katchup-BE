@@ -1,10 +1,6 @@
 package be15fintomatokatchupbe.dashboard.query.service;
 
-import be15fintomatokatchupbe.dashboard.query.dto.response.ProposalResponse;
-import be15fintomatokatchupbe.dashboard.query.dto.response.ClientCompanyResponse;
-import be15fintomatokatchupbe.dashboard.query.dto.response.ListupResponse;
-import be15fintomatokatchupbe.dashboard.query.dto.response.SalesActivityResponse;
-import be15fintomatokatchupbe.dashboard.query.dto.response.TodayScheduleResponse;
+import be15fintomatokatchupbe.dashboard.query.dto.response.*;
 import be15fintomatokatchupbe.dashboard.query.mapper.MainDashboardQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,5 +30,9 @@ public class MainDashboardQueryService {
 
     public List<ProposalResponse> getProposalByUserId(Long userId) {
         return mainDashboardQueryMapper.findProposalByUserId(userId);
+    }
+
+    public List<ContractResponse> getContractByUserId(Long userId) {
+        return mainDashboardQueryMapper.findContractByUserId(userId);
     }
 }
