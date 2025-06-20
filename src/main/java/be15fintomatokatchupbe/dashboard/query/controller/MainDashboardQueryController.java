@@ -2,11 +2,7 @@ package be15fintomatokatchupbe.dashboard.query.controller;
 
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
-import be15fintomatokatchupbe.dashboard.query.dto.response.ProposalResponse;
-import be15fintomatokatchupbe.dashboard.query.dto.response.ClientCompanyResponse;
-import be15fintomatokatchupbe.dashboard.query.dto.response.ListupResponse;
-import be15fintomatokatchupbe.dashboard.query.dto.response.SalesActivityResponse;
-import be15fintomatokatchupbe.dashboard.query.dto.response.TodayScheduleResponse;
+import be15fintomatokatchupbe.dashboard.query.dto.response.*;
 import be15fintomatokatchupbe.dashboard.query.service.MainDashboardQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -56,6 +52,13 @@ public class MainDashboardQueryController {
     public ResponseEntity<ApiResponse<List<ProposalResponse>>> getProposal(@AuthenticationPrincipal CustomUserDetail user) {
         Long userId = user.getUserId();
         List<ProposalResponse> response = mainDashboardQueryService.getProposalByUserId(userId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/contract")
+    public ResponseEntity<ApiResponse<List<ContractResponse>>> getContract(@AuthenticationPrincipal CustomUserDetail user) {
+        Long userId = user.getUserId();
+        List<ContractResponse> response = mainDashboardQueryService.getContractByUserId(userId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

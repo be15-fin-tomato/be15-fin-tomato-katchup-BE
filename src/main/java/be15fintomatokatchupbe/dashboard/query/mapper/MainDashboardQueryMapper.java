@@ -12,4 +12,5 @@ public interface MainDashboardQueryMapper {
     List<TodayScheduleResponse> findTodaySchedule(Long userId);
     List<ListupResponse> findListupByUserId(Long userId);
     List<ProposalResponse> findProposalByUserId(Long userId);
+    List<ContractResponse> findContractByUserId(Long userId);
 }
