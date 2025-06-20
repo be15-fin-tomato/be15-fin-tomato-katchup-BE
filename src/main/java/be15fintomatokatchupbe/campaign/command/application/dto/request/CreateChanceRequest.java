@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -16,8 +16,8 @@ public class CreateChanceRequest {
     private Long campaignStatusId;
     private Long clientCompanyId;
     private Long clientManagerId;
-    private Date startedAt;
-    private Date endedAt;
+    private LocalDateTime startedAt;
+    private LocalDateTime  endedAt;
     private List<Integer> userList;
     private String awarenessPath;
     private String productName;
@@ -25,5 +25,6 @@ public class CreateChanceRequest {
     private Long expectedRevenue;
     private BigDecimal expectedProfitMargin;
     private String notes;
+    private List<Integer> categoryList;
 }
 
