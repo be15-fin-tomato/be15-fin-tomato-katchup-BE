@@ -1,12 +1,10 @@
 package be15fintomatokatchupbe.dashboard.query.dto.response;
 
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@Builder
 public class SalesActivityResponse {
     private int clientCompanyCount;
     private int influencerCount;
