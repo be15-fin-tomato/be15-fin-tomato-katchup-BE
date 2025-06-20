@@ -3,6 +3,7 @@ package be15fintomatokatchupbe.dashboard.query.controller;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import be15fintomatokatchupbe.dashboard.query.dto.response.ClientCompanyResponse;
+import be15fintomatokatchupbe.dashboard.query.dto.response.ListupResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.SalesActivityResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.TodayScheduleResponse;
 import be15fintomatokatchupbe.dashboard.query.service.MainDashboardQueryService;
@@ -42,4 +43,12 @@ public class MainDashboardQueryController {
         List<TodayScheduleResponse> response = mainDashboardQueryService.getTodaySchedule(userId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @GetMapping("/list-up")
+    public ResponseEntity<ApiResponse<List<ListupResponse>>> getListup(@AuthenticationPrincipal CustomUserDetail user) {
+        Long userId = user.getUserId();
+        List<ListupResponse> response = mainDashboardQueryService.getListupByUserId(userId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
 }

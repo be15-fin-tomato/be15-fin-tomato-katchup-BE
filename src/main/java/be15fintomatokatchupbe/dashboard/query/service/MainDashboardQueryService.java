@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.dashboard.query.service;
 
 import be15fintomatokatchupbe.dashboard.query.dto.response.ClientCompanyResponse;
+import be15fintomatokatchupbe.dashboard.query.dto.response.ListupResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.SalesActivityResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.TodayScheduleResponse;
 import be15fintomatokatchupbe.dashboard.query.mapper.MainDashboardQueryMapper;
@@ -24,5 +25,9 @@ public class MainDashboardQueryService {
 
     public List<TodayScheduleResponse> getTodaySchedule(Long userId) {
         return mainDashboardQueryMapper.findTodaySchedule(userId);
+    }
+
+    public List<ListupResponse> getListupByUserId(Long userId) {
+        return mainDashboardQueryMapper.findListupByUserId(userId);
     }
 }
