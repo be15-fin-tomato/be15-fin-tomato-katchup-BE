@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.user.command.application.service;
 
+import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.user.command.application.dto.request.ChangePasswordRequest;
 import be15fintomatokatchupbe.user.command.application.dto.request.SignupRequest;
@@ -11,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor

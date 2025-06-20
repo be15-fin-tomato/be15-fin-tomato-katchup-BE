@@ -21,11 +21,11 @@ public class Campaign {
     private Long campaignId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
-    private ClientCompany customerCompany;
+    @JoinColumn(name = "client_company_id")
+    private ClientCompany clientCompany;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "campaign_status_id")
     private CampaignStatus campaignStatus;
 
     private String campaignName;

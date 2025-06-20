@@ -20,20 +20,22 @@ public class Pipeline {
     private Long pipelineId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "campaign_id", nullable = false)
     private Campaign campaign;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "pipeline_step_id", nullable = false)
     private PipelineStep pipelineStep;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "file_id")
     private File file;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pipeline_status_id")
     private PipelineStatus pipelineStatus;
 
-    private String title;
+    private String name;
 
     private LocalDateTime startedAt;
 
