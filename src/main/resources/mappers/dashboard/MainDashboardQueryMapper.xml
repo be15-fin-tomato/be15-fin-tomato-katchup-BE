@@ -58,4 +58,18 @@
             AND cc.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
     </select>
 
+    <select id="findTodaySchedule" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.TodayScheduleResponse">
+        SELECT
+            s.content,
+            s.schedule_date,
+            s.start_time,
+            s.end_time,
+            sc.hex_code
+        FROM schedule s
+        JOIN schedule_color sc ON s.schedule_color_id = sc.schedule_color_id
+        JOIN user u ON s.user_id = u.user_id
+        WHERE s.user_id = #{userId}
+            AND s.schedule_date = CURDATE()
+    </select>
+
 </mapper>
