@@ -22,7 +22,7 @@ public class Campaign {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
-    private ClientCompany customerCompany;
+    private ClientCompany clientCompany;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false)
