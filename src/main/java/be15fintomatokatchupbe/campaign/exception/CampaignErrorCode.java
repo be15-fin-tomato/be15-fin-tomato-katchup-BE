@@ -11,7 +11,8 @@ import org.springframework.http.HttpStatus;
 public enum CampaignErrorCode implements ErrorCode {
     /* 4XXXX 에러코드 할당*/
 
-    CAMPAIGN_STATUS_NOT_FOUND("40001", "캠페인 상태가 존재하지 않습니다.", HttpStatus.NOT_FOUND);
+    CAMPAIGN_STATUS_NOT_FOUND("40001", "캠페인 상태가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
+    PIPELINE_STEP_NOT_FOUND("40002", "파이프라인 단계가 존재하지 않습니다", HttpStatus.NOT_FOUND);
 
     private final String code;
     private final String message;

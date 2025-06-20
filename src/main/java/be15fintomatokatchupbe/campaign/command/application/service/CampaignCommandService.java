@@ -4,19 +4,27 @@ import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateCha
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Campaign;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.CampaignStatus;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Pipeline;
+import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.PipelineStep;
 import be15fintomatokatchupbe.campaign.command.domain.repository.CampaignRepository;
 import be15fintomatokatchupbe.campaign.command.domain.repository.CampaignStatusRepository;
+import be15fintomatokatchupbe.campaign.command.domain.repository.PipelineRepository;
+import be15fintomatokatchupbe.campaign.command.domain.repository.PipelineStepRepository;
 import be15fintomatokatchupbe.campaign.exception.CampaignErrorCode;
 import be15fintomatokatchupbe.client.command.application.service.ClientCommandService;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientCompany;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManager;
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.relation.service.PipeUserService;
 import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
+import be15fintomatokatchupbe.user.command.application.service.UserCommendService;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
 
 @AllArgsConstructor
 @Slf4j
@@ -25,6 +33,9 @@ public class CampaignCommandService {
     private final CampaignRepository campaignRepository;
     private final ClientCommandService clientCommandService;
     private final CampaignStatusRepository campaignStatusRepository;
+    private final PipelineRepository pipelineRepository;
+    private final PipeUserService pipeUserService;
+    private final PipelineStepRepository pipelineStepRepository;
 
     @Transactional
     public void createChance(Long userId, CreateChanceRequest request) {
@@ -42,6 +53,9 @@ public class CampaignCommandService {
         CampaignStatus campaignStatus = campaignStatusRepository.findById(request.getCampaignStatusId())
                 .orElseThrow(() -> new BusinessException(CampaignErrorCode.CAMPAIGN_STATUS_NOT_FOUND));
 
+        // 파이프 라인 단계
+        PipelineStep pipelineStep = pipelineStepRepository.findById(Long.valueOf(1))
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STEP_NOT_FOUND));
 
         // 1. 캠페인 만들기
         Campaign campaign = Campaign.builder()
@@ -58,14 +72,22 @@ public class CampaignCommandService {
 
         // 2. 파이프라인 만들기
         Pipeline pipeline = Pipeline.builder()
+                .name(request.getCampaignName())
+                .pipelineStep(pipelineStep)
                 .campaign(campaign)
                 .startedAt(request.getStartedAt())
-
+                .endedAt(request.getEndedAt())
+                .expectedRevenue(request.getExpectedRevenue())
+                .expectedProfitMargin(request.getExpectedProfitMargin())
                 .build();
 
+        pipelineRepository.save(pipeline);
         // 3. 광고 담당자 입력하기
 
+
+
         // 4. 담당자 입력하기
+        pipeUserService.SaveUserList(request.getUserList(), pipeline);
 
         // 5. 해시태그 입력하기
 

@@ -8,18 +8,21 @@ import be15fintomatokatchupbe.user.command.application.service.UserCommendServic
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/chance")
+@RequestMapping("/campaign")
 public class CampaignCommandController {
 
     private final CampaignCommandService campaignCommandService;
     private final UserCommendService userCommendService;
 
+
+    @PostMapping("/chance/create")
     public ResponseEntity<ApiResponse<Void>> createChance(
             @AuthenticationPrincipal CustomUserDetail user,
             @RequestBody CreateChanceRequest request

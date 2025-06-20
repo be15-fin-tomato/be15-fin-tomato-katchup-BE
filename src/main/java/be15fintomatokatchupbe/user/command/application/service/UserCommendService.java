@@ -13,6 +13,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class UserCommendService {
@@ -68,5 +70,10 @@ public class UserCommendService {
     public User findValidUser(Long id){
         return userRepository.findByUserIdAndIsDeleted(id, StatusType.N)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+    }
+
+    // 유저 목록으로 찾기
+    public List<User> findValidUserList(List<Long> userId){
+        return userRepository.findByUserIdInAndIsDeleted(userId, StatusType.N);
     }
 }
