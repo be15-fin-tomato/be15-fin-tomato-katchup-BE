@@ -9,7 +9,6 @@ import java.util.List;
 @Setter
 public class InfluencerRegisterRequestDTO {
     private String name;
-    private String email;
     private String gender;
     private Long price;
     private String national;

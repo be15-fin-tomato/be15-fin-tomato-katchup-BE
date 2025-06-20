@@ -31,10 +31,12 @@ public class InfluencerCommandController {
     }
 
     // 인플루언서 수정
-    @PatchMapping("/edit")
+    @PatchMapping("/{influencerId}")
     public ResponseEntity<ApiResponse<InfluencerEditResponse>> editInfluencer(
+            @PathVariable Long influencerId,
             @RequestBody InfluencerEditRequestDTO requestDTO
     ) {
+        requestDTO.setInfluencerId(influencerId);
         InfluencerEditResponse response = influencerCommandService.editInfluencer(requestDTO);
         return ResponseEntity.ok(ApiResponse.success(response));
     }

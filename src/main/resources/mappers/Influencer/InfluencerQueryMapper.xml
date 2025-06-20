@@ -8,6 +8,11 @@
     <resultMap id="InfluencerCardMap" type="be15fintomatokatchupbe.influencer.query.dto.response.InfluencerCardResponse">
         <id property="influencerId" column="influencer_id"/>
         <result property="name" column="name"/>
+        <result property="gender" column="gender"/>
+        <result property="national" column="national"/>
+        <result property="price" column="price"/>
+        <result property="instagramIsConnected" column="instagram_is_connected"/>
+        <result property="youtubeIsConnected" column="youtube_is_connected"/>
         <result property="manager" column="manager"/>
 
         <association property="youtube" javaType="be15fintomatokatchupbe.influencer.query.dto.response.YoutubeInfoResponse">
@@ -30,12 +35,18 @@
         SELECT
         i.influencer_id,
         i.name,
+        i.gender,
+        i.national,
+        i.price,
+        i.instagram_is_connected,
+        i.youtube_is_connected,
         u.name AS manager,
 
         c.category_id,
         c.category_name,
 
         y.account_id AS youtube_account_id,
+        y.name AS youtube_name,
 
         ig.account_id AS instagram_account_id,
         ig.follower AS instagram_follower
