@@ -11,5 +11,5 @@ public class ContractResponse {
     private String companyName;
     private String contractName;
     private String statusName;
-    private LocalDateTime createdAt;;
+    private LocalDateTime createdAt;
 }
