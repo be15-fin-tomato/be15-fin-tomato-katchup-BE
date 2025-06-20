@@ -4,7 +4,6 @@ import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateCha
 import be15fintomatokatchupbe.campaign.command.application.service.CampaignCommandService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
-import be15fintomatokatchupbe.user.command.application.service.UserCommendService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class CampaignCommandController {
 
     private final CampaignCommandService campaignCommandService;
-    private final UserCommendService userCommendService;
 
 
     @PostMapping("/chance/create")
