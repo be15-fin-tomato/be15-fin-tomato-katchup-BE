@@ -9,6 +9,7 @@ import java.util.List;
 @Builder
 public class InfluencerEditResponse {
     private Long influencerId;
+//    private String userName;
     private String gender;
     private Long price;
     private List<String> categoryNames;

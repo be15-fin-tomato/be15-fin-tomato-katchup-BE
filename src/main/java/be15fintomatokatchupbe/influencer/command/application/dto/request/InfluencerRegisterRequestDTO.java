@@ -8,7 +8,6 @@ import java.util.List;
 @Getter
 @Setter
 public class InfluencerRegisterRequestDTO {
-
     private String name;
     private String email;
     private String gender;
@@ -18,13 +17,10 @@ public class InfluencerRegisterRequestDTO {
 
     private boolean youtubeConnected;
     private String youtubeAccountId;
-    private Long youtubeSubscriber;
-
 
     private boolean instagramConnected;
     private String instagramAccountId;
     private Long instagramFollower;
 
     private List<Long> categoryIds;
-
 }

@@ -13,7 +13,6 @@
         <association property="youtube" javaType="be15fintomatokatchupbe.influencer.query.dto.response.YoutubeInfoResponse">
             <result property="accountId" column="youtube_account_id"/>
             <result property="name" column="youtube_name"/>
-            <result property="subscriber" column="youtube_subscriber"/>
         </association>
 
         <association property="instagram" javaType="be15fintomatokatchupbe.influencer.query.dto.response.InstagramInfoResponse">
@@ -37,7 +36,6 @@
         c.category_name,
 
         y.account_id AS youtube_account_id,
-        y.subscriber AS youtube_subscriber,
 
         ig.account_id AS instagram_account_id,
         ig.follower AS instagram_follower
