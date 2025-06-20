@@ -9,6 +9,7 @@ import be15fintomatokatchupbe.influencer.command.application.dto.response.Influe
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.*;
 import be15fintomatokatchupbe.influencer.command.domain.repository.*;
 import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
+import be15fintomatokatchupbe.relation.domain.HashtagInfluencerCampaign;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,7 +85,6 @@ public class InfluencerCommandServiceImpl implements InfluencerCommandService {
                 )
                 .build();
     }
-
 
     @Override
     @Transactional

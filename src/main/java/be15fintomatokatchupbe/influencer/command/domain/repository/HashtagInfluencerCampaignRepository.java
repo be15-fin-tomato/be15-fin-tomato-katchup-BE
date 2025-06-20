@@ -1,6 +1,6 @@
 package be15fintomatokatchupbe.influencer.command.domain.repository;
 
-import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.HashtagInfluencerCampaign;
+import be15fintomatokatchupbe.relation.domain.HashtagInfluencerCampaign;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
