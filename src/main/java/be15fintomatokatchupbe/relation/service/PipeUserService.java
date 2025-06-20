@@ -16,7 +16,7 @@ public class PipeUserService {
     private final UserCommendService userCommendService;
     private final PipeUserRepository pipeUserRepository;
 
-    public void SaveUserList(List<Long> userList, Pipeline pipeline){
+    public void saveUserList(List<Long> userList, Pipeline pipeline){
         List<User> foundUserList = userCommendService.findValidUserList(userList);
 
         List<PipelineUser> pipelineUserList = foundUserList.stream().map(user ->

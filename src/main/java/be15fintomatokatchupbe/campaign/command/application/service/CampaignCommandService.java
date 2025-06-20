@@ -14,6 +14,7 @@ import be15fintomatokatchupbe.client.command.application.service.ClientCommandSe
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientCompany;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManager;
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.relation.service.PipeInfClientManagerService;
 import be15fintomatokatchupbe.relation.service.PipeUserService;
 import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
 import be15fintomatokatchupbe.user.command.application.service.UserCommendService;
@@ -30,11 +31,13 @@ import java.util.Optional;
 @Slf4j
 @Service
 public class CampaignCommandService {
-    private final CampaignRepository campaignRepository;
     private final ClientCommandService clientCommandService;
+    private final PipeUserService pipeUserService;
+    private final PipeInfClientManagerService pipeInfClientManagerService;
+
+    private final CampaignRepository campaignRepository;
     private final CampaignStatusRepository campaignStatusRepository;
     private final PipelineRepository pipelineRepository;
-    private final PipeUserService pipeUserService;
     private final PipelineStepRepository pipelineStepRepository;
 
     @Transactional
@@ -83,11 +86,10 @@ public class CampaignCommandService {
 
         pipelineRepository.save(pipeline);
         // 3. 광고 담당자 입력하기
-
-
+        pipeInfClientManagerService.saveClientManager(clientManager, pipeline);
 
         // 4. 담당자 입력하기
-        pipeUserService.SaveUserList(request.getUserList(), pipeline);
+        pipeUserService.saveUserList(request.getUserList(), pipeline);
 
         // 5. 해시태그 입력하기
 
