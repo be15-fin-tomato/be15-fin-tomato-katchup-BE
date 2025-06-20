@@ -18,8 +18,10 @@ public class ClientCompanyUser {
     private Long clientCompanyUserId;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "client_company_id")
     private ClientCompany clientCompany;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     private User user;
 }
