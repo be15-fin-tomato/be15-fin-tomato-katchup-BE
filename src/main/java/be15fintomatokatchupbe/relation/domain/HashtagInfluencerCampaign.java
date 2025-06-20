@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.influencer.command.domain.aggregate.entity;
+package be15fintomatokatchupbe.relation.domain;
 import jakarta.persistence.*;
 import lombok.*;
 

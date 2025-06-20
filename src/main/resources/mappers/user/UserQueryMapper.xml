@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="be15fintomatokatchupbe.user.query.mapper.UserQueryMapper">
+    <select id="getMyAccount" resultType="be15fintomatokatchupbe.user.query.dto.response.UserAccountQueryResponse">
+        SELECT
+              a.user_id
+            , a.login_id
+            , a.phone
+            , a.email
+            , a.file_id
+            , b.file_name
+            , a.birth
+          FROM user a
+          LEFT JOIN pic_file b ON (a.file_id = b.file_id)
+            WHERE a.user_id = #{ userId }
+    </select>
+    <select id="getMyInfluencer" resultType="be15fintomatokatchupbe.user.query.dto.response.UserInfluencerListDTO">
+        SELECT
+              i.influencer_id
+            , i.user_id,
+            CASE
+                WHEN i.youtube_is_connected = 'Y' THEN y.name
+                WHEN i.instagram_is_connected = 'Y' THEN ig.name
+                ELSE i.name
+                END AS name,
+            CASE
+                WHEN i.youtube_is_connected = 'Y' THEN y.image_url
+                ELSE NULL
+                END AS image_url
+          FROM influencer i
+          LEFT JOIN youtube y ON i.influencer_id = y.influencer_id
+          LEFT JOIN instagram ig ON i.influencer_id = ig.influencer_id
+        WHERE i.is_deleted = 'N'
+          AND i.user_id = #{ userId }
+    </select>
+</mapper>
