@@ -35,8 +35,9 @@ public class Influencer {
     private National national;
 
     @Builder.Default
+    @Enumerated(EnumType.STRING)
     @Column(name = "is_deleted", nullable = false)
-    private String isDeleted = "N";
+    private StatusType isDeleted = StatusType.N;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
