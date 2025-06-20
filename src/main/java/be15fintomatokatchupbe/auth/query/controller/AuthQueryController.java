@@ -6,6 +6,8 @@ import be15fintomatokatchupbe.auth.query.dto.request.LoginRequest;
 import be15fintomatokatchupbe.auth.query.service.AuthQueryService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.user.annotation.ValidEmail;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
 
+@Tag(name = "회원")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth")
@@ -28,6 +31,7 @@ public class AuthQueryController {
     private final AuthQueryService authQueryService;
 
     /* 로그인 */
+    @Operation(summary = "로그인",description = "사용자는 로그인을 할 수 있다.")
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<TokenResponse>> login(
             @RequestBody @Valid LoginRequest request
@@ -38,6 +42,7 @@ public class AuthQueryController {
     }
 
     /* 재발급 */
+    @Operation(summary = "토큰 재발급",description = "토큰 재발급")
     @PostMapping("/reissue")
     public ResponseEntity<ApiResponse<TokenResponse>> reissue(
             @CookieValue(name = "refreshToken", required = false) String refreshToken
@@ -48,6 +53,7 @@ public class AuthQueryController {
     }
 
     /* 비밀번호 찾기 */
+    @Operation(summary = "비밀번호 찾기",description = "사용자는 비밀번호를 찾을 수 있다.")
     @GetMapping("/find/password")
     public ResponseEntity<ApiResponse<Void>> findPassword(
             @RequestParam String loginId,

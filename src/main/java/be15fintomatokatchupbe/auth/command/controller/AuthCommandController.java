@@ -3,6 +3,8 @@ package be15fintomatokatchupbe.auth.command.controller;
 import be15fintomatokatchupbe.auth.command.service.AuthCommandService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "회원")
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -23,6 +26,7 @@ public class AuthCommandController {
     private final AuthCommandService authCommandService;
 
     /* 로그아웃 */
+    @Operation(summary = "로그아웃",description = "사용자는 로그아웃을 할 수 있다.")
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(
             @AuthenticationPrincipal CustomUserDetail userDetail,

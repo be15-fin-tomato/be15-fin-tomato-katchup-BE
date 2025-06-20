@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.client.command.application.service;
+package be15fintomatokatchupbe.client.command.application.support;
 
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientCompany;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManager;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 @Slf4j
 @Service
-public class ClientCommandService {
+public class ClientHelperService {
     private final ClientCompanyRepository clientCompanyRepository;
     private final ClientManagerRepository clientManagerRepository;
 
