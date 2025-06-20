@@ -1,6 +1,5 @@
 package be15fintomatokatchupbe.user.query.dto.response;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,10 +7,12 @@ import lombok.Getter;
 @Getter
 public class UserInfluencerListDTO {
 
-    @NotBlank
     private Long influencerId;
 
-    @NotBlank
     private Long userId;
+
+    private String name;
+
+    private String imageUrl;
 
 }
