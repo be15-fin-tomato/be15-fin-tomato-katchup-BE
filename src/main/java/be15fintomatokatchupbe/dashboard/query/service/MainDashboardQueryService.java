@@ -35,4 +35,8 @@ public class MainDashboardQueryService {
     public List<ContractResponse> getContractByUserId(Long userId) {
         return mainDashboardQueryMapper.findContractByUserId(userId);
     }
+
+    public List<QuotationResponse> getQuotationByUserId(Long userId) {
+        return mainDashboardQueryMapper.findQuotationByUserId(userId);
+    }
 }
