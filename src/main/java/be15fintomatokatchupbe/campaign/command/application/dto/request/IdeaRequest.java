@@ -7,7 +7,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Getter
 @NoArgsConstructor
-public class InfluencerRevenueRequest extends InfluencerRequest{
-    private String youtubeLink;
-    private String instagramLink;
+public class IdeaRequest {
+    private String content;
 }

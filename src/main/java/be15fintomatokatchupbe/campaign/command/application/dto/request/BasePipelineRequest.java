@@ -1,15 +1,15 @@
 package be15fintomatokatchupbe.campaign.command.application.dto.request;
 
-import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @SuperBuilder
+@NoArgsConstructor
 public class BasePipelineRequest {
     private Long campaignId;
     private Long pipelineStepId;

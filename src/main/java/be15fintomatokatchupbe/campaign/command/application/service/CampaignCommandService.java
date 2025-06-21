@@ -21,6 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 
 @AllArgsConstructor
 @Slf4j
@@ -39,6 +41,7 @@ public class CampaignCommandService {
     private final PipelineRepository pipelineRepository;
     private final PipelineStepRepository pipelineStepRepository;
     private final PipelineStatusRepository pipelineStatusRepository;
+    private final IdeaRepository ideaRepository;
 
     @Transactional
     public void createChance(Long userId, CreateChanceRequest request) {
@@ -102,11 +105,7 @@ public class CampaignCommandService {
     @Transactional
     public void createProposal(Long userId, CreateProposalRequest request){
         /* 외부 엔티티 가져오기
-         * : 고객사, 광고 담당자, 캠페인, 파이프라인 단계 */
-
-        // 고객사 가져오기
-        ClientCompany clientCompany =
-                clientHelperService.findValidClientCompany(request.getClientCompanyId());
+         * : 광고 담당자, 캠페인, 파이프라인 단계 */
 
         //. 광고 담당자 가져오기
         ClientManager clientManager =
@@ -146,6 +145,20 @@ public class CampaignCommandService {
                 .build();
 
         pipelineRepository.save(pipeline);
+
+        List<Idea> ideaList =  request
+                .getIdeaList()
+                .stream()
+                .map(idea ->
+                        Idea
+                                .builder()
+                                .content(idea.getContent())
+                                .user(writer)
+                                .pipeline(pipeline)
+                                .build()
+                ).toList();
+
+        ideaRepository.saveAll(ideaList);
 
         /* 부가 데이터 각 테이블에 저장하기
          * : 광고 담당자, 인플루언서 강점-비고, 담당자*/
