@@ -1,6 +1,5 @@
 package be15fintomatokatchupbe.campaign.command.application.dto.request;
 
-import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Campaign;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

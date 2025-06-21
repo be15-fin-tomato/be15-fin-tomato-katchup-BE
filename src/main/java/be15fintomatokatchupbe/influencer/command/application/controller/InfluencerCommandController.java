@@ -1,8 +1,10 @@
 package be15fintomatokatchupbe.influencer.command.application.controller;
 
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
+import be15fintomatokatchupbe.influencer.command.application.dto.request.InfluencerDeleteRequestDTO;
 import be15fintomatokatchupbe.influencer.command.application.dto.request.InfluencerEditRequestDTO;
 import be15fintomatokatchupbe.influencer.command.application.dto.request.InfluencerRegisterRequestDTO;
+import be15fintomatokatchupbe.influencer.command.application.dto.response.InfluencerDeleteResponse;
 import be15fintomatokatchupbe.influencer.command.application.dto.response.InfluencerEditResponse;
 import be15fintomatokatchupbe.influencer.command.application.dto.response.InfluencerRegisterResponse;
 import be15fintomatokatchupbe.influencer.command.application.service.InfluencerCommandService;
@@ -38,6 +40,17 @@ public class InfluencerCommandController {
     ) {
         requestDTO.setInfluencerId(influencerId);
         InfluencerEditResponse response = influencerCommandService.editInfluencer(requestDTO);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    // 인플루언서 삭제
+    @DeleteMapping("/delete/{influencerId}")
+    public ResponseEntity<ApiResponse<InfluencerDeleteResponse>> deleteInfluencer(
+            @PathVariable Long influencerId,
+            @RequestBody InfluencerDeleteRequestDTO requestDTO
+    ) {
+        requestDTO.setInfluencerId(influencerId);
+        InfluencerDeleteResponse response = influencerCommandService.deleteInfluencer(requestDTO);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

@@ -5,6 +5,7 @@
 
 <mapper namespace="be15fintomatokatchupbe.dashboard.query.mapper.MainDashboardQueryMapper">
 
+    <!--  신규 영업활동 조회  -->
     <select id="countSalesActivities" parameterType="long" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.SalesActivityResponse">
         SELECT
             (
@@ -44,6 +45,7 @@
             ) AS pipelineCount
     </select>
 
+    <!--  내 담당 고객사 조회  -->
     <select id="findClientCompanyByUserId" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.ClientCompanyResponse">
         SELECT
             cc.client_company_name,
@@ -57,5 +59,83 @@
             AND ccu.user_id = #{userId}
             AND cc.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
     </select>
+
+    <!--  내 오늘 일정 조회  -->
+    <select id="findTodaySchedule" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.TodayScheduleResponse">
+        SELECT
+            s.content,
+            s.schedule_date,
+            s.start_time,
+            s.end_time,
+            sc.hex_code
+        FROM schedule s
+        JOIN schedule_color sc ON s.schedule_color_id = sc.schedule_color_id
+        WHERE s.user_id = #{userId}
+            AND s.schedule_date = CURDATE()
+    </select>
+
+    <!--  내 리스트업 조회  -->
+    <select id="findListupByUserId" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.ListupResponse">
+        SELECT
+            cc.client_company_name AS company_name,
+            c.campaign_name AS contract_name,
+            p.name AS listup_title,
+            cm.name AS client_manager_name,
+            cm.position AS client_manager_position
+        FROM pipeline p
+        JOIN pipeline_user pu ON pu.pipeline_id = p.pipeline_id
+        JOIN campaign c ON p.campaign_id = c.campaign_id
+        JOIN client_company cc ON c.client_company_id = cc.client_company_id
+        JOIN pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
+        LEFT JOIN pipeline_influencer_client_manager picm ON picm.pipeline_id = p.pipeline_id
+        LEFT JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
+        WHERE pu.user_id = #{userId}
+            AND ps.step_name = '리스트업'
+            AND p.is_deleted = 'N';
+    </select>
+
+    <!--  내 제안 조회  -->
+    <select id="findProposalByUserId" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.ProposalResponse">
+        SELECT
+            cc.client_company_name AS company_name,
+            c.campaign_name AS contract_name,
+            p.name AS proposal_title,
+            cm.name AS client_manager_name,
+            cm.position AS client_manager_position,
+            pss.status_name,
+            p.created_at
+        FROM pipeline p
+        JOIN pipeline_user pu ON pu.pipeline_id = p.pipeline_id
+        JOIN campaign c ON p.campaign_id = c.campaign_id
+        JOIN client_company cc ON c.client_company_id = cc.client_company_id
+        JOIN pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
+        JOIN pipeline_status pss ON p.pipeline_status_id = pss.pipeline_status_id
+        LEFT JOIN pipeline_influencer_client_manager picm ON picm.pipeline_id = p.pipeline_id
+        LEFT JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
+        WHERE pu.user_id = #{userId}
+            AND ps.step_name = '제안'
+            AND p.is_deleted = 'N';
+    </select>
+
+    <!--  내 계약 조회  -->
+    <select id="findContractByUserId" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.ContractResponse">
+        SELECT
+            cc.client_company_name AS company_name,
+            c.campaign_name AS contract_name,
+            pss.status_name,
+            p.created_at
+        FROM pipeline p
+        JOIN pipeline_user pu ON pu.pipeline_id = p.pipeline_id
+        JOIN campaign c ON p.campaign_id = c.campaign_id
+        JOIN client_company cc ON c.client_company_id = cc.client_company_id
+        JOIN pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
+        JOIN pipeline_status pss ON p.pipeline_status_id = pss.pipeline_status_id
+        LEFT JOIN pipeline_influencer_client_manager picm ON picm.pipeline_id = p.pipeline_id
+        WHERE pu.user_id = #{userId}
+            AND ps.step_name = '계약'
+            AND p.is_deleted = 'N';
+    </select>
+
+
 
 </mapper>
