@@ -1,9 +1,9 @@
 package be15fintomatokatchupbe.campaign.command.application.dto.request;
 
-import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
-@Builder
+@SuperBuilder
 @Getter
 public class InfluencerProposalRequest extends InfluencerRequest{
     private String strength;

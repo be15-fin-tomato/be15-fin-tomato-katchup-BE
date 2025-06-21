@@ -1,11 +1,11 @@
 package be15fintomatokatchupbe.campaign.command.application.dto.request;
 
 
-import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
 @Getter
-@Builder
+@SuperBuilder
 public class InfluencerRequest {
     private Long influencerId;
 }

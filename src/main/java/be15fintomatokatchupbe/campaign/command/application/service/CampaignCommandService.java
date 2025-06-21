@@ -14,6 +14,8 @@ import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.relation.service.HashInfCampService;
 import be15fintomatokatchupbe.relation.service.PipeInfClientManagerService;
 import be15fintomatokatchupbe.relation.service.PipeUserService;
+import be15fintomatokatchupbe.user.command.application.support.UserHelperService;
+import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ public class CampaignCommandService {
 
     private final ClientHelperService clientHelperService;
     private final CampaignHelperService campaignHelperService;
+    private final UserHelperService userHelperService;
 
     private final CampaignRepository campaignRepository;
     private final CampaignStatusRepository campaignStatusRepository;
@@ -57,6 +60,9 @@ public class CampaignCommandService {
         PipelineStep pipelineStep = pipelineStepRepository.findById(PipelineStepConstants.CHANCE)
                 .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STEP_NOT_FOUND));
 
+        // 작성자
+        User writer = userHelperService.findValidUser(userId);
+
         // 1. 캠페인 만들기
         Campaign campaign = Campaign.builder()
                 .clientCompany(clientCompany)
@@ -73,6 +79,7 @@ public class CampaignCommandService {
         // 2. 파이프라인 만들기
         Pipeline pipeline = Pipeline.builder()
                 .name(request.getCampaignName())
+                .writer(writer)
                 .pipelineStep(pipelineStep)
                 .campaign(campaign)
                 .startedAt(request.getStartedAt())
@@ -119,9 +126,13 @@ public class CampaignCommandService {
                 pipelineStatusRepository.findById(request.getPipelineStatusId())
                         .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STATUS_NOT_FOUND));
 
+        // 작성자 가져오기
+        User writer = userHelperService.findValidUser(userId);
+
         /* DB에 값 입력하기*/
         // 파이프라인 생성 - 저장
         Pipeline pipeline = Pipeline.builder()
+                .writer(writer)
                 .pipelineStep(pipelineStep)
                 .pipelineStatus(pipelineStatus)
                 .name(request.getName())
