@@ -1,5 +1,7 @@
 package be15fintomatokatchupbe.campaign.command.application.dto.request;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +12,8 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CreateChanceRequest {
     private String campaignName;
     private Long campaignStatusId;
@@ -25,5 +29,6 @@ public class CreateChanceRequest {
     private BigDecimal expectedProfitMargin;
     private String notes;
     private List<Long> categoryList;
+
 }
 

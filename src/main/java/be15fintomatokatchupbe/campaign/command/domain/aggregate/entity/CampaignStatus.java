@@ -6,7 +6,6 @@ import lombok.*;
 @Entity
 @Table(name = "campaign_status")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
