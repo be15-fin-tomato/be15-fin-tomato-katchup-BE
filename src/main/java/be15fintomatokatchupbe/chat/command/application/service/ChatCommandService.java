@@ -12,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -22,17 +24,21 @@ public class ChatCommandService {
     private final UserChatRepository userChatRepository;
 
     @Transactional
-    public CreateChatRoomResponse createChatRoom(List<Long> userIds) {
+    public CreateChatRoomResponse createChatRoom(Long creatorId, List<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) {
             throw new BusinessException(ChatErrorCode.INVALID_CHAT_ROOM_REQUEST);
         }
 
-        if (userIds.size() == 1) {
+        Set<Long> participants = new HashSet<>(userIds);
+        participants.add(creatorId);
+
+        if (participants.size() == 1) {
             throw new BusinessException(ChatErrorCode.SINGLE_PARTICIPANT_NOT_ALLOWED);
         }
+
         Chat chatRoom = chatRoomRepository.save(new Chat());
 
-        for (Long userId : userIds) {
+        for (Long userId : participants) {
             UserChat userChat = UserChat.builder()
                     .chatId(chatRoom.getChatId())
                     .userId(userId)
@@ -43,4 +49,5 @@ public class ChatCommandService {
 
         return new CreateChatRoomResponse(chatRoom.getChatId(), "채팅방이 생성되었습니다.");
     }
+
 }

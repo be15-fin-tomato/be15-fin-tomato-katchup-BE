@@ -25,7 +25,7 @@ public class ChatCommandController {
             @RequestBody CreateChatRoomRequest request , @AuthenticationPrincipal CustomUserDetail user
     ){
         request.setUserId(user.getUserId());
-        CreateChatRoomResponse response = chatCommandService.createChatRoom(request.getUserIds());
+        CreateChatRoomResponse response = chatCommandService.createChatRoom(user.getUserId(),request.getUserIds());
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
