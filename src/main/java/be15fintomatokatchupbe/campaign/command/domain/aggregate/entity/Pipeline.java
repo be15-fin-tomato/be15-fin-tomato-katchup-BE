@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.campaign.command.domain.aggregate.entity;
 
 import be15fintomatokatchupbe.common.domain.StatusType;
+import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -9,7 +10,6 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "pipeline")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -34,6 +34,10 @@ public class Pipeline {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pipeline_status_id")
     private PipelineStatus pipelineStatus;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "writer_id", nullable = false)
+    private User writer;
 
     private String name;
 

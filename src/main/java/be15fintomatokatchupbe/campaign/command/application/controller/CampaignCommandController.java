@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.campaign.command.application.controller;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateChanceRequest;
+import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateProposalRequest;
 import be15fintomatokatchupbe.campaign.command.application.service.CampaignCommandService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
@@ -31,6 +32,18 @@ public class CampaignCommandController {
 
         return ResponseEntity.ok(ApiResponse.success(null));
 
+    }
+
+    @PostMapping("/proposal/create")
+    public ResponseEntity<ApiResponse<Void>> createProposal(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestBody CreateProposalRequest request
+            ){
+        Long userId = user.getUserId();
+
+        campaignCommandService.createProposal(userId, request);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 
 }
