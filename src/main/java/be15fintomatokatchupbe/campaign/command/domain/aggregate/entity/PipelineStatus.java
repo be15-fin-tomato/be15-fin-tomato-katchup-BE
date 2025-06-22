@@ -6,7 +6,6 @@ import lombok.*;
 @Entity
 @Table(name = "pipeline_status")
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
