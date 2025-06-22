@@ -13,4 +13,5 @@ public interface MainDashboardQueryMapper {
     List<ListupResponse> findListupByUserId(Long userId);
     List<ProposalResponse> findProposalByUserId(Long userId);
     List<ContractResponse> findContractByUserId(Long userId);
+    List<QuotationResponse> findQuotationByUserId(Long userId);
 }
