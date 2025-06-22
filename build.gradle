@@ -52,6 +52,9 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     // 유튜브 API키
     implementation 'com.google.apis:google-api-services-youtube:v3-rev222-1.25.0'
+
+    // Mongo
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 }
 
 tasks.named('test') {
