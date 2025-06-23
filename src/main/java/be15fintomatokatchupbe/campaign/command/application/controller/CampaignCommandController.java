@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.campaign.command.application.controller;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateChanceRequest;
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateProposalRequest;
+import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateQuotationRequest;
 import be15fintomatokatchupbe.campaign.command.application.service.CampaignCommandService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
@@ -46,4 +47,16 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-}
+    @PostMapping("/quotation/create")
+    public ResponseEntity<ApiResponse<Void>> createQuotation(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestBody CreateQuotationRequest request
+    ) {
+        Long userId = user.getUserId();
+
+        campaignCommandService.createQuotation(userId, request);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    }

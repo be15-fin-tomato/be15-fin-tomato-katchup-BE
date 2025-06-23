@@ -62,5 +62,33 @@ public class ClientCompany {
         this.clientManagers.add(manager);
         manager.setClientCompany(this);
     }
+
+    public void update(String clientCompanyName,
+                       ClientCompanyStatus clientCompanyStatus,
+                       Long businessId,
+                       Long sales,
+                       Integer numberOfEmployees,
+                       String telephone,
+                       String fax,
+                       String address,
+                       String detailAddress,
+                       String notes) {
+
+        this.clientCompanyName = clientCompanyName;
+        this.clientCompanyStatus = clientCompanyStatus;
+        this.businessId = businessId;
+        this.sales = sales;
+        this.numberOfEmployees = numberOfEmployees;
+        this.telephone = telephone;
+        this.fax = fax;
+        this.address = address;
+        this.detailAddress = detailAddress;
+        this.notes = notes;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void clearManagers() {
+        this.clientManagers.clear();
+    }
 }
 
