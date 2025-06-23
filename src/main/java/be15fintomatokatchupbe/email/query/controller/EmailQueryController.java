@@ -37,10 +37,10 @@ public class EmailQueryController {
     /* 만족도 응답률 목록 조회 */
     @GetMapping("/response")
     @Operation(summary = "만족도 조사 응답률 조회", description = "만족도 조사 응답률을 조회 할 수 있다.")
-    public ResponseEntity<ApiResponse<CampaignSatisfactionResponseDTO>> getCampaignSatisfactionResponse() {
+    public ResponseEntity<ApiResponse<Double>> getCampaignSatisfactionResponse() {
 
-        CampaignSatisfactionResponseDTO response = emailQueryService.getCampaignSatisfactionResponse();
+        double avg = emailQueryService.getCampaignSatisfactionResponse();
 
-        return  ResponseEntity.ok(ApiResponse.success(response));
+        return  ResponseEntity.ok(ApiResponse.success(avg));
     }
 }
