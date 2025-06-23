@@ -73,4 +73,9 @@ public class EmailQueryService {
 
         return emailQueryMapper.getCampaignSatisfactionResponse();
     }
+
+    public double getCampaignSatisfactionAverage() {
+
+        return emailQueryMapper.getCampaignSatisfactionAverage();
+    }
 }

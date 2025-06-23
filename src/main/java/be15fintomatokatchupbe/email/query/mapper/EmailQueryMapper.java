@@ -18,5 +18,5 @@ public interface EmailQueryMapper {
 
     CampaignSatisfactionResponseDTO getCampaignSatisfactionResponse();
 
-
+    double getCampaignSatisfactionAverage();
 }
