@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.calendar.query.mapper.ScheduleQueryMapper">
+    <!-- 날짜별 일정 조회 -->
+    <select id="getScheduleList" resultType="be15fintomatokatchupbe.calendar.query.dto.ScheduleListDTO">
+        SELECT    s.schedule_id
+                , s.user_id
+                , s.schedule_color_id
+                , sc.color_name
+                , sc.hex_code
+                , s.content
+                , s.schedule_date
+                , s.start_time
+                , s.end_time
+        FROM schedule s
+        JOIN schedule_color sc ON s.schedule_color_id = sc.schedule_color_id
+        WHERE s.user_id = #{ userId }
+        AND s.schedule_date = #{ date }
+        ORDER BY s.start_time
+    </select>
+
+    <!-- 전체 일정 조회 -->
+    <select id="getScheduleListsAll" resultType="be15fintomatokatchupbe.calendar.query.dto.ScheduleListsAllDTO">
+        SELECT    s.schedule_id
+                , s.user_id
+                , s.schedule_color_id
+                , sc.color_name
+                , sc.hex_code
+                , s.content
+                , s.schedule_date
+                , s.start_time
+                , s.end_time
+        FROM schedule s
+        JOIN schedule_color sc ON s.schedule_color_id = sc.schedule_color_id
+        WHERE user_id = #{ userId }
+        ORDER BY s.schedule_date, s.start_time
+    </select>
+</mapper>
