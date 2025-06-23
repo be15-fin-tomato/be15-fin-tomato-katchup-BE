@@ -22,6 +22,9 @@ jobs:
       EMAIL_HOST: ${{ secrets.EMAIL_HOST }}
       YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
       SPRING_PROFILES_ACTIVE: test
+      YOUTUBE_CLIENT_ID: ${{secrets.YOUTUBE_CLIENT_ID}}
+      YOUTUBE_CLIENT_SECRET: ${{secrets.YOUTUBE_CLIENT_SECRET}}
+      YOUTUBE_REDIRECT_URI: ${{secrets.YOUTUBE_REDIRECT_URI}}
 
     steps:
       - name: Checkout code

@@ -23,6 +23,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
+        String upgradeHeader = request.getHeader("Upgrade");
+        if (upgradeHeader != null && "websocket".equalsIgnoreCase(upgradeHeader)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String token = parseToken(request);
 
         if(token != null && jwtTokenProvider.validateToken(token)){
