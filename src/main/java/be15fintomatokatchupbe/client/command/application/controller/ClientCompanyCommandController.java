@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.client.command.application.controller;
 
 import be15fintomatokatchupbe.client.command.application.dto.request.CreateClientCompanyRequest;
+import be15fintomatokatchupbe.client.command.application.dto.request.UpdateClientCompanyRequest;
 import be15fintomatokatchupbe.client.command.application.service.ClientCompanyCommandService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,6 +24,15 @@ public class ClientCompanyCommandController {
     public ResponseEntity<ApiResponse<Void>> createClientCompany(
             @Valid @RequestBody CreateClientCompanyRequest request) {
         clientCompanyCommandService.createClientCompany(request);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PutMapping("/{clientCompanyId}")
+    @Operation(summary = "고객사 정보 수정", description = "고객사 및 사원 정보를 수정합니다.")
+    public ResponseEntity<ApiResponse<Void>> updateClientCompany(
+            @PathVariable Long clientCompanyId,
+            @Valid @RequestBody UpdateClientCompanyRequest request) {
+        clientCompanyCommandService.updateClientCompany(clientCompanyId, request);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 }
