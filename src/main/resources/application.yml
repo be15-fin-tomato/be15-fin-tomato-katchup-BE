@@ -43,8 +43,12 @@ jwt:
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   mapper-locations: mappers/**/*.xml
 
 youtube:
   api:
     key: ${YOUTUBE_API_KEY}
+  client-id: ${YOUTUBE_CLIENT_ID}
+  client-secret: ${YOUTUBE_CLIENT_SECRET}
+  redirect-uri: ${YOUTUBE_REDIRECT_URI}

@@ -14,9 +14,13 @@ import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
+import org.springframework.security.core.Authentication;
 
 import javax.crypto.SecretKey;
+import java.util.Collections;
 import java.util.Date;
 
 @Component
@@ -101,5 +105,16 @@ public class JwtTokenProvider {
                 .parseSignedClaims(token)
                 .getPayload()
                 .getExpiration();
+    }
+
+    public Authentication getAuthentication(String token) {
+        Long userId = getUserIdFromJWT(token);
+        String loginId = getLoginIdFromJWT(token);
+
+        return new UsernamePasswordAuthenticationToken(
+                userId,
+                null,
+                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+        );
     }
 }
