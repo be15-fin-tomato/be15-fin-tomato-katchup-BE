@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.common.dto.Pagination;
 import be15fintomatokatchupbe.email.query.dto.request.EmailSearchRequest;
 import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionDTO;
 import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionResponse;
+import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionResponseDTO;
 import be15fintomatokatchupbe.email.query.mapper.EmailQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -67,4 +68,9 @@ public class EmailQueryService {
     }
 
 
+    /* 응답률 조회 */
+    public CampaignSatisfactionResponseDTO getCampaignSatisfactionResponse() {
+
+        return emailQueryMapper.getCampaignSatisfactionResponse();
+    }
 }

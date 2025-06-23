@@ -3,6 +3,7 @@ package be15fintomatokatchupbe.email.query.controller;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.email.query.dto.request.EmailSearchRequest;
 import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionResponse;
+import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionResponseDTO;
 import be15fintomatokatchupbe.email.query.service.EmailQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,5 +32,15 @@ public class EmailQueryController {
         CampaignSatisfactionResponse response = emailQueryService.getCampaignSatisfaction(emailSearchRequest);
 
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /* 만족도 응답률 목록 조회 */
+    @GetMapping("/response")
+    @Operation(summary = "만족도 조사 응답률 조회", description = "만족도 조사 응답률을 조회 할 수 있다.")
+    public ResponseEntity<ApiResponse<CampaignSatisfactionResponseDTO>> getCampaignSatisfactionResponse() {
+
+        CampaignSatisfactionResponseDTO response = emailQueryService.getCampaignSatisfactionResponse();
+
+        return  ResponseEntity.ok(ApiResponse.success(response));
     }
 }
