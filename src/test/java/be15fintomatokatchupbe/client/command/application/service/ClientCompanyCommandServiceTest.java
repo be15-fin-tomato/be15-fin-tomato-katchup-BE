@@ -3,10 +3,14 @@ package be15fintomatokatchupbe.client.command.application.service;
 import be15fintomatokatchupbe.client.command.application.dto.request.*;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientCompany;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientCompanyStatus;
+import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManager;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManagerStatus;
 import be15fintomatokatchupbe.client.command.domain.repository.*;
 import be15fintomatokatchupbe.client.command.exception.ClientErrorCode;
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.relation.service.ClientCompanyUserService;
+import be15fintomatokatchupbe.user.command.application.support.UserHelperService;
+import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -38,6 +42,12 @@ class ClientCompanyCommandServiceTest {
 
     @Mock
     private ClientManagerStatusRepository clientManagerStatusRepository;
+
+    @Mock
+    private ClientCompanyUserService clientCompanyUserService;
+
+    @Mock
+    private UserHelperService userHelperService;
 
     @InjectMocks
     private ClientCompanyCommandService sut;
@@ -71,16 +81,21 @@ class ClientCompanyCommandServiceTest {
             ReflectionTestUtils.setField(cReq, "detailAddress", "101동 202호");
             ReflectionTestUtils.setField(cReq, "notes", "테스트 메모");
             ReflectionTestUtils.setField(cReq, "clientManagers", List.of(mReq));
+            ReflectionTestUtils.setField(cReq, "userIds", List.of(1L, 2L));
 
             ClientCompanyStatus companyStatus = mock(ClientCompanyStatus.class);
             ClientManagerStatus managerStatus = mock(ClientManagerStatus.class);
+            User user1 = mock(User.class);
+            User user2 = mock(User.class);
 
             when(clientCompanyStatusRepository.findById(2L)).thenReturn(Optional.of(companyStatus));
             when(clientManagerStatusRepository.findById(1L)).thenReturn(Optional.of(managerStatus));
+            when(userHelperService.findValidUserList(List.of(1L, 2L))).thenReturn(List.of(user1, user2));
 
             sut.createClientCompany(cReq);
 
             verify(clientCompanyRepository, times(1)).save(any());
+            verify(clientCompanyUserService, times(1)).createRelations(any(ClientCompany.class), eq(List.of(user1, user2)));
         }
 
         @Test
@@ -104,7 +119,7 @@ class ClientCompanyCommandServiceTest {
     class UpdateClientCompany {
 
         @Test
-        @DisplayName("고객사 수정 성공")
+        @DisplayName("고객사 수정 성공 (담당자 포함)")
         void success() {
             // ===== given =====
             Long companyId = 1L;
@@ -132,14 +147,29 @@ class ClientCompanyCommandServiceTest {
             ReflectionTestUtils.setField(req, "detailAddress", "월드컵북로 10길");
             ReflectionTestUtils.setField(req, "notes", "VIP 고객");
             ReflectionTestUtils.setField(req, "clientManagers", List.of(mReq));
+            ReflectionTestUtils.setField(req, "userIds", List.of(1L, 2L));
 
             ClientCompanyStatus status = ClientCompanyStatus.builder().build();
             ClientManagerStatus managerStatus = ClientManagerStatus.builder().build();
-            ClientCompany company = ClientCompany.builder().clientCompanyId(companyId).build();
+
+            ClientManager existingManager = ClientManager.builder()
+                    .clientManagerId(1L)
+                    .name("이전매니저")
+                    .build();
+
+            ClientCompany company = ClientCompany.builder()
+                    .clientCompanyId(companyId)
+                    .clientCompanyName("이전 회사명")
+                    .build();
+            company.addManager(existingManager);
+
+            User user1 = mock(User.class);
+            User user2 = mock(User.class);
 
             when(clientCompanyRepository.findById(companyId)).thenReturn(Optional.of(company));
             when(clientCompanyStatusRepository.findById(2L)).thenReturn(Optional.of(status));
             when(clientManagerStatusRepository.findById(1L)).thenReturn(Optional.of(managerStatus));
+            when(userHelperService.findValidUserList(List.of(1L, 2L))).thenReturn(List.of(user1, user2));
 
             // ===== when =====
             sut.updateClientCompany(companyId, req);
@@ -148,7 +178,11 @@ class ClientCompanyCommandServiceTest {
             assertThat(company.getClientCompanyName()).isEqualTo("토마토 광고");
             assertThat(company.getClientManagers()).hasSize(1);
             assertThat(company.getClientManagers().get(0).getName()).isEqualTo("김대리");
+
+            verify(clientCompanyUserService).deleteByClientCompany(company);
+            verify(clientCompanyUserService).createRelations(company, List.of(user1, user2));
             verify(clientCompanyRepository, times(1)).findById(companyId);
+            verify(clientCompanyRepository, times(1)).save(company);
         }
 
         @Test
