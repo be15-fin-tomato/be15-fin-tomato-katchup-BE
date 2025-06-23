@@ -1,11 +1,13 @@
 package be15fintomatokatchupbe.chat.command.application.service;
 
 import be15fintomatokatchupbe.chat.command.application.dto.response.CreateChatRoomResponse;
+import be15fintomatokatchupbe.chat.command.application.dto.response.ExitChatRoomResponse;
 import be15fintomatokatchupbe.chat.command.domain.aggregate.entity.Chat;
 import be15fintomatokatchupbe.chat.command.domain.aggregate.entity.UserChat;
 import be15fintomatokatchupbe.chat.command.domain.repository.ChatRoomRepository;
 import be15fintomatokatchupbe.chat.command.domain.repository.UserChatRepository;
 import be15fintomatokatchupbe.chat.exception.ChatErrorCode;
+import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import org.mockito.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -70,5 +73,61 @@ class ChatCommandServiceTest {
                 () -> chatCommandService.createChatRoom(creatorId, userIds));
 
         assertEquals(ChatErrorCode.SINGLE_PARTICIPANT_NOT_ALLOWED, ex.getErrorCode());
+    }
+
+
+    // 퇴장 테스트
+    @Test
+    void exitRoom_success() {
+        Long userId = 1L;
+        Long chatId = 1L;
+
+        UserChat userChat = UserChat.builder()
+                .userChatId(10L)
+                .userId(userId)
+                .chatId(chatId)
+                .isDeleted(StatusType.N)
+                .build();
+
+        when(userChatRepository.findByUserIdAndChatId(userId, chatId)).thenReturn(Optional.of(userChat));
+
+        ExitChatRoomResponse response = chatCommandService.exitRoom(userId, chatId);
+
+        assertEquals("채팅방에서 나갔습니다.", response.getMessage());
+        assertEquals(StatusType.Y, userChat.getIsDeleted());
+        verify(userChatRepository).save(userChat);
+    }
+
+    @Test
+    void exitRoom_fail_when_userChat_not_found() {
+        Long userId = 1L;
+        Long chatId = 999L;
+
+        when(userChatRepository.findByUserIdAndChatId(userId, chatId)).thenReturn(Optional.empty());
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> chatCommandService.exitRoom(userId, chatId));
+
+        assertEquals(ChatErrorCode.CHAT_ROOM_NOT_FOUND, ex.getErrorCode());
+    }
+
+    @Test
+    void exitRoom_fail_when_already_exited() {
+        Long userId = 1L;
+        Long chatId = 1L;
+
+        UserChat userChat = UserChat.builder()
+                .userChatId(10L)
+                .userId(userId)
+                .chatId(chatId)
+                .isDeleted(StatusType.Y)
+                .build();
+
+        when(userChatRepository.findByUserIdAndChatId(userId, chatId)).thenReturn(Optional.of(userChat));
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> chatCommandService.exitRoom(userId, chatId));
+
+        assertEquals(ChatErrorCode.ALREADY_EXITED_CHAT, ex.getErrorCode());
     }
 }
