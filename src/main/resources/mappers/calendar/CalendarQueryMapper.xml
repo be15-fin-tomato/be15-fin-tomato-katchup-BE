@@ -18,7 +18,7 @@
         FROM schedule s
         JOIN schedule_color sc ON s.schedule_color_id = sc.schedule_color_id
         WHERE s.user_id = #{ userId }
-        AND s.schedule_date = #{ scheduleDate }
+        AND s.schedule_date = #{ date }
         ORDER BY s.start_time
     </select>
 
@@ -36,6 +36,6 @@
         FROM schedule s
         JOIN schedule_color sc ON s.schedule_color_id = sc.schedule_color_id
         WHERE user_id = #{ userId }
-        ORDER BY s.start_time
+        ORDER BY s.schedule_date, s.start_time
     </select>
 </mapper>

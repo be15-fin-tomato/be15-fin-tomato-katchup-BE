@@ -8,7 +8,7 @@ import be15fintomatokatchupbe.calendar.query.mapper.ScheduleQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.sql.Date;
 import java.util.List;
 
 @Service
@@ -17,7 +17,7 @@ public class CalendarQueryService {
     private final ScheduleQueryMapper scheduleQueryMapper;
 
     // 날짜별 일정 조회
-    public ScheduleListResponse getScheduleList(Long userId, LocalDate date) {
+    public ScheduleListResponse getScheduleList(Long userId, Date date) {
         List<ScheduleListDTO> scheduleDTO = scheduleQueryMapper.getScheduleList(userId, date);
         return ScheduleListResponse.builder()
                 .scheduleList(scheduleDTO)

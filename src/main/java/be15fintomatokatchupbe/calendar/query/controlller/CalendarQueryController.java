@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
+import java.sql.Date;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,7 +28,7 @@ public class CalendarQueryController {
     @Operation(summary = "날짜별 일정 조회", description = "사용자는 특정 날짜의 일정을 조회할 수 있다.")
     public ResponseEntity<ApiResponse<ScheduleListResponse>> getScheduleList(
             @AuthenticationPrincipal CustomUserDetail customUserDetail,
-            @PathVariable LocalDate date
+            @PathVariable Date date
             )
     {
         Long userId = customUserDetail.getUserId();
@@ -48,7 +48,6 @@ public class CalendarQueryController {
         Long userId = customUserDetail.getUserId();
 
         ScheduleListsAllResponse response = calendarQueryService.getScheduleListsAll(userId);
-
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
