@@ -51,4 +51,7 @@ public class UpdateClientCompanyRequest {
     @Schema(description = "사원 수정 리스트")
     @Valid
     private List<UpdateClientManagerRequest> clientManagers;
+
+    @Schema(description = "담당자")
+    private List<Long> userIds;
 }
