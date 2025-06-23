@@ -22,8 +22,7 @@ public class PipeInfClientManagerService {
 
     public void saveClientManager(ClientManager clientManager, Pipeline pipeline){
         PipelineInfluencerClientManager pipelineInfluencerClientManager
-                = PipelineInfluencerClientManager
-                .builder()
+                = PipelineInfluencerClientManager.builder()
                 .clientManager(clientManager)
                 .pipeline(pipeline)
                 .build();
@@ -31,19 +30,29 @@ public class PipeInfClientManagerService {
         pipeInfClientManagerRepository.save(pipelineInfluencerClientManager);
     }
 
-    public void saveInfluencer(List<InfluencerProposalRequest> influencerList, Pipeline pipeline) {
+    public void saveInfluencerInfo(List<InfluencerProposalRequest> influencerList, Pipeline pipeline) {
         List<PipelineInfluencerClientManager> resultList =
                 influencerList
                         .stream()
                         .map(influencer
-                                -> PipelineInfluencerClientManager
-                                .builder()
+                                -> PipelineInfluencerClientManager.builder()
                                 .pipeline(pipeline)
                                 .influencer(influencerHelperService.findValidInfluencer(influencer.getInfluencerId()))
                                 .notes(influencer.getNotes())
                                 .strength(influencer.getStrength())
                                 .build()
                         ).toList();
+
+        pipeInfClientManagerRepository.saveAll(resultList);
+    }
+
+    public void saveInfluencer(List<Long> influencerList, Pipeline pipeline) {
+        List<PipelineInfluencerClientManager> resultList = influencerList.stream()
+                .map(influencer -> PipelineInfluencerClientManager.builder()
+                        .pipeline(pipeline)
+                        .influencer(influencerHelperService.findValidInfluencer(influencer))
+                        .build())
+                .toList();
 
         pipeInfClientManagerRepository.saveAll(resultList);
     }

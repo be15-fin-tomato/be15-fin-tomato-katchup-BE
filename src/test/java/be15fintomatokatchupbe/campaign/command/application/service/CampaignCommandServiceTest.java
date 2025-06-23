@@ -1,12 +1,11 @@
 package be15fintomatokatchupbe.campaign.command.application.service;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateChanceRequest;
+import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateQuotationRequest;
+import be15fintomatokatchupbe.campaign.command.application.dto.request.InfluencerProposalRequest;
 import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelperService;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
-import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Campaign;
-import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.CampaignStatus;
-import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Pipeline;
-import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.PipelineStep;
+import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.*;
 import be15fintomatokatchupbe.campaign.command.domain.repository.*;
 import be15fintomatokatchupbe.campaign.exception.CampaignErrorCode;
 import be15fintomatokatchupbe.client.command.application.support.ClientHelperService;
@@ -48,6 +47,7 @@ class CampaignCommandServiceTest {
     @Mock private CampaignStatusRepository campaignStatusRepository;
     @Mock private PipelineRepository pipelineRepository;
     @Mock private PipelineStepRepository pipelineStepRepository;
+    @Mock private PipelineStatusRepository pipelineStatusRepository;
 
     private final Long userId = 1L;
 
@@ -127,5 +127,50 @@ class CampaignCommandServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining(CampaignErrorCode.PIPELINE_STEP_NOT_FOUND.getMessage());
     }
+
+    @Test
+    void createQuotation_shouldCreateSuccessfully() {
+        // given
+        CreateQuotationRequest request = CreateQuotationRequest.builder()
+                .campaignId(1L)
+                .pipelineStatusId(2L)
+                .clientManagerId(3L)
+                .name("Quotation Test")
+                .requestAt(LocalDateTime.now())
+                .startedAt(LocalDateTime.now().plusDays(1))
+                .endedAt(LocalDateTime.now().plusDays(2))
+                .presentedAt(LocalDateTime.now().plusDays(1))
+                .content("견적 내용")
+                .notes("비고")
+                .expectedRevenue(100000L)
+                .expectedProfit(25000L)
+                .availableQuantity(50L)
+                .userId(List.of(10L, 20L))
+                .influencerId(List.of(101L, 102L))
+                .build();
+
+        ClientManager mockManager = mock(ClientManager.class);
+        Campaign mockCampaign = mock(Campaign.class);
+        PipelineStep mockStep = mock(PipelineStep.class);
+        PipelineStatus mockStatus = mock(PipelineStatus.class);
+        User mockWriter = mock(User.class);
+
+        when(clientHelperService.findValidClientManager(3L)).thenReturn(mockManager);
+        when(campaignHelperService.findValidCampaign(1L)).thenReturn(mockCampaign);
+        when(pipelineStepRepository.findById(PipelineStepConstants.QUOTATION)).thenReturn(Optional.of(mockStep));
+        when(pipelineStatusRepository.findById(2L)).thenReturn(Optional.of(mockStatus));
+        when(userHelperService.findValidUser(userId)).thenReturn(mockWriter);
+
+        // when
+        campaignCommandService.createQuotation(userId, request);
+
+        // then
+        verify(mockCampaign).updateAvailableQuantity(50L);
+        verify(pipelineRepository).save(any(Pipeline.class));
+        verify(pipeInfClientManagerService).saveClientManager(eq(mockManager), any(Pipeline.class));
+        verify(pipeInfClientManagerService).saveInfluencer(eq(List.of(101L, 102L)), any(Pipeline.class)); // ✅ id만 검증
+        verify(pipeUserService).saveUserList(eq(List.of(10L, 20L)), any(Pipeline.class));
+    }
+
 
 }
