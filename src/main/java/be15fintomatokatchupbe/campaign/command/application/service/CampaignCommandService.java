@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.campaign.command.application.service;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateChanceRequest;
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateProposalRequest;
+import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateQuotationRequest;
 import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelperService;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.*;
@@ -103,7 +104,7 @@ public class CampaignCommandService {
     }
 
     @Transactional
-    public void createProposal(Long userId, CreateProposalRequest request){
+    public void createProposal(Long userId, CreateProposalRequest request) {
         /* 외부 엔티티 가져오기
          * : 광고 담당자, 캠페인, 파이프라인 단계 */
 
@@ -146,7 +147,7 @@ public class CampaignCommandService {
 
         pipelineRepository.save(pipeline);
 
-        List<Idea> ideaList =  request
+        List<Idea> ideaList = request
                 .getIdeaList()
                 .stream()
                 .map(idea ->
@@ -173,4 +174,37 @@ public class CampaignCommandService {
         pipeUserService.saveUserList(request.getUserId(), pipeline);
     }
 
+    @Transactional
+    public void createQuotation(Long userId, CreateQuotationRequest request) {
+        ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
+        Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
+        PipelineStep pipelineStep = pipelineStepRepository.findById(PipelineStepConstants.QUOTATION)
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STEP_NOT_FOUND));
+        PipelineStatus pipelineStatus = pipelineStatusRepository.findById(request.getPipelineStatusId())
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STATUS_NOT_FOUND));
+        User writer = userHelperService.findValidUser(userId);
+
+        campaign.updateAvailableQuantity(request.getAvailableQuantity());
+
+        Pipeline pipeline = Pipeline.builder()
+                .writer(writer)
+                .pipelineStep(pipelineStep)
+                .pipelineStatus(pipelineStatus)
+                .name(request.getName())
+                .requestAt(request.getRequestAt())
+                .startedAt(request.getStartedAt())
+                .endedAt(request.getEndedAt())
+                .presentedAt(request.getPresentedAt())
+                .campaign(campaign)
+                .content(request.getContent())
+                .notes(request.getNotes())
+                .expectedRevenue(request.getExpectedRevenue())
+                .expectedProfit(request.getExpectedProfit())
+                .build();
+        pipelineRepository.save(pipeline);
+
+        pipeInfClientManagerService.saveClientManager(clientManager, pipeline);
+        pipeInfClientManagerService.saveInfluencer(request.getInfluencerId(), pipeline);
+        pipeUserService.saveUserList(request.getUserId(), pipeline);
+    }
 }

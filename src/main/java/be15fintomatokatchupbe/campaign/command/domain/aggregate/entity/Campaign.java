@@ -54,4 +54,8 @@ public class Campaign {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private StatusType isDeleted = StatusType.N;
+
+    public void updateAvailableQuantity(Long availableQuantity) {
+        this.availableQuantity = availableQuantity;
+    }
 }
