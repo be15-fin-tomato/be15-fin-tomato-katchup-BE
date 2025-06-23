@@ -1,5 +1,7 @@
 package be15fintomatokatchupbe.calendar.command.application.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,10 +16,18 @@ import java.time.LocalTime;
 @Builder
 public class CreateScheduleRequestDto {
 
-    private Long userId;
+    @NotNull
     private LocalDate scheduleDate;
+
+    @NotBlank
     private String content;
+
+    @NotNull
     private LocalTime startTime;
+
+    @NotNull
     private LocalTime endTime;
+
+    @NotNull
     private Long scheduleColorId;
 }

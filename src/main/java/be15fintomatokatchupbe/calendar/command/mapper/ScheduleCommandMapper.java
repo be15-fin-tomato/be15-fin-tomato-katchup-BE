@@ -6,14 +6,14 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class ScheduleCommandMapper {
-//    public Schedule toEntity(CreateScheduleRequestDto dto, Long userId) {
-//        return Schedule.builder()
-//                .userId(userId)
-//                .scheduleDate(dto.getScheduleDate())
-//                .content( dto.getContent())
-//                .startTime( dto.getStartTime())
-//                .endTime( dto.getEndTime())
-//                .scheduleColorId(dto.getScheduleColorId())
-//                .build();
-//    }
+    public Schedule toEntity(CreateScheduleRequestDto dto, Long userId) {
+        return Schedule.builder()
+                .userId(userId)
+                .scheduleDate(dto.getScheduleDate())
+                .content( dto.getContent())
+                .startTime( dto.getStartTime())
+                .endTime( dto.getEndTime())
+                .scheduleColorId(dto.getScheduleColorId())
+                .build();
+    }
 }
