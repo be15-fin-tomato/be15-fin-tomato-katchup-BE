@@ -54,7 +54,7 @@ public class ClientCompany {
 
     private LocalDateTime deletedAt;
 
-    @OneToMany(mappedBy = "clientCompany", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "clientCompany", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @Builder.Default
     private List<ClientManager> clientManagers = new ArrayList<>();
 
