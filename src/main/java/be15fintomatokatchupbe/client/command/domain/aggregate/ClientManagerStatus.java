@@ -13,8 +13,10 @@ import lombok.*;
 public class ClientManagerStatus {
 
     @Id
+    @Column(name = "client_manager_status_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long clientManagerStatusId;
 
+    @Column(name = "status_name")
     private String statusName;
 }
