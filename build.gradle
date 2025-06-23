@@ -24,6 +24,14 @@ repositories {
 }
 
 dependencies {
+
+    // valid file
+    implementation 'org.apache.tika:tika-core:3.2.0'
+
+    // s3
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter:3.4.0'
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.4.0'
+
     // WebClient
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'com.fasterxml.jackson.core:jackson-databind'

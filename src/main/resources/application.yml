@@ -4,6 +4,20 @@ server:
     context-path: /api/v1
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+  cloud:
+    aws:
+      credentials:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      region:
+        static: ${AWS_S3_REGION}
+      s3:
+        bucket: ${AWS_S3_BUCKET_NAME}
+
   mail:
     host: ${EMAIL_HOST}
     port: ${EMAIL_PORT}
@@ -52,3 +66,5 @@ youtube:
   client-id: ${YOUTUBE_CLIENT_ID}
   client-secret: ${YOUTUBE_CLIENT_SECRET}
   redirect-uri: ${YOUTUBE_REDIRECT_URI}
+
+

@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.campaign.command.domain.aggregate.entity;
 
 import be15fintomatokatchupbe.common.domain.StatusType;
+import be15fintomatokatchupbe.file.domain.File;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import jakarta.persistence.*;
 import lombok.*;
