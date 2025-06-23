@@ -1,9 +1,13 @@
 package be15fintomatokatchupbe.email.query.dto.response;
 
 import be15fintomatokatchupbe.common.domain.StatusType;
+import lombok.Builder;
+import lombok.Getter;
 
 import java.sql.Date;
 
+@Getter
+@Builder
 public class CampaignSatisfactionDTO {
 
     private Long satisfactionId; // satisfaction    

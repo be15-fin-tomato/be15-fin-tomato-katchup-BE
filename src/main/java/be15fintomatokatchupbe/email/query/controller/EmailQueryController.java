@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.email.query.dto.request.EmailSearchRequest;
 import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionResponse;
 import be15fintomatokatchupbe.email.query.service.EmailQueryService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ public class EmailQueryController {
 
     /* 만족도 조사 목록 조회 */
     @GetMapping("/list")
+    @Operation(summary = "만족도 조사 목록조회", description = "만족도 조사 목록 조회를 할 수 있다.")
     public ResponseEntity<ApiResponse<CampaignSatisfactionResponse>> getCampaignSatisfaction(
             EmailSearchRequest emailSearchRequest
     ) {

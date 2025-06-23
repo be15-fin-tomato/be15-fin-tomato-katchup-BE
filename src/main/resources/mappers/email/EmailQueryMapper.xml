@@ -3,7 +3,7 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="be15fintomatokatchupbe.dashboard.query.mapper.MainDashboardQueryMapper">
+<mapper namespace="be15fintomatokatchupbe.email.query.mapper.EmailQueryMapper">
     <select id="getCampaignSatisfaction" resultType="be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionDTO">
         SELECT
               a.satisfaction_id
@@ -27,7 +27,7 @@
          JOIN client_company e ON e.client_company_id = d.client_company_id
          JOIN user f ON f.user_id = p.writer_id
          JOIN influencer g ON g.influencer_id = c.influencer_id
-        WHERE p.pipeline_status_id = 6
+        WHERE b.campaign_status_id = 5
         <if test="title != null">
             AND title LIKE CONCAT('%', #{ title }, '%')
         </if>
