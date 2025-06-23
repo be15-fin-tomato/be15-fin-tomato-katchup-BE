@@ -35,9 +35,6 @@ class ClientCompanyCommandServiceTest {
     private ClientCompanyRepository clientCompanyRepository;
 
     @Mock
-    private ClientManagerRepository clientManagerRepository;
-
-    @Mock
     private ClientCompanyStatusRepository clientCompanyStatusRepository;
 
     @Mock
