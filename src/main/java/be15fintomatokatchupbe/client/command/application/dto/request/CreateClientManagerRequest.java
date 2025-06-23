@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.client.command.application.dto.request;
 
 import be15fintomatokatchupbe.common.validation.ValidEmail;
+import be15fintomatokatchupbe.common.validation.ValidPhoneNumber;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,13 +28,14 @@ public class CreateClientManagerRequest {
     private String position;
 
     @Schema(description = "휴대폰 번호", example = "010-1234-5678")
+    @ValidPhoneNumber
     private String phone;
 
     @Schema(description = "유선 번호", example = "02-2345-6789")
+    @ValidPhoneNumber
     private String telephone;
 
     @Schema(description = "이메일", example = "staff@example.com")
-
     @ValidEmail
     @NotBlank
     private String email;

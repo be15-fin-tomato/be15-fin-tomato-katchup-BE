@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.client.command.application.dto.request;
 
+import be15fintomatokatchupbe.common.validation.ValidPhoneNumber;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -32,6 +33,7 @@ public class CreateClientCompanyRequest {
     private Integer numberOfEmployees;
 
     @Schema(description = "유선 번호", example = "02-1234-5678")
+    @ValidPhoneNumber
     private String telephone;
 
     @Schema(description = "팩스 번호", example = "02-1234-9876")
