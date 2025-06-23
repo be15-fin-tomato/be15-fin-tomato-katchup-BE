@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Repository
 public interface YoutubeRepository extends JpaRepository<Youtube, Long> {
 
@@ -14,4 +16,6 @@ public interface YoutubeRepository extends JpaRepository<Youtube, Long> {
     @Transactional
     @Query("DELETE FROM Youtube y WHERE y.influencerId = :influencerId")
     void deleteByInfluencerId(Long influencerId);
+
+    Optional<Youtube> findByChannelId(String channelId);
 }

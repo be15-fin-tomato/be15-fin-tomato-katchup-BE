@@ -16,7 +16,7 @@
         <result property="manager" column="manager"/>
 
         <association property="youtube" javaType="be15fintomatokatchupbe.influencer.query.dto.response.YoutubeInfoResponse">
-            <result property="accountId" column="youtube_account_id"/>
+            <result property="channelId" column="youtube_channel_id"/>
             <result property="name" column="youtube_name"/>
         </association>
 
@@ -45,7 +45,7 @@
         c.category_id,
         c.category_name,
 
-        y.account_id AS youtube_account_id,
+        y.channel_id AS youtube_channel_id,
         y.name AS youtube_name,
 
         ig.account_id AS instagram_account_id,
