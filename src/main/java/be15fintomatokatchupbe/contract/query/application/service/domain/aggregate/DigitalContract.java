@@ -32,6 +32,12 @@ public class DigitalContract {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private StatusType isUsed = StatusType.N;
+
+
+    public void edit(String template, String content) {
+        this.template = template;
+        this.content = content;
+    }
 }
 
 
