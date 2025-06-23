@@ -35,4 +35,13 @@ public class ClientCompanyCommandController {
         clientCompanyCommandService.updateClientCompany(clientCompanyId, request);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @DeleteMapping("/{clientCompanyId}")
+    @Operation(summary = "고객사 삭제", description = "고객사와 연결된 소속 사원들은 soft delete 되고, 담당자 관계는 hard delete 됩니다.")
+    public ResponseEntity<ApiResponse<Void>> deleteClientCompany(
+            @PathVariable Long clientCompanyId
+    ) {
+        clientCompanyCommandService.deleteClientCompany(clientCompanyId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }
