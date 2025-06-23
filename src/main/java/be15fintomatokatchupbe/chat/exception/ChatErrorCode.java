@@ -15,7 +15,8 @@ public enum ChatErrorCode implements ErrorCode {
     USER_NOT_FOUND("70003", "존재하지 않는 사용자입니다.", HttpStatus.NOT_FOUND),
     DUPLICATE_CHAT_ROOM("70004", "이미 동일한 채팅방이 존재합니다.", HttpStatus.CONFLICT),
     UNAUTHORIZED_CHAT_ACCESS("70005", "채팅 기능은 로그인 후 이용 가능합니다.", HttpStatus.UNAUTHORIZED),
-    CHAT_ROOM_NOT_FOUND("70006", "채팅방을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+    CHAT_ROOM_NOT_FOUND("70006", "채팅방을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    ALREADY_EXITED_CHAT("70007","이미 나간 상태입니다." , HttpStatus.CONFLICT );
 
     private final String code;
     private final String message;
