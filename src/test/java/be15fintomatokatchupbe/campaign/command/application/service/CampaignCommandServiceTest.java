@@ -168,7 +168,7 @@ class CampaignCommandServiceTest {
         verify(mockCampaign).updateAvailableQuantity(50L);
         verify(pipelineRepository).save(any(Pipeline.class));
         verify(pipeInfClientManagerService).saveClientManager(any(), any());
-        verify(pipeInfClientManagerService).saveInfluencer(any(), any());
+        verify(pipeInfClientManagerService).saveInfluencerInfo(any(), any());
         verify(pipeUserService).saveUserList(any(), any());
 
     }

@@ -168,7 +168,7 @@ public class CampaignCommandService {
         pipeInfClientManagerService.saveClientManager(clientManager, pipeline);
 
         /* 인플루언서 정보 */
-        pipeInfClientManagerService.saveInfluencer(request.getInfluencerList(), pipeline);
+        pipeInfClientManagerService.saveInfluencerInfo(request.getInfluencerList(), pipeline);
 
         /* 담당자*/
         pipeUserService.saveUserList(request.getUserId(), pipeline);

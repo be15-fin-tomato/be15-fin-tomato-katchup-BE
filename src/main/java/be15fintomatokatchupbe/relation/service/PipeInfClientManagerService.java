@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.campaign.command.application.dto.request.Influence
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Pipeline;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManager;
 import be15fintomatokatchupbe.influencer.command.application.support.InfluencerHelperService;
+import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
 import be15fintomatokatchupbe.relation.domain.PipelineInfluencerClientManager;
 import be15fintomatokatchupbe.relation.repository.PipeInfClientManagerRepository;
 import lombok.AllArgsConstructor;
@@ -22,8 +23,7 @@ public class PipeInfClientManagerService {
 
     public void saveClientManager(ClientManager clientManager, Pipeline pipeline){
         PipelineInfluencerClientManager pipelineInfluencerClientManager
-                = PipelineInfluencerClientManager
-                .builder()
+                = PipelineInfluencerClientManager.builder()
                 .clientManager(clientManager)
                 .pipeline(pipeline)
                 .build();
@@ -31,19 +31,29 @@ public class PipeInfClientManagerService {
         pipeInfClientManagerRepository.save(pipelineInfluencerClientManager);
     }
 
-    public void saveInfluencer(List<InfluencerProposalRequest> influencerList, Pipeline pipeline) {
+    public void saveInfluencerInfo(List<InfluencerProposalRequest> influencerList, Pipeline pipeline) {
         List<PipelineInfluencerClientManager> resultList =
                 influencerList
                         .stream()
                         .map(influencer
-                                -> PipelineInfluencerClientManager
-                                .builder()
+                                -> PipelineInfluencerClientManager.builder()
                                 .pipeline(pipeline)
                                 .influencer(influencerHelperService.findValidInfluencer(influencer.getInfluencerId()))
                                 .notes(influencer.getNotes())
                                 .strength(influencer.getStrength())
                                 .build()
                         ).toList();
+
+        pipeInfClientManagerRepository.saveAll(resultList);
+    }
+
+    public void saveInfluencer(List<InfluencerProposalRequest> influencerList, Pipeline pipeline) {
+        List<PipelineInfluencerClientManager> resultList = influencerList.stream()
+                .map(influencer -> PipelineInfluencerClientManager.builder()
+                        .pipeline(pipeline)
+                        .influencer(influencerHelperService.findValidInfluencer(influencer.getInfluencerId()))
+                        .build())
+                .toList();
 
         pipeInfClientManagerRepository.saveAll(resultList);
     }
