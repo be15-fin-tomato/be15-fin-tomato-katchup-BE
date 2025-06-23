@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.common.dto.Pagination;
 import be15fintomatokatchupbe.email.query.dto.request.EmailSearchRequest;
 import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionDTO;
 import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionResponse;
+import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionResponseDTO;
 import be15fintomatokatchupbe.email.query.mapper.EmailQueryMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -77,5 +78,28 @@ public class EmailQueryServiceTest {
         assertNotNull(result);
         assertTrue(result.getCampaignSatisfaction().isEmpty());
         assertEquals(0, result.getPagination().getTotalPage());
+    }
+
+    @Test
+    void getCampaignSatisfactionResponse_success() {
+        CampaignSatisfactionResponseDTO dto = new CampaignSatisfactionResponseDTO();
+        dto.setCampaignResponseRate(75.0);
+
+        when(emailQueryMapper.getCampaignSatisfactionResponse()).thenReturn(dto);
+
+        CampaignSatisfactionResponseDTO result = emailQueryService.getCampaignSatisfactionResponse();
+
+        assertNotNull(result);
+        assertEquals(75.0, result.getCampaignResponseRate());
+        assertEquals(25.0, result.getCampaignUnResponseRate());
+    }
+
+    @Test
+    void getCampaignSatisfactionAverage_success() {
+        when(emailQueryMapper.getCampaignSatisfactionAverage()).thenReturn(4.2);
+
+        double avg = emailQueryService.getCampaignSatisfactionAverage();
+
+        assertEquals(4.2, avg);
     }
 }
