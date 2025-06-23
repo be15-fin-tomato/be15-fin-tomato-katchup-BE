@@ -52,4 +52,24 @@ public class ClientManager {
     private LocalDateTime updatedAt;
 
     private LocalDateTime deletedAt;
+
+    public void update(String name,
+                       String department,
+                       String position,
+                       String phone,
+                       String telephone,
+                       String email,
+                       String notes,
+                       ClientManagerStatus clientManagerStatus) {
+
+        this.name = name;
+        this.department = department;
+        this.position = position;
+        this.phone = phone;
+        this.telephone = telephone;
+        this.email = email;
+        this.notes = notes;
+        this.clientManagerStatus = clientManagerStatus;
+        this.updatedAt = LocalDateTime.now();
+    }
 }
