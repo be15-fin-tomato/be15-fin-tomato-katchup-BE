@@ -3,18 +3,19 @@ package be15fintomatokatchupbe.email.query.dto.response;
 import be15fintomatokatchupbe.common.domain.StatusType;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.sql.Date;
 
 @Getter
-@Builder
+@Setter
 public class CampaignSatisfactionDTO {
 
     private Long satisfactionId; // satisfaction    
 
-    private StatusType emailStatus; // satisfaction
+    private String emailStatus; // satisfaction
 
-    private StatusType isReacted; // satisfaction
+    private String isReacted; // satisfaction
 
     private Date responseDate; // satisfaction
 
@@ -35,5 +36,7 @@ public class CampaignSatisfactionDTO {
     private String userName; // user
 
     private String influencerName; // influencer
+
+    private transient String thumbnailUrl;
 
 }

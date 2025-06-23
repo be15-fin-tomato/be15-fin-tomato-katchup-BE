@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,7 +25,7 @@ public class EmailQueryController {
     @GetMapping("/list")
     @Operation(summary = "만족도 조사 목록조회", description = "만족도 조사 목록 조회를 할 수 있다.")
     public ResponseEntity<ApiResponse<CampaignSatisfactionResponse>> getCampaignSatisfaction(
-            EmailSearchRequest emailSearchRequest
+            @ModelAttribute EmailSearchRequest emailSearchRequest
     ) {
 
         CampaignSatisfactionResponse response = emailQueryService.getCampaignSatisfaction(emailSearchRequest);

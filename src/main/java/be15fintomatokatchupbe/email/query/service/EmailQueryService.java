@@ -20,6 +20,12 @@ public class EmailQueryService {
 
         List<CampaignSatisfactionDTO> responses = emailQueryMapper.getCampaignSatisfaction(emailSearchRequest);
 
+        for (CampaignSatisfactionDTO dto : responses) {
+            if (dto.getYoutubeLink() != null) {
+                dto.setThumbnailUrl(generateYoutubeThumbnailUrl(dto.getYoutubeLink()));
+            }
+        }
+
         int totalList = emailQueryMapper.totalList(emailSearchRequest);
 
         int page = emailSearchRequest.getPage();
@@ -34,4 +40,31 @@ public class EmailQueryService {
                         .build())
                 .build();
     }
+
+    private String generateYoutubeThumbnailUrl(String youtubeLink) {
+        if (youtubeLink == null) return null;
+
+        try {
+            String videoId = null;
+
+            if (youtubeLink.contains("youtube.com/watch?v=")) {
+                videoId = youtubeLink.substring(youtubeLink.indexOf("v=") + 2);
+                int amp = videoId.indexOf("&");
+                if (amp != -1) {
+                    videoId = videoId.substring(0, amp);
+                }
+            } else if (youtubeLink.contains("youtu.be/")) {
+                videoId = youtubeLink.substring(youtubeLink.lastIndexOf("/") + 1);
+            }
+
+            return videoId != null
+                    ? "https://img.youtube.com/vi/" + videoId + "/hqdefault.jpg"
+                    : null;
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
 }
