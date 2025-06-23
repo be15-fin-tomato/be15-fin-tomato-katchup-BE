@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<h1>Chat Test</h1>
+<button onclick="connect()">Connect</button>
+<button onclick="sendMessage()">Send</button>
+
+<script>
+    let stompClient = null;
+    const token = "eyJhbGciOiJIUzM4NCJ9.eyJzdWIiOiIxMjMiLCJ1c2VySWQiOjEsImlhdCI6MTc1MDY1NTc1OCwiZXhwIjoxNzUwNjU2NjU4fQ.Ua_MybhP45RAhQRyY6QTPMtgaAKkwoCU5aC0Ju0AM52noOylWcD22Ex-xUP4DLPP";
+
+    function connect() {
+        const socket = new SockJS('http://localhost:8080/api/v1/ws?token=' + token);
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect(
+            { Authorization: 'Bearer ' + token }, // STOMP 헤더에 JWT 포함
+            frame => {
+                console.log("✅ 연결 성공:", frame);
+                stompClient.subscribe('/topic/room.1', message => {
+                    const body = JSON.parse(message.body);
+                    console.log("📥 받은 메시지:", body);
+                });
+            },
+            error => {
+                console.error("❌ 접속 에러:", error);
+            }
+        );
+    }
+
+    function sendMessage() {
+        if (!stompClient || !stompClient.connected) {
+            console.warn("🚫 WebSocket이 연결되지 않았습니다.");
+            return;
+        }
+
+        stompClient.send("/app/chat.sendMessage", {}, JSON.stringify({
+            chatId: 1,
+            message: "테스트 메시지" // ✅ 서버와 일치하는 필드명 사용
+        }));
+        console.log("📤 메시지 전송 완료");
+    }
+</script>
+</body>
+</html>
