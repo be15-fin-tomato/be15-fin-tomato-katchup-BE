@@ -1,5 +1,9 @@
 package be15fintomatokatchupbe.oauth.query.service;
 
+import be15fintomatokatchupbe.influencer.command.application.support.InfluencerHelperService;
+import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Youtube;
+import be15fintomatokatchupbe.influencer.command.domain.repository.YoutubeRepository;
+import be15fintomatokatchupbe.influencer.query.service.YoutubeService;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeStatsResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -25,6 +29,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class YoutubeOAuthQueryService {
+    private final YoutubeRepository youtubeRepository;
+    private final YoutubeService youtubeService;
 
     private final WebClient webClient;
 
@@ -237,11 +243,47 @@ public class YoutubeOAuthQueryService {
         return map;
     }
 
+    public GoogleTokenResponse refreshAccessToken(String refreshToken) {
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("client_id", clientId);
+        form.add("client_secret", clientSecret);
+        form.add("refresh_token", refreshToken);
+        form.add("grant_type", "refresh_token");
+
+        return postForm("https://oauth2.googleapis.com/token", form, GoogleTokenResponse.class);
+    }
+
+    public void saveOrUpdateRefreshToken(Long influencerId, String channelId , GoogleTokenResponse tokenResponse){
+        String accessToken = tokenResponse.accessToken;
+        String refreshToken = tokenResponse.refreshToken;
+
+        YoutubeService.YoutubeChannelInfo channelInfo = youtubeService.fetchChannelInfo(channelId);
+
+        Youtube youtube = Youtube.builder()
+                .influencerId(influencerId)
+                .accountId(refreshToken)
+                .subscriber(channelInfo.subscriberCount())
+                .build();
+
+        youtubeRepository.save(youtube);
+    }
+
     @Getter
-    @Setter
     public static class GoogleTokenResponse {
         @JsonProperty("access_token")
         private String accessToken;
+
+        @JsonProperty("refresh_token")
+        private String refreshToken; // ← 이거 있어야 함
+
+        @JsonProperty("expires_in")
+        private int expiresIn;
+
+        @JsonProperty("token_type")
+        private String tokenType;
+
+        @JsonProperty("scope")
+        private String scope;
     }
 
     @Getter

@@ -37,8 +37,15 @@ public class YoutubeOAuthQueryController {
         ChannelIdResponse channel = youtubeOAuthQueryService.getMyChannelId(tokenResponse.getAccessToken());
         String channelId = channel.getItems().get(0).getId();
 
+//        youtubeOAuthQueryService.saveOrUpdateRefreshToken(channelId, tokenResponse);
+
+        log.info("accessToken" + tokenResponse.getAccessToken());
+        log.info("refreshToken" + tokenResponse.getRefreshToken());
+        log.info("channelID" + channelId);
+
         return ResponseEntity.ok(Map.of(
                 "accessToken", tokenResponse.getAccessToken(),
+                "refreshToken", tokenResponse.getRefreshToken(),
                 "channelId", channelId
         ));
     }
