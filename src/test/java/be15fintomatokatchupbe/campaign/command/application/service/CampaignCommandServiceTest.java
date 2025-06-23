@@ -146,7 +146,7 @@ class CampaignCommandServiceTest {
                 .expectedProfit(25000L)
                 .availableQuantity(50L)
                 .userId(List.of(10L, 20L))
-                .influencerId(List.of(mock(InfluencerProposalRequest.class)))
+                .influencerId(List.of(101L, 102L))
                 .build();
 
         ClientManager mockManager = mock(ClientManager.class);
@@ -167,10 +167,9 @@ class CampaignCommandServiceTest {
         // then
         verify(mockCampaign).updateAvailableQuantity(50L);
         verify(pipelineRepository).save(any(Pipeline.class));
-        verify(pipeInfClientManagerService).saveClientManager(any(), any());
-        verify(pipeInfClientManagerService).saveInfluencerInfo(any(), any());
-        verify(pipeUserService).saveUserList(any(), any());
-
+        verify(pipeInfClientManagerService).saveClientManager(eq(mockManager), any(Pipeline.class));
+        verify(pipeInfClientManagerService).saveInfluencer(eq(List.of(101L, 102L)), any(Pipeline.class)); // ✅ id만 검증
+        verify(pipeUserService).saveUserList(eq(List.of(10L, 20L)), any(Pipeline.class));
     }
 
 

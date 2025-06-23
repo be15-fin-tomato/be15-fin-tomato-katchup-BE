@@ -46,11 +46,11 @@ public class PipeInfClientManagerService {
         pipeInfClientManagerRepository.saveAll(resultList);
     }
 
-    public void saveInfluencer(List<InfluencerProposalRequest> influencerList, Pipeline pipeline) {
+    public void saveInfluencer(List<Long> influencerList, Pipeline pipeline) {
         List<PipelineInfluencerClientManager> resultList = influencerList.stream()
                 .map(influencer -> PipelineInfluencerClientManager.builder()
                         .pipeline(pipeline)
-                        .influencer(influencerHelperService.findValidInfluencer(influencer.getInfluencerId()))
+                        .influencer(influencerHelperService.findValidInfluencer(influencer))
                         .build())
                 .toList();
 
