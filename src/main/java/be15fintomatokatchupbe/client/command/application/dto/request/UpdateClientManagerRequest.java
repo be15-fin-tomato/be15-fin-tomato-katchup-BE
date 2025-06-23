@@ -7,8 +7,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @Schema(description = "고객사 소속 사원 수정 DTO")
 public class UpdateClientManagerRequest {

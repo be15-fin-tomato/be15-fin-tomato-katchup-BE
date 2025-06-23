@@ -7,10 +7,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 
 @Getter
+@Setter
 @NoArgsConstructor
 @Schema(description = "고객사 등록 요청 DTO")
 public class CreateClientCompanyRequest {
