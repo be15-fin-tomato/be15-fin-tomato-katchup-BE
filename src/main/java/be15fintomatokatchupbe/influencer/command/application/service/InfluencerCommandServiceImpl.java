@@ -53,7 +53,7 @@ public class InfluencerCommandServiceImpl implements InfluencerCommandService {
         if (dto.isYoutubeConnected()) {
             Youtube youtube = Youtube.builder()
                     .influencerId(influencer.getId())
-                    .accountId(dto.getYoutubeAccountId())
+                    .channelId(dto.getYoutubeAccountId())
                     .build();
             youtubeRepository.save(youtube);
         }
