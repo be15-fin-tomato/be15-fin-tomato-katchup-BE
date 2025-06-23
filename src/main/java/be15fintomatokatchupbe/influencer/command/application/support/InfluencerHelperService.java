@@ -16,5 +16,6 @@ public class InfluencerHelperService {
     public Influencer findValidInfluencer(Long influencerId){
         return influencerRepository.findByIdAndIsDeleted(influencerId, StatusType.N)
                 .orElseThrow(() -> new BusinessException(InfluencerErrorCode.INFLUENCER_NOT_FOUND));
+
     }
 }

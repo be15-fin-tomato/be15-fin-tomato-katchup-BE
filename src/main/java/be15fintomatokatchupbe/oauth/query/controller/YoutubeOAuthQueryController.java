@@ -1,5 +1,8 @@
 package be15fintomatokatchupbe.oauth.query.controller;
 
+import be15fintomatokatchupbe.common.dto.ApiResponse;
+import be15fintomatokatchupbe.oauth.query.dto.YoutubeCodeRequest;
+import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeCodeResponse;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeStatsResponse;
 import be15fintomatokatchupbe.oauth.query.service.YoutubeAnalyticsService;
 import be15fintomatokatchupbe.oauth.query.service.YoutubeOAuthQueryService;
@@ -26,29 +29,45 @@ public class YoutubeOAuthQueryController {
 
     // 1. 유튜브 권한 요청 URL 리디렉션
     @GetMapping("/authorize/youtube")
-    public void redirectToYoutubeAuthorization(HttpServletResponse response) throws IOException {
-        response.sendRedirect(youtubeOAuthQueryService.buildAuthorizationUrl());
+    public ResponseEntity<ApiResponse<String>> redirectToYoutubeAuthorization(
+            HttpServletResponse response
+    ) {
+        String authUrl = youtubeOAuthQueryService.buildAuthorizationUrl();
+//        response.sendRedirect(authUrl);
+        return ResponseEntity.ok(ApiResponse.success(authUrl));
     }
 
     // 2. 인가코드 콜백 처리 및 accessToken + channelId 응답
-    @GetMapping("/callback/youtube")
-    public ResponseEntity<Map<String, String>> handleYoutubeCallback(@RequestParam String code) {
-        GoogleTokenResponse tokenResponse = youtubeOAuthQueryService.getAccessToken(code);
-        ChannelIdResponse channel = youtubeOAuthQueryService.getMyChannelId(tokenResponse.getAccessToken());
+    @PostMapping("/youtube/code")
+    public ResponseEntity<ApiResponse<YoutubeCodeResponse>> handleYoutubeCallback(
+            @RequestBody YoutubeCodeRequest request
+    ) {
+        log.info("code: {}", request.getCode());
+        log.info("req: {}", request.toString());
+
+        GoogleTokenResponse tokenResponse = youtubeOAuthQueryService.getToken(request.getCode());
+        ChannelIdResponse channel = youtubeOAuthQueryService.getMyChannelIdPost(tokenResponse.getAccessToken());
         String channelId = channel.getItems().get(0).getId();
 
-//        youtubeOAuthQueryService.saveOrUpdateRefreshToken(channelId, tokenResponse);
+        youtubeOAuthQueryService.saveRefreshToken(channelId, tokenResponse);
 
-        log.info("accessToken" + tokenResponse.getAccessToken());
-        log.info("refreshToken" + tokenResponse.getRefreshToken());
-        log.info("channelID" + channelId);
+        log.info("엑세스 토큰 : {}", tokenResponse.getAccessToken());
+        log.info("리프레쉬 토큰 : {}", tokenResponse.getRefreshToken());
 
-        return ResponseEntity.ok(Map.of(
-                "accessToken", tokenResponse.getAccessToken(),
-                "refreshToken", tokenResponse.getRefreshToken(),
-                "channelId", channelId
-        ));
+        return ResponseEntity.ok(ApiResponse.success(YoutubeCodeResponse.builder().channelId(channelId).build()));
     }
+
+//    @PostMapping("/oauth2/youtube/token")
+//    public ResponseEntity<ApiResponse<Void>> exchangeToken() {
+//        GoogleTokenResponse tokenResponse = youtubeOAuthQueryService.getAccessToken(request.getCode());
+//        ChannelIdResponse channel = youtubeOAuthQueryService.getMyChannelId(tokenResponse.getAccessToken());
+//        String channelId = channel.getItems().get(0).getId();
+//
+//        // refreshToken 저장
+////        youtubeOAuthQueryService.saveOrUpdateRefreshToken(channelId, tokenResponse);
+//
+//        return ResponseEntity.ok(ApiResponse.success(null));
+//    }
 
     // 3. 직접 Analytics API 호출 (Postman 테스트용)
     @GetMapping("/youtube/analytics")

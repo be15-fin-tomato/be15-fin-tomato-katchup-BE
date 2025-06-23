@@ -16,8 +16,11 @@ public class Youtube {
     @Column(name = "influencer_id")
     private Long influencerId;
 
-    @Column(name = "account_id", length = 255)
-    private String accountId;
+    @Column(name = "channel_id", length = 255)
+    private String channelId;
+
+    @Column(name = "refresh_token")
+    private String refreshToken;
 
     @Column(name = "subscriber")
     private Long subscriber;
