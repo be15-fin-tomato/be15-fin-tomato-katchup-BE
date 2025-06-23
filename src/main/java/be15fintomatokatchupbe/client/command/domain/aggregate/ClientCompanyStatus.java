@@ -13,8 +13,10 @@ import lombok.*;
 public class ClientCompanyStatus {
 
     @Id
+    @Column(name = "client_company_status_id")
     private Long clientCompanyStatusId;
 
+    @Column(name = "status_name")
     private String statusName;
 }
 
