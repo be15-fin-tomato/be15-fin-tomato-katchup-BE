@@ -10,6 +10,8 @@ public class ScheduleListDTO {
     private final Long scheduleId;
     private final Long userId;
     private final Long scheduleColorId;
+    private final String scheduleColorName;
+    private final String hexCode;
     private final String content;
     private final String scheduleDate;
     private final String startTime;
