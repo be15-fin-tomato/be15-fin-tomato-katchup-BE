@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.calendar.command.application.dto.CreateScheduleReq
 import be15fintomatokatchupbe.calendar.command.application.service.CalendarCommandService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,17 +17,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-//@RequestMapping("/calendar")
+@RequestMapping("/calendar")
 public class CalendarCommandController {
-//    private final CalendarCommandService calendarCommandService;
+    private final CalendarCommandService calendarCommandService;
 
-//    @PostMapping("/create")
-//    public ResponseEntity<ApiResponse<Void>> createSchedule(
-//            @AuthenticationPrincipal CustomUserDetail userDetail,
-//            @RequestBody @Valid CreateScheduleRequestDto dto
-//    ) {
-//        calendarCommandService.create(userDetail.getUserId(), dto);
-//        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(null));
-//    }
-
+    @PostMapping("/create")
+    @Operation(summary = "캘린더 일정 등록", description = "사용자는 캘린더에 개인 일정을 등록할 수 있다.")
+    public ResponseEntity<ApiResponse<Void>> createSchedule(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @RequestBody @Valid CreateScheduleRequestDto dto
+    ) {
+        calendarCommandService.create(userDetail.getUserId(), dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(null));
+    }
 }

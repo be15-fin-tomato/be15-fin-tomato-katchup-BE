@@ -14,7 +14,6 @@ import java.time.LocalTime;
 @Table(name = "schedule")
 @Getter
 @NoArgsConstructor
-@Builder
 public class Schedule {
 
     @Id
@@ -22,7 +21,11 @@ public class Schedule {
     private Long scheduleId;
     private Long userId;
     private Long scheduleColorId;
+
+    @Transient
     private String scheduleColorName;
+
+    @Transient
     private String hexCode;
     private String content;
     private LocalDate scheduleDate;

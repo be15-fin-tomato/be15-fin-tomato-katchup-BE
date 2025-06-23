@@ -14,9 +14,14 @@ public class CalendarCommandService {
     private final ScheduleRepository scheduleRepository;
     private final ScheduleCommandMapper mapper;
 
-//    @Transactional
-//    public void create(Long userId, CreateScheduleRequestDto dto) {
-//        Schedule schedule = mapper.toEntity(dto, userId);
-//        scheduleRepository.save(schedule);
-//    }
+    @Transactional
+    public void create(Long userId, CreateScheduleRequestDto dto) {
+        Schedule schedule = mapper.toEntity(dto, userId);
+
+        if (dto.getStartTime().isAfter(dto.getEndTime())) {
+            throw new IllegalArgumentException("시작 시간이 종료 시간보다 늦을 수 없습니다.");
+        }
+
+        scheduleRepository.save(schedule);
+    }
 }
