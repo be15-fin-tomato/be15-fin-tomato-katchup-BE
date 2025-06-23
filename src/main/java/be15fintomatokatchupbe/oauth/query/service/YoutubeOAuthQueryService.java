@@ -1,5 +1,8 @@
 package be15fintomatokatchupbe.oauth.query.service;
 
+import be15fintomatokatchupbe.influencer.command.application.support.YoutubeHelperService;
+import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Youtube;
+import be15fintomatokatchupbe.infra.redis.YoutubeTokenRepository;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeStatsResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -16,6 +19,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -25,6 +29,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class YoutubeOAuthQueryService {
+    private final YoutubeTokenRepository youtubeTokenRepository;
+    private final YoutubeHelperService youtubeHelperService;
 
     private final WebClient webClient;
 
@@ -51,13 +57,23 @@ public class YoutubeOAuthQueryService {
                 .toUriString();
     }
 
-    public GoogleTokenResponse getAccessToken(String code) {
-        return postForm("https://oauth2.googleapis.com/token", buildForm(code), GoogleTokenResponse.class);
+    public GoogleTokenResponse getToken(String code) {
+        try {
+            return postForm("https://oauth2.googleapis.com/token", buildForm(code), GoogleTokenResponse.class);
+        } catch (WebClientResponseException e) {
+            log.error("🔥 Google 토큰 요청 실패: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw e;
+        }
     }
 
     public ChannelIdResponse getMyChannelId(String accessToken) {
         String url = "https://www.googleapis.com/youtube/v3/channels?part=id&mine=true";
         return getWithAuth(url, accessToken, ChannelIdResponse.class);
+    }
+
+    public ChannelIdResponse getMyChannelIdPost(String accessToken) {
+        String url = "https://www.googleapis.com/youtube/v3/channels?part=id&mine=true";
+        return getWithAuthPost(url, accessToken, ChannelIdResponse.class);
     }
 
     public AnalyticsResponse getChannelAnalytics(String accessToken, String channelId, String startDate, String endDate,
@@ -78,7 +94,7 @@ public class YoutubeOAuthQueryService {
         log.info("[YT API] {}", uri);
 
         try {
-            return getWithAuth(uri, accessToken, AnalyticsResponse.class);
+            return getWithAuth(uri,channelId, AnalyticsResponse.class);
         } catch (WebClientResponseException e) {
             log.error("🔥 YouTube API 오류: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString());
             throw e;
@@ -87,7 +103,7 @@ public class YoutubeOAuthQueryService {
 
     public int getTotalVideoCount(String accessToken, String channelId) {
         String url = "https://www.googleapis.com/youtube/v3/channels?part=statistics&id=" + channelId;
-        ChannelStatsResponse response = getWithAuth(url, accessToken, ChannelStatsResponse.class);
+        ChannelStatsResponse response = getWithAuth(url,channelId, ChannelStatsResponse.class);
         return response.getItems().get(0).getStatistics().getVideoCount();
     }
 
@@ -205,10 +221,64 @@ public class YoutubeOAuthQueryService {
                 .toList();
     }
 
-    private <T> T getWithAuth(String url, String accessToken, Class<T> responseType) {
+    private <T> T getWithAuthPost(String url, String accessToken, Class<T> responseType) {
         String token = accessToken.startsWith("Bearer ") ? accessToken : "Bearer " + accessToken;
         log.info("✅ 최종 Authorization 헤더: {}", token);
 
+        return webClient.get()
+                .uri(url)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .retrieve()
+                .bodyToMono(responseType)
+                .block();
+    }
+
+    private <T> T getWithAuth(String url, String channelId, Class<T> responseType) {
+        // 1. Redis에서 accessToken 먼저 가져오기
+        String accessToken = youtubeTokenRepository.findAccessToken(channelId);
+        log.info("?????{}", accessToken);
+        log.info("!!!!!{}", channelId);
+
+        if (accessToken == null) {
+            log.info("🚫 Redis에 accessToken 없음, refresh로 갱신 시도");
+            accessToken = refreshAndGetAccessToken(channelId);
+        }
+
+        try {
+            return requestWithToken(url, accessToken, responseType);
+        } catch (WebClientResponseException e) {
+            if (e.getStatusCode().value() == 401) {
+                log.warn("🔁 AccessToken 만료됨. RefreshToken으로 재발급 시도");
+                accessToken = refreshAndGetAccessToken(channelId);
+                return requestWithToken(url, accessToken, responseType); // 재시도
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    private String refreshAndGetAccessToken(String channelId) {
+        // Redis에서 refreshToken 먼저 조회
+        String refreshToken = youtubeTokenRepository.find(channelId);
+
+        // Redis에 없으면 DB에서 조회
+        if (refreshToken == null) {
+            Youtube youtube = youtubeHelperService.findYoutube(channelId);
+            refreshToken = youtube.getRefreshToken();
+        }
+
+        // refresh로 access 재발급
+        GoogleTokenResponse newToken = refreshAccessToken(refreshToken);
+        Duration duration = Duration.ofSeconds(newToken.getExpiresIn());
+
+        // Redis 갱신
+        youtubeTokenRepository.saveAccessToken(channelId, newToken.getAccessToken(), duration);
+
+        return newToken.getAccessToken();
+    }
+
+    private <T> T requestWithToken(String url, String accessToken, Class<T> responseType) {
+        String token = accessToken.startsWith("Bearer ") ? accessToken : "Bearer " + accessToken;
         return webClient.get()
                 .uri(url)
                 .header(HttpHeaders.AUTHORIZATION, token)
@@ -237,11 +307,42 @@ public class YoutubeOAuthQueryService {
         return map;
     }
 
+    public GoogleTokenResponse refreshAccessToken(String refreshToken) {
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("client_id", clientId);
+        form.add("client_secret", clientSecret);
+        form.add("refresh_token", refreshToken);
+        form.add("grant_type", "refresh_token");
+
+        return postForm("https://oauth2.googleapis.com/token", form, GoogleTokenResponse.class);
+    }
+
+    public void saveRefreshToken(String channelId , GoogleTokenResponse tokenResponse){
+        String accessToken = tokenResponse.accessToken;
+        String refreshToken = tokenResponse.refreshToken;
+        int ttl = tokenResponse.getExpiresIn(); // expiresIn이 초 단위라고 가정
+        Duration duration = Duration.ofSeconds(ttl);
+
+        youtubeTokenRepository.save(channelId, refreshToken);
+        youtubeTokenRepository.saveAccessToken(channelId, accessToken, duration);
+    }
+
     @Getter
-    @Setter
     public static class GoogleTokenResponse {
         @JsonProperty("access_token")
         private String accessToken;
+
+        @JsonProperty("refresh_token")
+        private String refreshToken;
+
+        @JsonProperty("expires_in")
+        private int expiresIn;
+
+        @JsonProperty("token_type")
+        private String tokenType;
+
+        @JsonProperty("scope")
+        private String scope;
     }
 
     @Getter

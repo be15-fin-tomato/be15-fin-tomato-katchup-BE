@@ -51,4 +51,7 @@ public class CreateClientCompanyRequest {
     @Schema(description = "고객사 소속 사원 목록", required = true)
     @Valid
     private List<CreateClientManagerRequest> clientManagers;
+
+    @Schema(description = "담당자")
+    private List<Long> userIds;
 }

@@ -13,11 +13,16 @@ import be15fintomatokatchupbe.client.command.domain.repository.ClientCompanyStat
 import be15fintomatokatchupbe.client.command.domain.repository.ClientManagerRepository;
 import be15fintomatokatchupbe.client.command.domain.repository.ClientManagerStatusRepository;
 import be15fintomatokatchupbe.client.command.exception.ClientErrorCode;
+import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.relation.service.ClientCompanyUserService;
+import be15fintomatokatchupbe.user.command.application.support.UserHelperService;
+import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -29,7 +34,10 @@ public class ClientCompanyCommandService {
     private final ClientManagerRepository clientManagerRepository;
     private final ClientCompanyStatusRepository clientCompanyStatusRepository;
     private final ClientManagerStatusRepository clientManagerStatusRepository;
+    private final ClientCompanyUserService clientCompanyUserService;
+    private final UserHelperService userHelperService;
 
+    // 1) 고객사 + 사원 + 담당자(유저) 동시 생성
     @Transactional
     public void createClientCompany(CreateClientCompanyRequest request) {
         ClientCompanyStatus status = clientCompanyStatusRepository.findById(request.getClientCompanyStatusId())
@@ -67,12 +75,19 @@ public class ClientCompanyCommandService {
             company.addManager(manager);
         }
 
+        // 고객사 저장
         clientCompanyRepository.save(company);
+
+        // 담당자 N:M 매핑 생성
+        List<User> users = userHelperService.findValidUserList(request.getUserIds());
+        clientCompanyUserService.createRelations(company, users);
     }
 
+    // 2) 고객사 + 사원 + 담당자(유저) 수정
     @Transactional
     public void updateClientCompany(Long clientCompanyId, UpdateClientCompanyRequest request) {
         ClientCompany company = clientCompanyRepository.findById(clientCompanyId)
+                .filter(c -> c.getIsDeleted() == StatusType.N)
                 .orElseThrow(() -> new BusinessException(ClientErrorCode.NOT_FOUND));
 
         ClientCompanyStatus status = clientCompanyStatusRepository.findById(request.getClientCompanyStatusId())
@@ -124,6 +139,11 @@ public class ClientCompanyCommandService {
             }
         }
 
+        // 담당자 매핑 hard delete 처리
+        clientCompanyUserService.deleteByClientCompany(company);
+        // 새 담당자 매핑 생성
+        List<User> users = userHelperService.findValidUserList(request.getUserIds());
+        clientCompanyUserService.createRelations(company, users);
         clientCompanyRepository.save(company);
     }
 }
