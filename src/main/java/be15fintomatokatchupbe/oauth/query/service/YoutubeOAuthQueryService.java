@@ -26,6 +26,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class YoutubeOAuthQueryService {
 
+    private final WebClient webClient;
+
     @Value("${youtube.client-id}")
     private String clientId;
 
@@ -34,8 +36,6 @@ public class YoutubeOAuthQueryService {
 
     @Value("${youtube.redirect-uri}")
     private String redirectUri;
-
-    private final WebClient webClient = WebClient.create();
 
     public String buildAuthorizationUrl() {
         return UriComponentsBuilder.fromHttpUrl("https://accounts.google.com/o/oauth2/v2/auth")
