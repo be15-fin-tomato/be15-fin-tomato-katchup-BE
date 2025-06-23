@@ -6,9 +6,10 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
+@Table(name = "client_company_user")
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 public class ClientCompanyUser {
