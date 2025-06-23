@@ -16,6 +16,7 @@ public interface EmailQueryMapper {
 
     int totalList(EmailSearchRequest emailSearchRequest);
 
-    double getCampaignSatisfactionResponse();
+    CampaignSatisfactionResponseDTO getCampaignSatisfactionResponse();
+
 
 }

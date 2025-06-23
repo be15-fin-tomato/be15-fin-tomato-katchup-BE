@@ -67,7 +67,10 @@ public class EmailQueryService {
         }
     }
 
-    public double getCampaignSatisfactionResponse() {
+
+    /* 응답률 조회 */
+    public CampaignSatisfactionResponseDTO getCampaignSatisfactionResponse() {
+
         return emailQueryMapper.getCampaignSatisfactionResponse();
     }
 }

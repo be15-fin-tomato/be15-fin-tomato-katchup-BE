@@ -53,9 +53,9 @@
 
     </select>
 
-    <select id="getCampaignSatisfactionResponse" resultType="double">
+    <select id="getCampaignSatisfactionResponse" resultType="be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionResponseDTO">
         SELECT
-            ROUND((COUNT(CASE WHEN is_reacted = 'Y' THEN 1 END) / COUNT(*)) * 100, 1)
+            ROUND((COUNT(CASE WHEN is_reacted = 'Y' THEN 1 END) / COUNT(*)) * 100, 1) AS campaignResponseRate
         FROM satisfaction;
     </select>
 

@@ -1,11 +1,16 @@
 package be15fintomatokatchupbe.email.query.dto.response;
 
-import lombok.Builder;
 import lombok.Getter;
 
-@Builder
+
 @Getter
 public class CampaignSatisfactionResponseDTO {
 
     private double campaignResponseRate;
+    private transient double campaignUnResponseRate;
+
+    public double getCampaignUnResponseRate() {
+        return 100 - campaignResponseRate;
+    }
+
 }
