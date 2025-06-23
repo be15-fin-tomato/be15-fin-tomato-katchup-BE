@@ -73,4 +73,10 @@ public class EmailQueryService {
 
         return emailQueryMapper.getCampaignSatisfactionResponse();
     }
+
+    /* 평균 점수 조회 */
+    public double getCampaignSatisfactionAverage() {
+
+        return emailQueryMapper.getCampaignSatisfactionAverage();
+    }
 }

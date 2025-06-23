@@ -59,5 +59,12 @@
         FROM satisfaction;
     </select>
 
+    <select id="getCampaignSatisfactionAverage" resultType="double">
+        SELECT
+              IFNULL(ROUND(AVG(score), 1), 0.0)
+          FROM satisfaction
+        WHERE is_reacted = 'Y';
+    </select>
+
 
 </mapper>
