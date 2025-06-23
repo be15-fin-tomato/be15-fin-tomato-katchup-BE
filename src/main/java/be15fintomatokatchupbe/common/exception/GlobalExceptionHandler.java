@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.common.exception;
 
 import be15fintomatokatchupbe.common.dto.ApiResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -21,16 +22,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException e) {
-        ErrorCode errorCode = GlobalErrorCode.VALIDATION_ERROR;
-        StringBuilder errorMessage = new StringBuilder();
-        for (FieldError error : e.getBindingResult().getFieldErrors()) {
-            errorMessage.append(
-                    String.format("[%s : %s]", error.getField(), error.getDefaultMessage()));
-        }
+        FieldError fieldError = e.getBindingResult().getFieldErrors().get(0);
 
-        ApiResponse<Void> response = ApiResponse.failure(errorCode.getCode(), errorMessage.toString());
+        String errorCodeStr = fieldError.getDefaultMessage();
 
-        return new ResponseEntity<>(response, errorCode.getHttpStatus());
+        ApiResponse<Void> response = ApiResponse.failure("VALIDATION_ERROR", errorCodeStr);
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);  // 400 에러
     }
 
     // JWT 토큰 만료 시, refresh token 전송 요청을 보냄
