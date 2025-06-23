@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.email.query.mapper;
 
 import be15fintomatokatchupbe.email.query.dto.request.EmailSearchRequest;
 import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionDTO;
+import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionResponseDTO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -14,4 +15,8 @@ public interface EmailQueryMapper {
     List<CampaignSatisfactionDTO> getCampaignSatisfaction(EmailSearchRequest emailSearchRequest);
 
     int totalList(EmailSearchRequest emailSearchRequest);
+
+    CampaignSatisfactionResponseDTO getCampaignSatisfactionResponse();
+
+
 }
