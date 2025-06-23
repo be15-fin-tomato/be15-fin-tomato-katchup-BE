@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.email.query.mapper.EmailQueryMapper">
+    <select id="getCampaignSatisfaction" resultType="be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionDTO">
+        SELECT
+              a.satisfaction_id
+            , a.email_status
+            , a.is_reacted
+            , a.response_date
+            , a.sent_date
+            , b.campaign_name
+            , c.youtube_link
+            , c.instagram_link
+            , d.name as clientManagerName
+            , d.email
+            , e.client_company_name
+            , f.name as userName
+            , g.name as influencerName
+         FROM satisfaction a
+         LEFT JOIN campaign b ON a.campaign_id = b.campaign_id
+         LEFT JOIN pipeline p ON p.campaign_id = b.campaign_id
+         JOIN pipeline_influencer_client_manager c ON c.pipeline_id = p.pipeline_id
+         JOIN client_manager d ON d.client_manager_id = c.client_manager_id
+         JOIN client_company e ON e.client_company_id = d.client_company_id
+         LEFT JOIN user f ON f.user_id = p.writer_id
+         LEFT JOIN influencer g ON g.influencer_id = c.influencer_id
+        WHERE b.campaign_status_id = 5
+        <if test="campaignName != null">
+            AND b.campaign_name LIKE CONCAT('%', #{campaignName}, '%')
+        </if>
+        ORDER BY a.satisfaction_id DESC
+        LIMIT #{ limit } OFFSET #{ offset };
+    </select>
+
+    <select id="totalList" resultType="int">
+        SELECT
+            COUNT(*)
+        FROM satisfaction a
+        LEFT JOIN campaign b ON a.campaign_id = b.campaign_id
+        LEFT JOIN pipeline p ON p.campaign_id = b.campaign_id
+        JOIN pipeline_influencer_client_manager c ON c.pipeline_id = p.pipeline_id
+        JOIN client_manager d ON d.client_manager_id = c.client_manager_id
+        JOIN client_company e ON e.client_company_id = d.client_company_id
+        LEFT JOIN user f ON f.user_id = p.writer_id
+        LEFT JOIN influencer g ON g.influencer_id = c.influencer_id
+        WHERE b.campaign_status_id = 5
+        <if test="campaignName != null">
+            AND b.campaign_name LIKE CONCAT('%', #{campaignName}, '%')
+        </if>
+    </select>
+
+
+</mapper>
