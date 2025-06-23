@@ -19,7 +19,6 @@ public class CampaignQueryService {
     private final CampaignQueryMapper campaignQueryMapper;
 
     public ProposalSearchResponse getProposalList(Long userId, ProposalSearchRequest request) {
-        log.info(request.getPage() + " " + request.getSize());
         int offset = (request.getPage() - 1) * request.getSize();
         int size = request.getSize();
 
