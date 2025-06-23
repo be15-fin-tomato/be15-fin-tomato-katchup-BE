@@ -31,18 +31,26 @@
         <if test="campaignName != null">
             AND b.campaign_name LIKE CONCAT('%', #{campaignName}, '%')
         </if>
+        ORDER BY a.satisfaction_id DESC
         LIMIT #{ limit } OFFSET #{ offset };
     </select>
 
     <select id="totalList" resultType="int">
         SELECT
-              COUNT(*)
-          FROM satisfaction
+            COUNT(*)
+        FROM satisfaction a
+        LEFT JOIN campaign b ON a.campaign_id = b.campaign_id
+        LEFT JOIN pipeline p ON p.campaign_id = b.campaign_id
+        JOIN pipeline_influencer_client_manager c ON c.pipeline_id = p.pipeline_id
+        JOIN client_manager d ON d.client_manager_id = c.client_manager_id
+        JOIN client_company e ON e.client_company_id = d.client_company_id
+        LEFT JOIN user f ON f.user_id = p.writer_id
+        LEFT JOIN influencer g ON g.influencer_id = c.influencer_id
         WHERE b.campaign_status_id = 5
         <if test="campaignName != null">
             AND b.campaign_name LIKE CONCAT('%', #{campaignName}, '%')
         </if>
-        LIMIT #{ limit } OFFSET #{ offset };
     </select>
+
 
 </mapper>
