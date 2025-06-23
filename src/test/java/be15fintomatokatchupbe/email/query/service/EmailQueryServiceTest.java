@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,11 +37,11 @@ public class EmailQueryServiceTest {
         request.setPage(1);
         request.setSize(10);
 
-        List<CampaignSatisfactionDTO> expectedList = List.of(
-                CampaignSatisfactionDTO.builder()
-                        .campaignName("캠페인 A")
-                        .build()
-        );
+        CampaignSatisfactionDTO dto = new CampaignSatisfactionDTO();
+        dto.setCampaignName("캠페인 A");
+
+        List<CampaignSatisfactionDTO> expectedList = new ArrayList<>();
+        expectedList.add(dto);
 
         when(emailQueryMapper.getCampaignSatisfaction(request)).thenReturn(expectedList);
         when(emailQueryMapper.totalList(request)).thenReturn(1);
@@ -66,7 +67,7 @@ public class EmailQueryServiceTest {
         request.setPage(1);
         request.setSize(10);
 
-        when(emailQueryMapper.getCampaignSatisfaction(request)).thenReturn(List.of());
+        when(emailQueryMapper.getCampaignSatisfaction(request)).thenReturn(new ArrayList<>());
         when(emailQueryMapper.totalList(request)).thenReturn(0);
 
         // when
@@ -77,6 +78,4 @@ public class EmailQueryServiceTest {
         assertTrue(result.getCampaignSatisfaction().isEmpty());
         assertEquals(0, result.getPagination().getTotalPage());
     }
-
-
 }
