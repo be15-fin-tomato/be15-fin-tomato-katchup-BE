@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.campaign.command.domain.aggregate.entity;
+package be15fintomatokatchupbe.file.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -17,5 +17,7 @@ public class File {
 
     private String fileName;
 
-    private String fileRoute;
+    private String fileKey;
+
+    private String mimeType;
 }
