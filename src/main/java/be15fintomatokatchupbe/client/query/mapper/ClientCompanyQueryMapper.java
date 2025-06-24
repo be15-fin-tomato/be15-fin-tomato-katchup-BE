@@ -8,5 +8,5 @@ import java.util.List;
 
 @Mapper
 public interface ClientCompanyQueryMapper {
-    List<ClientCompanyDetailResponse> findClientCompanyDetailById (@Param("clientCompanyId") Long clientCompanyId);
+    ClientCompanyDetailResponse findClientCompanyDetailById(@Param("clientCompanyId") Long clientCompanyId);
 }
