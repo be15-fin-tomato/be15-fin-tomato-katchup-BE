@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.calendar.command.application.controller;
 
-import be15fintomatokatchupbe.calendar.command.application.dto.CreateScheduleRequestDto;
+import be15fintomatokatchupbe.calendar.command.application.dto.request.CreateScheduleRequestDto;
+import be15fintomatokatchupbe.calendar.command.application.dto.request.UpdateScheduleRequestDto;
 import be15fintomatokatchupbe.calendar.command.application.service.CalendarCommandService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
@@ -26,6 +27,17 @@ public class CalendarCommandController {
     ) {
         calendarCommandService.create(userDetail.getUserId(), dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(null));
+    }
+
+    @PatchMapping("/{scheduleId}")
+    @Operation(summary = "캘린더 일정 수정", description = "사용자는 캘린더에 등록한 개인 일정 항목을 수정할 수 있다.")
+    public ResponseEntity<ApiResponse<Void>> updateSchedule(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable Long scheduleId,
+            @RequestBody UpdateScheduleRequestDto dto
+    ){
+        calendarCommandService.update(userDetail.getUserId(), scheduleId, dto);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     @DeleteMapping("/{scheduleId}")

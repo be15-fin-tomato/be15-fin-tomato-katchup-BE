@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.calendar.command.application.service;
 
-import be15fintomatokatchupbe.calendar.command.application.dto.CreateScheduleRequestDto;
+import be15fintomatokatchupbe.calendar.command.application.dto.request.CreateScheduleRequestDto;
+import be15fintomatokatchupbe.calendar.command.application.dto.request.UpdateScheduleRequestDto;
 import be15fintomatokatchupbe.calendar.command.domain.aggregate.Schedule;
 import be15fintomatokatchupbe.calendar.command.mapper.ScheduleCommandMapper;
 import be15fintomatokatchupbe.calendar.command.repository.ScheduleRepository;
@@ -24,6 +25,15 @@ public class CalendarCommandService {
             throw new IllegalArgumentException("시작 시간이 종료 시간보다 늦을 수 없습니다.");
         }
 
+        scheduleRepository.save(schedule);
+    }
+
+    @Transactional
+    public void update(Long userId, Long scheduleId, UpdateScheduleRequestDto dto) {
+        Schedule schedule = scheduleRepository.findByScheduleIdAndUserId(scheduleId, userId)
+                .orElseThrow(() -> new BusinessException(CalendarErrorCode.ACCESS_DENIED));
+
+        schedule.update(dto);
         scheduleRepository.save(schedule);
     }
 
