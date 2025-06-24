@@ -9,12 +9,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ClientCompanyQueryService {
 
-    private final ClientCompanyQueryMapper queryMapper;
+    private final ClientCompanyQueryMapper clientCompanyQueryMapper;
 
-    public ClientCompanyDetailResponse getDetail(Long clientCompanyId) {
-        return queryMapper.findClientCompanyDetailById(clientCompanyId)
-                .stream()
-                .findFirst()
-                .orElse(null);
+    public ClientCompanyDetailResponse getClientCompanyDetail(Long clientCompanyId) {
+        return clientCompanyQueryMapper.findClientCompanyDetailById(clientCompanyId);
     }
 }
