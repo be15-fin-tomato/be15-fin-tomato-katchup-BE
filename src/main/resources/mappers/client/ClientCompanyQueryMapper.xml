@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.client.query.mapper.ClientCompanyQueryMapper">
+
+    <select id="findClientCompanyDetailById" resultMap="ClientCompanyDetailResultMap">
+        SELECT
+            cc.client_company_id AS clientCompanyId,
+            cc.client_company_name AS clientCompanyName,
+            cc.client_company_status_id AS clientCompanyStatusId,
+            cc.business_id,
+            cc.sales,
+            cc.number_of_employees,
+            cc.telephone,
+            cc.fax,
+            cc.address,
+            cc.detail_address,
+            cc.notes,
+
+            cm.client_manager_id AS managerId,
+            cm.name AS managerName,
+            cm.department AS managerDepartment,
+            cm.position AS managerPosition,
+            cm.phone AS managerPhone,
+            cm.telephone AS managerTelephone,
+            cm.email AS managerEmail,
+            cm.notes AS managerNotes,
+
+            cu.user_id AS userId
+
+        FROM client_company cc
+                 LEFT JOIN client_manager cm ON cc.client_company_id = cm.client_company_id AND cm.is_deleted = 'N'
+                 LEFT JOIN client_company_user cu ON cc.client_company_id = cu.client_company_id
+        WHERE cc.client_company_id = #{clientCompanyId}
+          AND cc.is_deleted = 'N'
+    </select>
+
+    <resultMap id="ClientCompanyDetailResultMap" type="be15fintomatokatchupbe.client.query.dto.ClientCompanyDetailResponse">
+        <id property="clientCompanyId" column="clientCompanyId"/>
+        <result property="clientCompanyName" column="clientCompanyName"/>
+        <result property="clientCompanyStatusId" column="clientCompanyStatusId"/>
+        <result property="businessId" column="business_id"/>
+        <result property="sales" column="sales"/>
+        <result property="numberOfEmployees" column="number_of_employees"/>
+        <result property="telephone" column="telephone"/>
+        <result property="fax" column="fax"/>
+        <result property="address" column="address"/>
+        <result property="detailAddress" column="detail_address"/>
+        <result property="notes" column="notes"/>
+
+        <!-- userId list는 따로 resultHandler로 처리 -->
+        <collection property="userIds" ofType="java.lang.Long">
+            <result column="userId"/>
+        </collection>
+
+        <collection property="clientManagers" ofType="be15fintomatokatchupbe.client.query.dto.ClientManagerDTO">
+            <result property="clientManagerId" column="managerId"/>
+            <result property="name" column="managerName"/>
+            <result property="department" column="managerDepartment"/>
+            <result property="position" column="managerPosition"/>
+            <result property="phone" column="managerPhone"/>
+            <result property="telephone" column="managerTelephone"/>
+            <result property="email" column="managerEmail"/>
+            <result property="notes" column="managerNotes"/>
+        </collection>
+    </resultMap>
+
+</mapper>
