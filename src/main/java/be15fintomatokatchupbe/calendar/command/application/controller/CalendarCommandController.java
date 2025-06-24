@@ -10,10 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,5 +26,15 @@ public class CalendarCommandController {
     ) {
         calendarCommandService.create(userDetail.getUserId(), dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/{scheduleId}")
+    @Operation(summary = "캘린더 일정 삭제", description = "사용자는 캘린더에 등록한 개인 일정을 삭제할 수 있다.")
+    public ResponseEntity<ApiResponse<Void>> deleteSchedule(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable Long scheduleId
+    ){
+        calendarCommandService.delete(userDetail.getUserId(), scheduleId);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 }
