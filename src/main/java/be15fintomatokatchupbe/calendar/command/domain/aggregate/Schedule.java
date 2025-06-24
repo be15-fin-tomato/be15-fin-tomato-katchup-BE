@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.calendar.command.domain.aggregate;
 
+import be15fintomatokatchupbe.calendar.command.application.dto.request.UpdateScheduleRequestDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,4 +44,25 @@ public class Schedule {
         this.startTime = startTime;
         this.endTime = endTime;
     }
+
+    public void update(UpdateScheduleRequestDto dto) {
+
+        if (dto.getScheduleDate() != null) {
+            this.scheduleDate = dto.getScheduleDate();
+        }
+        if (dto.getContent() != null) {
+            this.content = dto.getContent();
+        }
+        if (dto.getStartTime() != null) {
+            this.startTime = dto.getStartTime();
+        }
+        if (dto.getEndTime() != null) {
+            this.endTime = dto.getEndTime();
+        }
+        if (dto.getScheduleColorId() != null) {
+            this.scheduleColorId = dto.getScheduleColorId();
+        }
+
+    }
+
 }

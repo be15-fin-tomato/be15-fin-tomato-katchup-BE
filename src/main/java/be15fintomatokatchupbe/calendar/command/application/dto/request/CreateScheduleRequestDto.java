@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.calendar.command.application.dto;
+package be15fintomatokatchupbe.calendar.command.application.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -30,4 +30,5 @@ public class CreateScheduleRequestDto {
 
     @NotNull
     private Long scheduleColorId;
+
 }

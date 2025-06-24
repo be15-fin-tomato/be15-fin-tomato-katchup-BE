@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.calendar.command.application.service;
 
-import be15fintomatokatchupbe.calendar.command.application.dto.CreateScheduleRequestDto;
+import be15fintomatokatchupbe.calendar.command.application.dto.request.CreateScheduleRequestDto;
+import be15fintomatokatchupbe.calendar.command.application.dto.request.UpdateScheduleRequestDto;
 import be15fintomatokatchupbe.calendar.command.domain.aggregate.Schedule;
 import be15fintomatokatchupbe.calendar.command.mapper.ScheduleCommandMapper;
 import be15fintomatokatchupbe.calendar.command.repository.ScheduleRepository;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Service
 public class CalendarCommandService {
+
     private final ScheduleRepository scheduleRepository;
     private final ScheduleCommandMapper mapper;
 
@@ -28,9 +30,19 @@ public class CalendarCommandService {
     }
 
     @Transactional
+    public void update(Long userId, Long scheduleId, UpdateScheduleRequestDto dto) {
+        Schedule schedule = scheduleRepository.findByScheduleIdAndUserId(scheduleId, userId)
+                .orElseThrow(() -> new BusinessException(CalendarErrorCode.ACCESS_DENIED));
+
+        schedule.update(dto);
+        scheduleRepository.save(schedule);
+    }
+
+    @Transactional
     public void delete(Long userId, Long scheduleId) {
         Schedule schedule = scheduleRepository.findByScheduleIdAndUserId(scheduleId, userId)
                 .orElseThrow(() -> new BusinessException(CalendarErrorCode.ACCESS_DENIED));
         scheduleRepository.delete(schedule);
     }
+
 }
