@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
+
 @RequiredArgsConstructor
 @Service
 public class CalendarCommandService {
@@ -22,8 +24,11 @@ public class CalendarCommandService {
     public void create(Long userId, CreateScheduleRequestDto dto) {
         Schedule schedule = mapper.toEntity(dto, userId);
 
-        if (dto.getStartTime().isAfter(dto.getEndTime())) {
-            throw new IllegalArgumentException("시작 시간이 종료 시간보다 늦을 수 없습니다.");
+        LocalTime startTime = dto.getStartTime() != null ? dto.getStartTime() : schedule.getStartTime();
+        LocalTime endTime = dto.getEndTime() != null ? dto.getEndTime() : schedule.getEndTime();
+
+        if (startTime != null && endTime != null && startTime.isAfter(endTime)) {
+            throw new BusinessException(CalendarErrorCode.INVALID_TIME);
         }
 
         scheduleRepository.save(schedule);
@@ -34,6 +39,12 @@ public class CalendarCommandService {
         Schedule schedule = scheduleRepository.findByScheduleIdAndUserId(scheduleId, userId)
                 .orElseThrow(() -> new BusinessException(CalendarErrorCode.ACCESS_DENIED));
 
+        LocalTime startTime = dto.getStartTime() != null ? dto.getStartTime() : schedule.getStartTime();
+        LocalTime endTime = dto.getEndTime() != null ? dto.getEndTime() : schedule.getEndTime();
+
+        if (startTime != null && endTime != null && startTime.isAfter(endTime)) {
+            throw new BusinessException(CalendarErrorCode.INVALID_TIME);
+        }
         schedule.update(dto);
         scheduleRepository.save(schedule);
     }
