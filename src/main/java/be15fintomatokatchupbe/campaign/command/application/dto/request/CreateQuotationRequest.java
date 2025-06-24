@@ -12,6 +12,7 @@ import java.util.List;
 public class CreateQuotationRequest extends BasePipelineRequest {
     // 인플루언서 정보
     private List<Long> influencerId;
+    private List<IdeaRequest> ideaList;
 
     // 견적가, 공급가능수량, 기대수익
     private Long expectedRevenue;

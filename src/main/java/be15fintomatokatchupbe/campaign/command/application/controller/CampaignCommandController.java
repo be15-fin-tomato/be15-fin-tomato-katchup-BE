@@ -1,9 +1,6 @@
 package be15fintomatokatchupbe.campaign.command.application.controller;
 
-import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateChanceRequest;
-import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateContractRequest;
-import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateProposalRequest;
-import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateQuotationRequest;
+import be15fintomatokatchupbe.campaign.command.application.dto.request.*;
 import be15fintomatokatchupbe.campaign.command.application.service.CampaignCommandService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
@@ -73,6 +70,19 @@ public class CampaignCommandController {
         Long userId = userDetail.getUserId();
 
         campaignCommandService.createContract(userId, request, files);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PostMapping("/revenue/create")
+    public ResponseEntity<ApiResponse<Void>> createRevenue(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @RequestPart("request")CreateRevenueRequest request,
+            @RequestPart(required = false) List<MultipartFile> files
+    ){
+        Long userId = userDetail.getUserId();
+
+        campaignCommandService.createRevenue(userId, request, files);
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }

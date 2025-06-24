@@ -31,6 +31,7 @@ public class Campaign {
 
     private String productName;
 
+    @Setter
     private Long productPrice;
 
     private String awarenessPath;
