@@ -148,6 +148,7 @@ public class ClientCompanyCommandService {
         clientCompanyRepository.save(company);
     }
 
+    // 3) 고객사 + 사원 + 담당자(유저) 삭제
     @Transactional
     public void deleteClientCompany(Long clientCompanyId) {
         // 1) 고객사 조회(삭제되지 않은 것만)
