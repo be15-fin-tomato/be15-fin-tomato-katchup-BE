@@ -1,9 +1,6 @@
 package be15fintomatokatchupbe.campaign.command.application.service;
 
-import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateChanceRequest;
-import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateContractRequest;
-import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateProposalRequest;
-import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateQuotationRequest;
+import be15fintomatokatchupbe.campaign.command.application.dto.request.*;
 import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelperService;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.*;
@@ -253,5 +250,50 @@ public class CampaignCommandService {
         pipeInfClientManagerService.saveClientManager(clientManager, pipeline);
         pipeInfClientManagerService.saveInfluencer(request.getInfluencerId(), pipeline);
         pipeUserService.saveUserList(request.getUserId(), pipeline);
+    }
+
+    @Transactional
+    public void createRevenue(Long userId, CreateRevenueRequest request, List<MultipartFile> files) {
+        ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
+        Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
+        PipelineStep pipelineStep = pipelineStepRepository.findById(PipelineStepConstants.REVENUE)
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STEP_NOT_FOUND));
+        PipelineStatus pipelineStatus = pipelineStatusRepository.findById(request.getPipelineStatusId())
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STATUS_NOT_FOUND));
+        User writer = userHelperService.findValidUser(userId);
+
+        campaign.setProductPrice(request.getProductPrice());
+        campaignRepository.save(campaign);
+
+        Pipeline pipeline = Pipeline.builder()
+                .pipelineStep(pipelineStep)
+                .pipelineStatus(pipelineStatus)
+                .campaign(campaign)
+                .name(request.getName())
+                .requestAt(request.getRequestAt())
+                .startedAt(request.getStartedAt())
+                .endedAt(request.getEndedAt())
+                .presentedAt(request.getPresentedAt())
+                .content(request.getContent())
+                .notes(request.getNotes())
+                .writer(writer)
+                .build();
+
+        pipelineRepository.save(pipeline);
+
+        /* 파일 저장*/
+        if(files != null && !files.isEmpty()){
+            // 1. 파일 S3에 올리고 돌려 받기
+            List<File> fileList = fileService.uploadFile(files);
+            fileList.forEach(file -> file.setPipeline(pipeline));
+
+            // 2. 파일 DB에 저장하기
+            fileService.saveFile(fileList);
+        }
+
+        pipeInfClientManagerService.saveClientManager(clientManager, pipeline);
+        pipeInfClientManagerService.saveInfluencerRevenue(request.getInfluencerList(), pipeline);
+        pipeUserService.saveUserList(request.getUserId(), pipeline);
+
     }
 }
