@@ -5,18 +5,21 @@ import be15fintomatokatchupbe.client.command.domain.repository.ClientManagerRepo
 import be15fintomatokatchupbe.client.command.exception.ClientErrorCode;
 import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.config.GoogleSheetConfig;
 import be15fintomatokatchupbe.email.command.domain.aggregate.Satisfaction;
 import be15fintomatokatchupbe.email.command.domain.repository.SatisfactionRepository;
 import be15fintomatokatchupbe.email.exception.EmailErrorCode;
-import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
-import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import be15fintomatokatchupbe.utils.EmailUtils;
+import com.google.api.services.sheets.v4.Sheets;
+import com.google.api.services.sheets.v4.model.ValueRange;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.mail.MailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class EmailCommendService {
     private final EmailUtils emailUtil;
     private final SatisfactionRepository satisfactionRepository;
     private final ClientManagerRepository clientManagerRepository;
+    private final GoogleSheetConfig googleSheetConfig;
 
     @Transactional
     public void sendSatisfaction(Long satisfactionId) {
@@ -69,5 +73,59 @@ public class EmailCommendService {
         satisfaction.setEmailStatus(StatusType.Y);
         satisfactionRepository.save(satisfaction);
 
+    }
+
+    @Transactional
+    public void getSatisfactionResult(Long satisfactionId) {
+        try {
+            List<Object> row = findRowBySatisfactionId(satisfactionId);
+
+            if (row == null) {
+                throw new BusinessException(EmailErrorCode.NOT_FOUND_ROW);
+            }
+
+            // E열(4) ~ X열(23)까지 합산
+            int sum = 0;
+            for (int i = 4; i <= 23; i++) {
+                if (row.size() > i && row.get(i) != null) {
+                    sum += Integer.parseInt(row.get(i).toString().trim());
+                }
+            }
+
+            /* 비고 */
+            String notes = row.get(24).toString();
+
+            Satisfaction entity = satisfactionRepository.findById(satisfactionId)
+                    .orElseThrow(() -> new BusinessException(EmailErrorCode.NOT_FOUND_SATISFACTION));
+
+            entity.setScore(sum);
+            entity.setResponseDate(new Date());
+            entity.setNotes(notes);
+            entity.setIsReacted(StatusType.Y);
+
+        } catch (Exception e) {
+            throw new BusinessException(EmailErrorCode.ERROR_SHEETS);
+        }
+    }
+
+    public List<Object> findRowBySatisfactionId(Long satisfactionId) throws Exception {
+        String spreadSheetId = "1OTHbmdSmwqTtrDK5rKL74VgM-ad87nXnIDW84Q-X2fs";
+        Sheets sheets = googleSheetConfig.getSheetsService();
+        String range = "설문지응답!A2:Y";
+
+        ValueRange valueRange = sheets.spreadsheets().values()
+                .get(spreadSheetId, range)
+                .execute();
+
+        List<List<Object>> rows = valueRange.getValues();
+        if (rows == null || rows.isEmpty()) return null;
+
+        for (List<Object> row : rows) {
+            if (row.size() > 1 && satisfactionId.toString().equals(row.get(1).toString().trim())) {
+                return row;
+            }
+        }
+
+        return null;
     }
 }

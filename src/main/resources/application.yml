@@ -68,4 +68,10 @@ youtube:
   client-secret: ${YOUTUBE_CLIENT_SECRET}
   redirect-uri: ${YOUTUBE_REDIRECT_URI}
 
+google:
+  sheet:
+    credentials: credentials.json
+    spreadsheet-id: ${SHEET_ID}
+
+
 

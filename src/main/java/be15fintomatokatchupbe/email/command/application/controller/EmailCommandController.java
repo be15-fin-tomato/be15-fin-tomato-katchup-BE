@@ -2,7 +2,6 @@ package be15fintomatokatchupbe.email.command.application.controller;
 
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.email.command.application.service.EmailCommendService;
-import be15fintomatokatchupbe.email.query.service.EmailQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +26,17 @@ public class EmailCommandController {
             @PathVariable Long satisfactionId
     ) {
         emailCommendService.sendSatisfaction(satisfactionId);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    /* 만족도 결과 저장하기 */
+    @PostMapping("/save/{satisfactionId}")
+    @Operation(summary = "만족도 조사 결과 불러오기", description = "만족도 조사 총 점수를 불러올 수 있다.")
+    public ResponseEntity<ApiResponse<Void>> getSatisfactionResult (
+            @PathVariable Long satisfactionId
+    ) {
+        emailCommendService.getSatisfactionResult(satisfactionId);
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }

@@ -5,7 +5,7 @@ import be15fintomatokatchupbe.common.domain.StatusType;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.sql.Date;
+import java.util.Date;
 
 @Entity
 @Table(name = "satisfaction")
