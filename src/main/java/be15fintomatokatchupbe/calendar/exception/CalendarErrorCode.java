@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
-public enum calendarErrorCode implements ErrorCode {
+public enum CalendarErrorCode implements ErrorCode {
 
     SCHEDULE_NOT_FOUND("60001", "존재하지 않는 일정입니다.", HttpStatus.NOT_FOUND),
     ACCESS_DENIED("60002", "해당 일정에 대한 권한이 없습니다.", HttpStatus.FORBIDDEN);

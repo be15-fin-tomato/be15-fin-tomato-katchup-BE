@@ -4,6 +4,8 @@ import be15fintomatokatchupbe.calendar.command.application.dto.CreateScheduleReq
 import be15fintomatokatchupbe.calendar.command.domain.aggregate.Schedule;
 import be15fintomatokatchupbe.calendar.command.mapper.ScheduleCommandMapper;
 import be15fintomatokatchupbe.calendar.command.repository.ScheduleRepository;
+import be15fintomatokatchupbe.calendar.exception.CalendarErrorCode;
+import be15fintomatokatchupbe.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,5 +25,12 @@ public class CalendarCommandService {
         }
 
         scheduleRepository.save(schedule);
+    }
+
+    @Transactional
+    public void delete(Long userId, Long scheduleId) {
+        Schedule schedule = scheduleRepository.findByScheduleIdAndUserId(scheduleId, userId)
+                .orElseThrow(() -> new BusinessException(CalendarErrorCode.ACCESS_DENIED));
+        scheduleRepository.delete(schedule);
     }
 }
