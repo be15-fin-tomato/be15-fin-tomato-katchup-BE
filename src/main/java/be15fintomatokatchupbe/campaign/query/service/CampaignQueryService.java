@@ -1,6 +1,8 @@
 package be15fintomatokatchupbe.campaign.query.service;
 
 
+import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
+import be15fintomatokatchupbe.campaign.query.dto.ProposalCardDTO;
 import be15fintomatokatchupbe.campaign.query.dto.request.ProposalSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.ProposalCardResponse;
 import be15fintomatokatchupbe.campaign.query.dto.response.ProposalSearchResponse;
@@ -10,7 +12,10 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @AllArgsConstructor
@@ -22,26 +27,48 @@ public class CampaignQueryService {
         int offset = (request.getPage() - 1) * request.getSize();
         int size = request.getSize();
 
-        // 1. 매퍼 호출
-        List<ProposalCardResponse> proposalCardResponse = campaignQueryMapper.findProposals(request, offset, size);
+        // 1. flat DTO 리스트 조회
+        List<ProposalCardDTO> flatList =
+                campaignQueryMapper.findProposals(request, offset, size, PipelineStepConstants.PROPOSAL);
 
-        log.info(proposalCardResponse.toString());
+        // 2. 그룹화 처리
+        Map<Long, ProposalCardResponse> grouped = new LinkedHashMap<>();
 
-        // 2. 총 개수 세주기
-        int totalCount = campaignQueryMapper.countProposals(request);
+        for (ProposalCardDTO dto : flatList) {
+            ProposalCardResponse existing = grouped.get(dto.getPipelineId());
 
-        // 페이지네이션 만들기
-        Pagination pagination = Pagination
-                .builder()
+            if (existing == null) {
+                ProposalCardResponse response = ProposalCardResponse.builder()
+                        .pipelineId(dto.getPipelineId())
+                        .name(dto.getName())
+                        .statusId(dto.getStatusId())
+                        .clientCompanyName(dto.getClientCompanyName())
+                        .clientManagerName(dto.getClientManagerName())
+                        .requestAt(dto.getRequestAt())
+                        .presentAt(dto.getPresentAt())
+                        .userName(new ArrayList<>(List.of(dto.getUserName())))
+                        .build();
+                grouped.put(dto.getPipelineId(), response);
+            } else {
+                existing.getUserName().add(dto.getUserName());
+            }
+        }
+
+        List<ProposalCardResponse> groupedList = new ArrayList<>(grouped.values());
+
+        // 3. 총 개수 조회
+        int totalCount = campaignQueryMapper.countProposals(request, PipelineStepConstants.PROPOSAL);
+
+        Pagination pagination = Pagination.builder()
                 .currentPage(request.getPage())
                 .size(size)
                 .totalPage(totalCount)
                 .build();
 
-        return ProposalSearchResponse
-                .builder()
-                .response(proposalCardResponse)
+        return ProposalSearchResponse.builder()
+                .response(groupedList)
                 .pagination(pagination)
                 .build();
     }
+
 }
