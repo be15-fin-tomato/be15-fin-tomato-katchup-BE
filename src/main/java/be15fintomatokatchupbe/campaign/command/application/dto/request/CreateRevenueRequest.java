@@ -12,6 +12,7 @@ import java.util.List;
 public class CreateRevenueRequest extends BasePipelineRequest{
     // 인플루언서
     private List<InfluencerRevenueRequest> influencerList;
+    private List<IdeaRequest> ideaList;
 
     // 광고 단가, 상품 가격
     private Long productPrice;

@@ -204,6 +204,20 @@ public class CampaignCommandService {
                 .build();
         pipelineRepository.save(pipeline);
 
+        List<Idea> ideaList = request
+                .getIdeaList()
+                .stream()
+                .map(idea ->
+                        Idea
+                                .builder()
+                                .content(idea.getContent())
+                                .user(writer)
+                                .pipeline(pipeline)
+                                .build()
+                ).toList();
+
+        ideaRepository.saveAll(ideaList);
+
         pipeInfClientManagerService.saveClientManager(clientManager, pipeline);
         pipeInfClientManagerService.saveInfluencer(request.getInfluencerId(), pipeline);
         pipeUserService.saveUserList(request.getUserId(), pipeline);
@@ -237,6 +251,21 @@ public class CampaignCommandService {
                 .build();
 
         pipelineRepository.save(pipeline);
+
+        List<Idea> ideaList = request
+                .getIdeaList()
+                .stream()
+                .map(idea ->
+                        Idea
+                                .builder()
+                                .content(idea.getContent())
+                                .user(writer)
+                                .pipeline(pipeline)
+                                .build()
+                ).toList();
+
+        ideaRepository.saveAll(ideaList);
+
         /* 파일 저장*/
         if(files != null && !files.isEmpty()){
             // 1. 파일 S3에 올리고 돌려 받기
@@ -280,6 +309,20 @@ public class CampaignCommandService {
                 .build();
 
         pipelineRepository.save(pipeline);
+
+        List<Idea> ideaList = request
+                .getIdeaList()
+                .stream()
+                .map(idea ->
+                        Idea
+                                .builder()
+                                .content(idea.getContent())
+                                .user(writer)
+                                .pipeline(pipeline)
+                                .build()
+                ).toList();
+
+        ideaRepository.saveAll(ideaList);
 
         /* 파일 저장*/
         if(files != null && !files.isEmpty()){
