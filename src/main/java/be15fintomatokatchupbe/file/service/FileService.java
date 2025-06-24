@@ -5,12 +5,10 @@ import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.file.dto.FileDownloadResult;
 import be15fintomatokatchupbe.file.exception.FileErrorCode;
 import be15fintomatokatchupbe.file.repository.FileRepository;
-import be15fintomatokatchupbe.influencer.command.application.dto.FileDTO;
 import be15fintomatokatchupbe.utils.FileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -40,51 +38,56 @@ public class FileService {
     private final String SAVE_IMAGE_DIR= "img";
     private static final long MAX_FILE_SIZE = 20 * 1024 * 1024;
 
-    public List<File> uploadFile(List<MultipartFile> files) throws Exception {
+    /* 내부 호출용*/
+    public List<File> uploadFile(List<MultipartFile> files) {
         List<File> uploadedFiles = new ArrayList<>();
         log.info(bucketName);
 
         for (MultipartFile file : files) {
-            log.info("파일 위조 확인: {}", fileUtil.validateFile(file));
+            try {
+                log.info("파일 위조 확인: {}", fileUtil.validateFile(file));
 
-            if (!fileUtil.validateFile(file)) {
+                if (!fileUtil.validateFile(file)) {
+                    throw new BusinessException(FileErrorCode.FILE_FORMAT_ERROR);
+                }
+
+                if (file.getSize() > MAX_FILE_SIZE) {
+                    throw new BusinessException(FileErrorCode.FILE_TOO_BIG);
+                }
+
+                String originalFilename = file.getOriginalFilename();
+                String extension = fileUtil.getExtension(originalFilename).toLowerCase();
+                String uuidFilename = UUID.randomUUID() + "." + extension;
+
+                String mimeType = fileUtil.detectMimeType(file);
+                boolean isImage = mimeType.startsWith("image/");
+                String dir = isImage ? SAVE_IMAGE_DIR : SAVE_FILE_DIR;
+
+                String fileKey = dir + "/" + uuidFilename;
+
+                Map<String, String> metadata = new HashMap<>();
+                metadata.put("mime-type", mimeType);
+
+                PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(fileKey)
+                        .metadata(metadata)
+                        .build();
+
+                s3Client.putObject(putObjectRequest,
+                        RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+
+                File fileEntity = File.builder()
+                        .fileName(originalFilename)
+                        .fileKey(fileKey)
+                        .mimeType(mimeType)
+                        .build();
+
+//                fileRepository.save(fileEntity);
+                uploadedFiles.add(fileEntity);
+            } catch (Exception e) {
                 throw new BusinessException(FileErrorCode.FILE_FORMAT_ERROR);
             }
-
-            if (file.getSize() > MAX_FILE_SIZE) {
-                throw new BusinessException(FileErrorCode.FILE_TOO_BIG);
-            }
-
-            String originalFilename = file.getOriginalFilename();
-            String extension = fileUtil.getExtension(originalFilename).toLowerCase();
-            String uuidFilename = UUID.randomUUID() + "." + extension;
-
-            String mimeType = fileUtil.detectMimeType(file);
-            boolean isImage = mimeType.startsWith("image/");
-            String dir = isImage ? SAVE_IMAGE_DIR : SAVE_FILE_DIR;
-
-            String fileKey = dir + "/" + uuidFilename;
-
-            Map<String, String> metadata = new HashMap<>();
-            metadata.put("mime-type", mimeType);
-
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(fileKey)
-                    .metadata(metadata)
-                    .build();
-
-            s3Client.putObject(putObjectRequest,
-                    RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
-
-            File fileEntity = File.builder()
-                    .fileName(originalFilename)
-                    .fileKey(fileKey)
-                    .mimeType(mimeType)
-                    .build();
-
-            fileRepository.save(fileEntity);
-            uploadedFiles.add(fileEntity);
         }
 
         return uploadedFiles;
@@ -113,5 +116,10 @@ public class FileService {
             log.error("파일 다운로드 중 오류 발생", e);
             throw new BusinessException(FileErrorCode.FILE_DOWNLOAD_ERROR); // 새 에러코드 정의 필요
         }
+    }
+
+    /* 내부 호출용*/
+    public void saveFile(List<File> filesList){
+        fileRepository.saveAll(filesList);
     }
 }

@@ -1,7 +1,6 @@
 package be15fintomatokatchupbe.campaign.command.domain.aggregate.entity;
 
 import be15fintomatokatchupbe.common.domain.StatusType;
-import be15fintomatokatchupbe.file.domain.File;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,10 +26,6 @@ public class Pipeline {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pipeline_step_id", nullable = false)
     private PipelineStep pipelineStep;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "file_id")
-    private File file;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pipeline_status_id")
@@ -59,6 +54,8 @@ public class Pipeline {
     private String content;
 
     private Long expectedProfit;
+
+    private Long availableQuantity;
 
     private Long totalProfit;
 
