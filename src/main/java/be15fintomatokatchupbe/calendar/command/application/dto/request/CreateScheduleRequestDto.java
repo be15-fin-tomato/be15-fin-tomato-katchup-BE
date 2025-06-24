@@ -30,4 +30,5 @@ public class CreateScheduleRequestDto {
 
     @NotNull
     private Long scheduleColorId;
+
 }

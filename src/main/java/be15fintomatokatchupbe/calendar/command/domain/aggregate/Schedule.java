@@ -46,6 +46,7 @@ public class Schedule {
     }
 
     public void update(UpdateScheduleRequestDto dto) {
+
         if (dto.getScheduleDate() != null) {
             this.scheduleDate = dto.getScheduleDate();
         }
@@ -61,5 +62,7 @@ public class Schedule {
         if (dto.getScheduleColorId() != null) {
             this.scheduleColorId = dto.getScheduleColorId();
         }
+
     }
+
 }

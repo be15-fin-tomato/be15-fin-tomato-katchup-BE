@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Service
 public class CalendarCommandService {
+
     private final ScheduleRepository scheduleRepository;
     private final ScheduleCommandMapper mapper;
 
@@ -43,4 +44,5 @@ public class CalendarCommandService {
                 .orElseThrow(() -> new BusinessException(CalendarErrorCode.ACCESS_DENIED));
         scheduleRepository.delete(schedule);
     }
+
 }

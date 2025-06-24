@@ -49,4 +49,5 @@ public class CalendarCommandController {
         calendarCommandService.delete(userDetail.getUserId(), scheduleId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
 }

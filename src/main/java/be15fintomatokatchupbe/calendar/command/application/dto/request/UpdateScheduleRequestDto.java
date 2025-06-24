@@ -11,9 +11,13 @@ import java.time.LocalTime;
 public class UpdateScheduleRequestDto {
 
     private LocalDate scheduleDate;
+
     private String content;
+
     private LocalTime startTime;
+
     private LocalTime endTime;
+
     private Long scheduleColorId;
 
 }
