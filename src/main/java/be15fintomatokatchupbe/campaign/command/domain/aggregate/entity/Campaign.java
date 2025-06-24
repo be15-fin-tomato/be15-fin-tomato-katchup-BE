@@ -35,8 +35,6 @@ public class Campaign {
 
     private String awarenessPath;
 
-    private Long availableQuantity;
-
     private Long salesQuantity;
 
     @Enumerated(EnumType.STRING)
@@ -54,8 +52,4 @@ public class Campaign {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private StatusType isDeleted = StatusType.N;
-
-    public void updateAvailableQuantity(Long availableQuantity) {
-        this.availableQuantity = availableQuantity;
-    }
 }

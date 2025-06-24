@@ -1,20 +1,25 @@
 package be15fintomatokatchupbe.campaign.command.application.controller;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateChanceRequest;
+import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateContractRequest;
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateProposalRequest;
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateQuotationRequest;
 import be15fintomatokatchupbe.campaign.command.application.service.CampaignCommandService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
+@Tag(name = "캠페인")
 @RestController
+@Slf4j
 @AllArgsConstructor
 @RequestMapping("/campaign")
 public class CampaignCommandController {
@@ -59,4 +64,17 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @PostMapping("/contract/create")
+    public ResponseEntity<ApiResponse<Void>> createContract(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @RequestPart("request") CreateContractRequest request,
+            @RequestPart(required = false) List<MultipartFile> files
+    ){
+        Long userId = userDetail.getUserId();
+
+        campaignCommandService.createContract(userId, request, files);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+}
