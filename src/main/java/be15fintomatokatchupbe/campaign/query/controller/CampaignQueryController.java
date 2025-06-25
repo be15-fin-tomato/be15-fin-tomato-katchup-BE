@@ -1,10 +1,7 @@
 package be15fintomatokatchupbe.campaign.query.controller;
 
-import be15fintomatokatchupbe.campaign.query.dto.response.ContractSearchResponse;
+import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
-import be15fintomatokatchupbe.campaign.query.dto.response.ProposalSearchResponse;
-import be15fintomatokatchupbe.campaign.query.dto.response.QuotationSearchResponse;
-import be15fintomatokatchupbe.campaign.query.dto.response.RevenueSearchResponse;
 import be15fintomatokatchupbe.campaign.query.service.CampaignQueryService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
@@ -13,10 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name="캠페인")
 @RestController
@@ -48,6 +42,19 @@ public class CampaignQueryController {
         QuotationSearchResponse response = campaignQueryService.getQuotationList(userId, request);
 
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/quotation/{id}")
+    @Operation(summary = "견적 상세 조회", description = "견적 상세 조회를 합니다.")
+    public ResponseEntity<ApiResponse<QuotationDetailResponse>> getQuotationDetail(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable("id") Long pipelineId
+    ){
+        Long userId = userDetail.getUserId();
+        QuotationDetailResponse response = campaignQueryService.getQuotationDetail(userId, pipelineId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+
     }
 
     @GetMapping("/contract")
