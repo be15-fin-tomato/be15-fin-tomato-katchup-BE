@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.calendar.query.service;
 
+import be15fintomatokatchupbe.calendar.exception.CalendarErrorCode;
 import be15fintomatokatchupbe.calendar.query.dto.pipeline.PipeLineScheduleListResponse;
 import be15fintomatokatchupbe.calendar.query.dto.pipeline.PipelineScheduleListDTO;
 import be15fintomatokatchupbe.calendar.query.dto.schedule.ScheduleListDTO;
@@ -8,6 +9,7 @@ import be15fintomatokatchupbe.calendar.query.dto.schedule.ScheduleListsAllDTO;
 import be15fintomatokatchupbe.calendar.query.dto.schedule.ScheduleListsAllResponse;
 import be15fintomatokatchupbe.calendar.query.mapper.PipelineScheduleQueryMapper;
 import be15fintomatokatchupbe.calendar.query.mapper.ScheduleQueryMapper;
+import be15fintomatokatchupbe.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +41,7 @@ public class CalendarQueryService {
     // 파이프라인 일정 불러오기
     public PipeLineScheduleListResponse getPipelineScheduleLists(Long userId) {
         List <PipelineScheduleListDTO> pipelineScheduleListDTO = pipelineScheduleQueryMapper.getPipelineScheduleList(userId);
+
         return PipeLineScheduleListResponse.builder()
                 .pipelineScheduleList(pipelineScheduleListDTO)
                 .build();
