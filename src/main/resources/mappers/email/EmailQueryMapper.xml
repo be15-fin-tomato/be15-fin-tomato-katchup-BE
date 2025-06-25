@@ -30,6 +30,17 @@
         <where>
             b.campaign_status_id = 5
             <choose>
+                <!-- ALL 검색: keyword가 여러 필드 중 어디든 포함되면 통과 -->
+                <when test="searchType == 'all' and keyword != null and keyword != ''">
+                    AND (
+                    g.name LIKE CONCAT('%', #{keyword}, '%') -- 인플루언서명
+                    OR d.name LIKE CONCAT('%', #{keyword}, '%') -- 클라이언트 매니저명
+                    OR d.email LIKE CONCAT('%', #{keyword}, '%') -- 클라이언트 이메일
+                    OR e.client_company_name LIKE CONCAT('%', #{keyword}, '%') -- 고객사
+                    OR b.campaign_name LIKE CONCAT('%', #{keyword}, '%') -- 캠페인명
+                    )
+                </when>
+                <!-- 단일 필드 검색 -->
                 <when test="searchType == 'campaignName' and keyword != null and keyword != ''">
                     AND b.campaign_name LIKE CONCAT('%', #{keyword}, '%')
                 </when>
@@ -39,10 +50,14 @@
                 <when test="searchType == 'clientManagerName' and keyword != null and keyword != ''">
                     AND d.name LIKE CONCAT('%', #{keyword}, '%')
                 </when>
+
+                <!-- 디폴트: 전체 -->
                 <otherwise>
-                    AND 1=1
+                    AND 1 = 1
                 </otherwise>
             </choose>
+
+            <!-- 공통 추가 필터: userName -->
             <if test="userName != null and userName != ''">
                 AND f.name LIKE CONCAT('%', #{userName}, '%')
             </if>
@@ -65,6 +80,18 @@
         <where>
             b.campaign_status_id = 5
             <choose>
+                <!-- ALL 검색: keyword가 여러 필드 중 어디든 포함되면 통과 -->
+                <when test="searchType == 'all' and keyword != null and keyword != ''">
+                    AND (
+                    g.name LIKE CONCAT('%', #{keyword}, '%') -- 인플루언서명
+                    OR d.name LIKE CONCAT('%', #{keyword}, '%') -- 클라이언트 매니저명
+                    OR d.email LIKE CONCAT('%', #{keyword}, '%') -- 클라이언트 이메일
+                    OR e.client_company_name LIKE CONCAT('%', #{keyword}, '%') -- 고객사
+                    OR b.campaign_name LIKE CONCAT('%', #{keyword}, '%') -- 캠페인명
+                    )
+                </when>
+
+                <!-- 단일 필드 검색 -->
                 <when test="searchType == 'campaignName' and keyword != null and keyword != ''">
                     AND b.campaign_name LIKE CONCAT('%', #{keyword}, '%')
                 </when>
@@ -74,10 +101,14 @@
                 <when test="searchType == 'clientManagerName' and keyword != null and keyword != ''">
                     AND d.name LIKE CONCAT('%', #{keyword}, '%')
                 </when>
+
+                <!-- 디폴트: 전체 -->
                 <otherwise>
-                    AND 1=1
+                    AND 1 = 1
                 </otherwise>
             </choose>
+
+            <!-- 공통 추가 필터: userName -->
             <if test="userName != null and userName != ''">
                 AND f.name LIKE CONCAT('%', #{userName}, '%')
             </if>
