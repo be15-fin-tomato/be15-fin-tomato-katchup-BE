@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.campaign.query.dto.response;
+package be15fintomatokatchupbe.campaign.query.dto.response.common;
 
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;

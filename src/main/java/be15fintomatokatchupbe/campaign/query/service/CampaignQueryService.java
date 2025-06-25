@@ -2,10 +2,7 @@ package be15fintomatokatchupbe.campaign.query.service;
 
 
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
-import be15fintomatokatchupbe.campaign.query.dto.mapper.ContractCardDTO;
-import be15fintomatokatchupbe.campaign.query.dto.mapper.ProposalCardDTO;
-import be15fintomatokatchupbe.campaign.query.dto.mapper.QuotationCardDTO;
-import be15fintomatokatchupbe.campaign.query.dto.mapper.RevenueCardDTO;
+import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
@@ -209,5 +206,51 @@ public class CampaignQueryService {
                         .response(response)
                         .pagination(pagination)
                         .build();
+    }
+
+    public QuotationDetailResponse getQuotationDetail(Long userId, Long pipelineId) {
+        /* 폼 정보 가져오기 */
+        /* 폼 가져오기 */
+        QuotationFormDTO quotationFormDto = campaignQueryMapper.findQuotationDetail(pipelineId, PipelineStepConstants.QUOTATION);
+
+        /* 인풀루언서 가져오기 */
+        List<InfluencerInfo> influencerDto = campaignQueryMapper.findPipelineInfluencer(pipelineId);
+
+        /* 담당자 가져오기 */
+        List<UserInfo> userDto = campaignQueryMapper.findPipelineUser(pipelineId);
+
+        /* 참고 목록 가져오기 */
+        List<ReferenceInfo> referenceDto = campaignQueryMapper.findPipeReference(pipelineId, PipelineStepConstants.PROPOSAL);
+
+        /* 의견 가져오기 */
+        List<IdeaInfo> ideaDto = campaignQueryMapper.findPipeIdea(pipelineId);
+
+        /* 조합하기 */
+        QuotationFormResponse form = QuotationFormResponse.builder()
+                .name(quotationFormDto.getName())
+                .clientCompanyId(quotationFormDto.getClientCompanyId())
+                .clientCompanyName(quotationFormDto.getClientCompanyName())
+                .clientManagerId(quotationFormDto.getClientManagerId())
+                .clientManagerName(quotationFormDto.getClientManagerName())
+                .userList(userDto)
+                .campaignId(quotationFormDto.getCampaignId())
+                .campaignName(quotationFormDto.getCampaignName())
+                .requestAt(quotationFormDto.getRequestAt())
+                .presentAt(quotationFormDto.getPresentAt())
+                .startedAt(quotationFormDto.getStartedAt())
+                .endedAt(quotationFormDto.getEndedAt())
+                .influencerList(influencerDto)
+                .expectedRevenue(quotationFormDto.getExpectedRevenue())
+                .availableQuantity(quotationFormDto.getAvailableQuantity())
+                .expectedProfit(quotationFormDto.getExpectedProfit())
+                .build();
+
+        /* 응답하기 */
+        return QuotationDetailResponse
+                .builder()
+                .form(form)
+                .refrenceList(referenceDto)
+                .ideaList(ideaDto)
+                .build();
     }
 }
