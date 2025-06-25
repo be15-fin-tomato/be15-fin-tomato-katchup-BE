@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.campaign.query.mapper;
 
+import be15fintomatokatchupbe.campaign.query.dto.mapper.ContractCardDTO;
 import be15fintomatokatchupbe.campaign.query.dto.mapper.ProposalCardDTO;
 import be15fintomatokatchupbe.campaign.query.dto.mapper.QuotationCardDTO;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
@@ -25,4 +26,11 @@ public interface CampaignQueryMapper {
     );
 
     int countPipeline(@Param("req")PipelineSearchRequest request, @Param("pipelineStepId") Long pipelineStepId);
+
+    List<ContractCardDTO> findContractList(
+            @Param("req") PipelineSearchRequest req,
+            @Param("offset") int offset,
+            @Param("size") int size,
+            @Param("pipelineStepId") Long pipelineStepId
+    );
 }

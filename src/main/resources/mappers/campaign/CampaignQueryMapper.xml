@@ -136,6 +136,72 @@
         LIMIT #{size} OFFSET #{offset}
     </select>
 
+    <select id="findContractList" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.ContractCardDTO">
+        SELECT
+        p.pipeline_id AS pipelineId,
+        p.name AS name,
+        ps.status_name AS statusName,
+        cc.client_company_name AS clientCompanyName,
+        cm.name AS clientManagerName,
+        c.product_name AS productName,
+        p.expected_revenue AS expectedRevenue,
+        GROUP_CONCAT(u.name SEPARATOR ', ') AS userNameInfo
+        FROM
+        pipeline p
+        JOIN
+        campaign c ON p.campaign_id = c.campaign_id
+        JOIN
+        client_company cc ON c.client_company_id = cc.client_company_id
+        LEFT JOIN
+        pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id AND picm.client_manager_id IS NOT NULL
+        LEFT JOIN
+        client_manager cm ON cm.client_manager_id = picm.client_manager_id
+        LEFT JOIN
+        pipeline_user pu ON pu.pipeline_id = p.pipeline_id
+        LEFT JOIN
+        user u ON pu.user_id = u.user_id
+        JOIN
+        pipeline_status ps ON p.pipeline_status_id = ps.pipeline_status_id
+
+        WHERE
+        p.pipeline_step_id = #{ pipelineStepId }
+        AND
+        p.is_deleted = 'N'
+        <!-- 인플루언서는 조회하지 않음! -->
+
+        <!-- 검색 조건 추가하기 -->
+        <if test="req.keyword != null and req.keyword != ''">
+            <if test="req.category == 'title'">
+                AND p.name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+            <if test="req.category == 'company'">
+                AND cc.client_company_name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+            <if test="req.category == 'user'">
+                AND cm.name LIKE concat('%', #{req.keyword}, '%')
+            </if>
+        </if>
+        <if test="req.userId != null">
+            AND u.user_id = #{req.userId}
+        </if>
+
+        GROUP BY
+        p.pipeline_id, p.name, ps.status_name, cc.client_company_name, c.product_name, p.expected_revenue, cm.name
+
+        ORDER BY
+        <choose>
+            <when test="req.sort == 'date'">p.created_at</when>
+            <when test="req.sort == 'title'">p.name</when>
+            <otherwise>p.created_at</otherwise>
+        </choose>
+        <choose>
+            <when test="req.sortOrder == 'desc'">DESC</when>
+            <otherwise>ASC</otherwise>
+        </choose>
+
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
     <select id="countPipeline" resultType="int">
         SELECT
         COUNT(DISTINCT p.pipeline_id)
