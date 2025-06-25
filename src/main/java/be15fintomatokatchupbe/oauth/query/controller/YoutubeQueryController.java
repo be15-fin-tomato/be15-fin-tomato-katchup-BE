@@ -1,7 +1,7 @@
 package be15fintomatokatchupbe.oauth.query.controller;
 
 import be15fintomatokatchupbe.common.dto.ApiResponse;
-import be15fintomatokatchupbe.oauth.query.dto.YoutubeCodeRequest;
+import be15fintomatokatchupbe.oauth.query.dto.request.YoutubeCodeRequest;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeCodeResponse;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeStatsResponse;
 import be15fintomatokatchupbe.oauth.query.service.YoutubeAnalyticsService;
@@ -15,14 +15,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-import java.util.Map;
-
 @Slf4j
 @RestController
 @RequestMapping("/oauth2")
 @RequiredArgsConstructor
-public class YoutubeOAuthQueryController {
+public class YoutubeQueryController {
 
     private final YoutubeOAuthQueryService youtubeOAuthQueryService;
     private final YoutubeAnalyticsService youtubeAnalyticsService;
