@@ -4,7 +4,7 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper">
-    <select id="findProposals" resultType="be15fintomatokatchupbe.campaign.query.dto.response.ProposalCardResponse">
+    <select id="findProposals" resultType="be15fintomatokatchupbe.campaign.query.dto.ProposalCardDTO">
         SELECT
         p.pipeline_id AS pipelineId,
         p.name AS name,
@@ -24,7 +24,7 @@
         JOIN client_manager cm ON cm.client_manager_id = picm.client_manager_id
         LEFT JOIN pipeline_status ps ON p.pipeline_status_id = ps.pipeline_status_id
         <where>
-            p.pipeline_step_id = 3 AND p.is_deleted = 'N'
+            p.pipeline_step_id = #{pipelineStepId} AND p.is_deleted = 'N'
 
             <if test="req.keyword != null and req.category != null">
                 <choose>
@@ -60,15 +60,23 @@
     </select>
 
     <select id="countProposals" resultType="int">
-        SELECT COUNT(*)
+        SELECT COUNT(DISTINCT p.pipeline_id)
         FROM pipeline p
         JOIN campaign c ON c.campaign_id = p.campaign_id
-        JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
-        JOIN pipeline_user pu ON p.pipeline_id = pu.pipeline_id
-        JOIN user u ON u.user_id = pu.user_id
-        JOIN client_manager cm ON cm.client_manager_id = picm.client_manager_id
+
+        <if test="req.userId != null">
+            JOIN pipeline_user pu ON p.pipeline_id = pu.pipeline_id
+            JOIN user u ON u.user_id = pu.user_id
+        </if>
+
+        <if test="req.category == 'user'">
+            JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
+            JOIN client_manager cm ON cm.client_manager_id = picm.client_manager_id
+        </if>
+
         <where>
-            p.pipeline_step_id = 3 AND p.is_deleted = 'N'
+            p.pipeline_step_id = #{pipelineStepId}
+            AND p.is_deleted = 'N'
 
             <if test="req.keyword != null and req.category != null">
                 <choose>

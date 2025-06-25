@@ -72,4 +72,9 @@ public class ClientManager {
         this.clientManagerStatus = clientManagerStatus;
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void softDelete() {
+        this.isDeleted = StatusType.Y;
+        this.deletedAt = LocalDateTime.now();   // 삭제 시간도 기록
+    }
 }

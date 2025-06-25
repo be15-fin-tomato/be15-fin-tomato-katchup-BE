@@ -1,8 +1,6 @@
 package be15fintomatokatchupbe.campaign.command.application.service;
 
-import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateChanceRequest;
-import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateProposalRequest;
-import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateQuotationRequest;
+import be15fintomatokatchupbe.campaign.command.application.dto.request.*;
 import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelperService;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.*;
@@ -12,6 +10,8 @@ import be15fintomatokatchupbe.client.command.application.support.ClientHelperSer
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientCompany;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManager;
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.file.domain.File;
+import be15fintomatokatchupbe.file.service.FileService;
 import be15fintomatokatchupbe.relation.service.HashInfCampService;
 import be15fintomatokatchupbe.relation.service.PipeInfClientManagerService;
 import be15fintomatokatchupbe.relation.service.PipeUserService;
@@ -21,6 +21,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class CampaignCommandService {
     private final PipeUserService pipeUserService;
     private final PipeInfClientManagerService pipeInfClientManagerService;
     private final HashInfCampService hashInfCampService;
+    private final FileService fileService;
 
     private final ClientHelperService clientHelperService;
     private final CampaignHelperService campaignHelperService;
@@ -184,8 +186,6 @@ public class CampaignCommandService {
                 .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STATUS_NOT_FOUND));
         User writer = userHelperService.findValidUser(userId);
 
-        campaign.updateAvailableQuantity(request.getAvailableQuantity());
-
         Pipeline pipeline = Pipeline.builder()
                 .writer(writer)
                 .pipelineStep(pipelineStep)
@@ -200,11 +200,143 @@ public class CampaignCommandService {
                 .notes(request.getNotes())
                 .expectedRevenue(request.getExpectedRevenue())
                 .expectedProfit(request.getExpectedProfit())
+                .availableQuantity(request.getAvailableQuantity())
                 .build();
         pipelineRepository.save(pipeline);
+
+        List<Idea> ideaList = request
+                .getIdeaList()
+                .stream()
+                .map(idea ->
+                        Idea
+                                .builder()
+                                .content(idea.getContent())
+                                .user(writer)
+                                .pipeline(pipeline)
+                                .build()
+                ).toList();
+
+        ideaRepository.saveAll(ideaList);
 
         pipeInfClientManagerService.saveClientManager(clientManager, pipeline);
         pipeInfClientManagerService.saveInfluencer(request.getInfluencerId(), pipeline);
         pipeUserService.saveUserList(request.getUserId(), pipeline);
+    }
+
+    @Transactional
+    public void createContract(Long userId, CreateContractRequest request, List<MultipartFile> files) {
+        ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
+        Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
+        PipelineStep pipelineStep = pipelineStepRepository.findById(PipelineStepConstants.CONTRACT)
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STEP_NOT_FOUND));
+        PipelineStatus pipelineStatus = pipelineStatusRepository.findById(request.getPipelineStatusId())
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STATUS_NOT_FOUND));
+        User writer = userHelperService.findValidUser(userId);
+
+        Pipeline pipeline = Pipeline.builder()
+                .pipelineStep(pipelineStep)
+                .pipelineStatus(pipelineStatus)
+                .campaign(campaign)
+                .name(request.getName())
+                .requestAt(request.getRequestAt())
+                .startedAt(request.getStartedAt())
+                .endedAt(request.getEndedAt())
+                .presentedAt(request.getPresentedAt())
+                .content(request.getContent())
+                .notes(request.getNotes())
+                .writer(writer)
+                .expectedRevenue(request.getExpectedRevenue())
+                .expectedProfit(request.getExpectedProfit())
+                .availableQuantity(request.getAvailableQuantity())
+                .build();
+
+        pipelineRepository.save(pipeline);
+
+        List<Idea> ideaList = request
+                .getIdeaList()
+                .stream()
+                .map(idea ->
+                        Idea
+                                .builder()
+                                .content(idea.getContent())
+                                .user(writer)
+                                .pipeline(pipeline)
+                                .build()
+                ).toList();
+
+        ideaRepository.saveAll(ideaList);
+
+        /* 파일 저장*/
+        if(files != null && !files.isEmpty()){
+            // 1. 파일 S3에 올리고 돌려 받기
+            List<File> fileList = fileService.uploadFile(files);
+            fileList.forEach(file -> file.setPipeline(pipeline));
+
+            // 2. 파일 DB에 저장하기
+            fileService.saveFile(fileList);
+        }
+
+        pipeInfClientManagerService.saveClientManager(clientManager, pipeline);
+        pipeInfClientManagerService.saveInfluencer(request.getInfluencerId(), pipeline);
+        pipeUserService.saveUserList(request.getUserId(), pipeline);
+    }
+
+    @Transactional
+    public void createRevenue(Long userId, CreateRevenueRequest request, List<MultipartFile> files) {
+        ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
+        Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
+        PipelineStep pipelineStep = pipelineStepRepository.findById(PipelineStepConstants.REVENUE)
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STEP_NOT_FOUND));
+        PipelineStatus pipelineStatus = pipelineStatusRepository.findById(request.getPipelineStatusId())
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STATUS_NOT_FOUND));
+        User writer = userHelperService.findValidUser(userId);
+
+        campaign.setProductPrice(request.getProductPrice());
+        campaignRepository.save(campaign);
+
+        Pipeline pipeline = Pipeline.builder()
+                .pipelineStep(pipelineStep)
+                .pipelineStatus(pipelineStatus)
+                .campaign(campaign)
+                .name(request.getName())
+                .requestAt(request.getRequestAt())
+                .startedAt(request.getStartedAt())
+                .endedAt(request.getEndedAt())
+                .presentedAt(request.getPresentedAt())
+                .content(request.getContent())
+                .notes(request.getNotes())
+                .writer(writer)
+                .build();
+
+        pipelineRepository.save(pipeline);
+
+        List<Idea> ideaList = request
+                .getIdeaList()
+                .stream()
+                .map(idea ->
+                        Idea
+                                .builder()
+                                .content(idea.getContent())
+                                .user(writer)
+                                .pipeline(pipeline)
+                                .build()
+                ).toList();
+
+        ideaRepository.saveAll(ideaList);
+
+        /* 파일 저장*/
+        if(files != null && !files.isEmpty()){
+            // 1. 파일 S3에 올리고 돌려 받기
+            List<File> fileList = fileService.uploadFile(files);
+            fileList.forEach(file -> file.setPipeline(pipeline));
+
+            // 2. 파일 DB에 저장하기
+            fileService.saveFile(fileList);
+        }
+
+        pipeInfClientManagerService.saveClientManager(clientManager, pipeline);
+        pipeInfClientManagerService.saveInfluencerRevenue(request.getInfluencerList(), pipeline);
+        pipeUserService.saveUserList(request.getUserId(), pipeline);
+
     }
 }

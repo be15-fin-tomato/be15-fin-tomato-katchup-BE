@@ -8,6 +8,8 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @NoArgsConstructor
 public class InfluencerRevenueRequest extends InfluencerRequest{
+    private Long influencerId;
     private String youtubeLink;
     private String instagramLink;
+    private Long adPrice;
 }

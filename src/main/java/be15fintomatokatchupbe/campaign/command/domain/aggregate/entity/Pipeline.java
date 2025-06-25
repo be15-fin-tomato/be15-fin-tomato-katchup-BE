@@ -28,10 +28,6 @@ public class Pipeline {
     private PipelineStep pipelineStep;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "file_id")
-    private File file;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pipeline_status_id")
     private PipelineStatus pipelineStatus;
 
@@ -58,6 +54,8 @@ public class Pipeline {
     private String content;
 
     private Long expectedProfit;
+
+    private Long availableQuantity;
 
     private Long totalProfit;
 

@@ -1,6 +1,8 @@
 package be15fintomatokatchupbe.contract.command.application.service;
 
+import be15fintomatokatchupbe.contract.command.application.dto.request.DigitalContractCreateRequest;
 import be15fintomatokatchupbe.contract.command.application.dto.request.DigitalContractEditRequest;
+import be15fintomatokatchupbe.contract.command.application.dto.response.DigitalContractCreateResponse;
 import be15fintomatokatchupbe.contract.command.application.dto.response.DigitalContractDeleteResponse;
 import be15fintomatokatchupbe.contract.command.application.dto.response.DigitalContractEditResponse;
 import be15fintomatokatchupbe.contract.command.domain.repository.DigitalContractRepository;
@@ -39,6 +41,7 @@ public class DigitalContractCommandService {
 
     @Transactional
     public DigitalContractDeleteResponse deleteDigitalContract(Long digitalContractId) {
+
         DigitalContract contract = digitalContractRepository.findById(digitalContractId)
                 .orElseThrow(() -> new BusinessException(DigitalContractErrorCode.NOT_FOUND));
 
@@ -49,4 +52,32 @@ public class DigitalContractCommandService {
                 .build();
     }
 
+
+    @Transactional
+    public DigitalContractCreateResponse createDigitalContract(DigitalContractCreateRequest request) {
+
+        if (request.getTemplate() == null || request.getTemplate().trim().isEmpty()) {
+            throw new BusinessException(DigitalContractErrorCode.INVALID_TEMPLATE_NAME);
+        }
+
+        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
+            throw new BusinessException(DigitalContractErrorCode.EMPTY_CONTENT);
+        }
+
+        boolean exists = digitalContractRepository.existsByTemplate(request.getTemplate());
+        if (exists) {
+            throw new BusinessException(DigitalContractErrorCode.DUPLICATE_TEMPLATE);
+        }
+
+        DigitalContract contract = DigitalContract.builder()
+                .template(request.getTemplate())
+                .content(request.getContent())
+                .build();
+
+        digitalContractRepository.save(contract);
+
+        return DigitalContractCreateResponse.builder()
+                .message("템플릿 생성 성공")
+                .build();
+    }
 }

@@ -9,17 +9,13 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
 public enum EmailErrorCode implements ErrorCode {
-    // member 오류
+    // email 오류
     /* 각 도메인마다 ERROR CODE 작성 */
-    DUPLICATE_EMAIL_EXISTS("10001", "이미 가입된 이메일입니다.", HttpStatus.BAD_REQUEST),
-    DUPLICATE_ID_EXISTS("10002", "이미 가입된 사원코드입니다.", HttpStatus.BAD_REQUEST),
-    INVALID_LOGIN_ID_REQUEST("10003", "잘못된 사원코드 입니다.", HttpStatus.BAD_REQUEST),
-    INVALID_PASSWORD_REQUEST("10004", "잘못된 비밀번호 입니다.", HttpStatus.BAD_REQUEST),
-    PASSWORD_MISMATCH("10005", "비밀번호가 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
-    EMAIL_NOT_FOUND("10006", "이메일이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
-    USER_NOT_FOUND("10007", "회원이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
-    NEW_PASSWORD_MISMATCH("10008", "두 비밀번호가 서로 일치하지않습니다.", HttpStatus.BAD_REQUEST),
-    IMAGE_NOT_FOUND("10009", "이미지가 존재하지않습니다.", HttpStatus.BAD_REQUEST);
+    NOT_FOUND_SATISFACTION("90001", "존재하지않는 만족도 결과입니다.", HttpStatus.BAD_REQUEST),
+    ALREADY_REQUESTED_SATISFACTION("90002", "만족도 조사를 요청한 이력이 있습니다.", HttpStatus.BAD_REQUEST),
+    ERROR_SHEETS("90003", "시트를 조회하는 중 에러가 발생했습니다.", HttpStatus.BAD_REQUEST),
+    NOT_FOUND_ROW("90004", "해당하는 행이 없습니다.", HttpStatus.BAD_REQUEST);
+
 
 
     private final String code;

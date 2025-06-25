@@ -1,6 +1,6 @@
 package be15fintomatokatchupbe.calendar.command.mapper;
 
-import be15fintomatokatchupbe.calendar.command.application.dto.CreateScheduleRequestDto;
+import be15fintomatokatchupbe.calendar.command.application.dto.request.CreateScheduleRequestDto;
 import be15fintomatokatchupbe.calendar.command.domain.aggregate.Schedule;
 import org.springframework.stereotype.Component;
 

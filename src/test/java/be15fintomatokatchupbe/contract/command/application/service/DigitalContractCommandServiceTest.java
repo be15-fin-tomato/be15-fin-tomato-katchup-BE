@@ -1,7 +1,9 @@
 package be15fintomatokatchupbe.contract.command.application.service;
 
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.contract.command.application.dto.request.DigitalContractCreateRequest;
 import be15fintomatokatchupbe.contract.command.application.dto.request.DigitalContractEditRequest;
+import be15fintomatokatchupbe.contract.command.application.dto.response.DigitalContractCreateResponse;
 import be15fintomatokatchupbe.contract.command.application.dto.response.DigitalContractEditResponse;
 import be15fintomatokatchupbe.contract.command.application.dto.response.DigitalContractDeleteResponse;
 import be15fintomatokatchupbe.contract.command.domain.repository.DigitalContractRepository;
@@ -127,4 +129,75 @@ class DigitalContractCommandServiceTest {
                     .hasMessageContaining(DigitalContractErrorCode.NOT_FOUND.getMessage());
         }
     }
+
+    @Nested
+    @DisplayName("createDigitalContract() - 계약서 생성")
+    class CreateDigitalContract {
+
+        @Test
+        @DisplayName("성공적으로 생성된다")
+        void success() {
+            DigitalContractCreateRequest request = new DigitalContractCreateRequest("템플릿A", "내용A");
+
+            when(digitalContractRepository.existsByTemplate("템플릿A")).thenReturn(false);
+
+            DigitalContractCreateResponse result = sut.createDigitalContract(request);
+
+            assertThat(result.getMessage()).isEqualTo("템플릿 생성 성공");
+            verify(digitalContractRepository).save(any(DigitalContract.class));
+        }
+
+        @Test
+        @DisplayName("템플릿 이름이 null이면 예외 발생")
+        void nullTemplateName() {
+            DigitalContractCreateRequest request = new DigitalContractCreateRequest(null, "내용");
+
+            assertThatThrownBy(() -> sut.createDigitalContract(request))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(DigitalContractErrorCode.INVALID_TEMPLATE_NAME.getMessage());
+        }
+
+        @Test
+        @DisplayName("템플릿 이름이 공백이면 예외 발생")
+        void emptyTemplateName() {
+            DigitalContractCreateRequest request = new DigitalContractCreateRequest("   ", "내용");
+
+            assertThatThrownBy(() -> sut.createDigitalContract(request))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(DigitalContractErrorCode.INVALID_TEMPLATE_NAME.getMessage());
+        }
+
+        @Test
+        @DisplayName("내용이 null이면 예외 발생")
+        void nullContent() {
+            DigitalContractCreateRequest request = new DigitalContractCreateRequest("템플릿A", null);
+
+            assertThatThrownBy(() -> sut.createDigitalContract(request))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(DigitalContractErrorCode.EMPTY_CONTENT.getMessage());
+        }
+
+        @Test
+        @DisplayName("내용이 공백이면 예외 발생")
+        void emptyContent() {
+            DigitalContractCreateRequest request = new DigitalContractCreateRequest("템플릿A", " ");
+
+            assertThatThrownBy(() -> sut.createDigitalContract(request))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(DigitalContractErrorCode.EMPTY_CONTENT.getMessage());
+        }
+
+        @Test
+        @DisplayName("중복된 템플릿 이름이면 예외 발생")
+        void duplicateTemplate() {
+            DigitalContractCreateRequest request = new DigitalContractCreateRequest("중복템플릿", "내용");
+
+            when(digitalContractRepository.existsByTemplate("중복템플릿")).thenReturn(true);
+
+            assertThatThrownBy(() -> sut.createDigitalContract(request))
+                    .isInstanceOf(BusinessException.class)
+                    .hasMessageContaining(DigitalContractErrorCode.DUPLICATE_TEMPLATE.getMessage());
+        }
+    }
+
 }

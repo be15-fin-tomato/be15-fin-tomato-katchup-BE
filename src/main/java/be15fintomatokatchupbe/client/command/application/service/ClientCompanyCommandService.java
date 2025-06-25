@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -144,6 +145,30 @@ public class ClientCompanyCommandService {
         // 새 담당자 매핑 생성
         List<User> users = userHelperService.findValidUserList(request.getUserIds());
         clientCompanyUserService.createRelations(company, users);
+        clientCompanyRepository.save(company);
+    }
+
+    // 3) 고객사 + 사원 + 담당자(유저) 삭제
+    @Transactional
+    public void deleteClientCompany(Long clientCompanyId) {
+        // 1) 고객사 조회(삭제되지 않은 것만)
+        ClientCompany company = clientCompanyRepository.findById(clientCompanyId)
+                .filter(c -> c.getIsDeleted() == StatusType.N)
+                .orElseThrow(() -> new BusinessException(ClientErrorCode.NOT_FOUND));
+
+        // 2) 고객사 soft delete 처리
+        company.setIsDeleted(StatusType.Y);
+        company.setDeletedAt(LocalDateTime.now());
+
+        // 3) 고객사 소속 사원들 soft delete 처리
+        for (ClientManager manager : company.getClientManagers()) {
+            manager.setIsDeleted(StatusType.Y);
+            manager.setDeletedAt(LocalDateTime.now());
+        }
+
+        // 4) 고객사-담당자 관계 hard delete
+        clientCompanyUserService.deleteByClientCompany(company);
+
         clientCompanyRepository.save(company);
     }
 }

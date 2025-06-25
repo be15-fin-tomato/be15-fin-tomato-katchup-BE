@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.relation.service;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.InfluencerProposalRequest;
+import be15fintomatokatchupbe.campaign.command.application.dto.request.InfluencerRevenueRequest;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Pipeline;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManager;
 import be15fintomatokatchupbe.influencer.command.application.support.InfluencerHelperService;
@@ -51,6 +52,20 @@ public class PipeInfClientManagerService {
                 .map(influencer -> PipelineInfluencerClientManager.builder()
                         .pipeline(pipeline)
                         .influencer(influencerHelperService.findValidInfluencer(influencer))
+                        .build())
+                .toList();
+
+        pipeInfClientManagerRepository.saveAll(resultList);
+    }
+
+    public void saveInfluencerRevenue(List<InfluencerRevenueRequest> influencerList, Pipeline pipeline){
+        List<PipelineInfluencerClientManager> resultList = influencerList.stream()
+                .map(influencer -> PipelineInfluencerClientManager.builder()
+                        .pipeline(pipeline)
+                        .influencer(influencerHelperService.findValidInfluencer(influencer.getInfluencerId()))
+                        .youtubeLink(influencer.getYoutubeLink())
+                        .instagramLink(influencer.getInstagramLink())
+                        .adPrice(influencer.getAdPrice())
                         .build())
                 .toList();
 

@@ -1,5 +1,8 @@
 package be15fintomatokatchupbe.calendar.command.domain.aggregate;
 
+import be15fintomatokatchupbe.calendar.command.application.dto.request.UpdateScheduleRequestDto;
+import be15fintomatokatchupbe.calendar.exception.CalendarErrorCode;
+import be15fintomatokatchupbe.common.exception.BusinessException;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,4 +46,30 @@ public class Schedule {
         this.startTime = startTime;
         this.endTime = endTime;
     }
+
+    public void update(UpdateScheduleRequestDto dto) {
+
+        if (dto.getScheduleDate() != null) {
+            this.scheduleDate = dto.getScheduleDate();
+        }
+        if (dto.getContent() != null) {
+            this.content = dto.getContent();
+        }
+        if (dto.getStartTime() != null) {
+            this.startTime = dto.getStartTime();
+        }
+        if (dto.getEndTime() != null) {
+            this.endTime = dto.getEndTime();
+        }
+        if (dto.getStartTime() != null && dto.getEndTime() != null) {
+            if (dto.getStartTime().isAfter(dto.getEndTime())) {
+                throw new BusinessException(CalendarErrorCode.INVALID_TIME);
+            }
+        }
+        if (dto.getScheduleColorId() != null) {
+            this.scheduleColorId = dto.getScheduleColorId();
+        }
+
+    }
+
 }
