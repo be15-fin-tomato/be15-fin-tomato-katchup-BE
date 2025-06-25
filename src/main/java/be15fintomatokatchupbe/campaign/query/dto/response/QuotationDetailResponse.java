@@ -15,5 +15,5 @@ public class QuotationDetailResponse {
     List<ReferenceInfo> refrenceList;
 
     /* 의견에 들어갈 내용 */
-    List<IdeaInfo> opinionList;
+    List<IdeaInfo> ideaList;
 }

@@ -211,19 +211,46 @@ public class CampaignQueryService {
     public QuotationDetailResponse getQuotationDetail(Long userId, Long pipelineId) {
         /* 폼 정보 가져오기 */
         /* 폼 가져오기 */
-        QuotationFormDTO quotationFormDto = campaignQueryMapper.findQuotationDetail(pipelineId);
+        QuotationFormDTO quotationFormDto = campaignQueryMapper.findQuotationDetail(pipelineId, PipelineStepConstants.QUOTATION);
 
         /* 인풀루언서 가져오기 */
+        List<InfluencerInfo> influencerDto = campaignQueryMapper.findPipelineInfluencer(pipelineId);
 
         /* 담당자 가져오기 */
+        List<UserInfo> userDto = campaignQueryMapper.findPipelineUser(pipelineId);
 
         /* 참고 목록 가져오기 */
-
+        List<ReferenceInfo> referenceDto = campaignQueryMapper.findPipeReference(pipelineId, PipelineStepConstants.PROPOSAL);
 
         /* 의견 가져오기 */
+        List<IdeaInfo> ideaDto = campaignQueryMapper.findPipeIdea(pipelineId);
 
         /* 조합하기 */
+        QuotationFormResponse form = QuotationFormResponse.builder()
+                .name(quotationFormDto.getName())
+                .clientCompanyId(quotationFormDto.getClientCompanyId())
+                .clientCompanyName(quotationFormDto.getClientCompanyName())
+                .clientManagerId(quotationFormDto.getClientManagerId())
+                .clientManagerName(quotationFormDto.getClientManagerName())
+                .userList(userDto)
+                .campaignId(quotationFormDto.getCampaignId())
+                .campaignName(quotationFormDto.getCampaignName())
+                .requestAt(quotationFormDto.getRequestAt())
+                .presentAt(quotationFormDto.getPresentAt())
+                .startedAt(quotationFormDto.getStartedAt())
+                .endedAt(quotationFormDto.getEndedAt())
+                .influencerList(influencerDto)
+                .expectedRevenue(quotationFormDto.getExpectedRevenue())
+                .availableQuantity(quotationFormDto.getAvailableQuantity())
+                .expectedProfit(quotationFormDto.getExpectedProfit())
+                .build();
 
         /* 응답하기 */
+        return QuotationDetailResponse
+                .builder()
+                .form(form)
+                .refrenceList(referenceDto)
+                .ideaList(ideaDto)
+                .build();
     }
 }

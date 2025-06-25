@@ -1,15 +1,15 @@
 package be15fintomatokatchupbe.campaign.query.dto.response;
 
 import lombok.Getter;
-import lombok.experimental.SuperBuilder;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@SuperBuilder
 @Getter
+@Setter
 public class IdeaInfo {
-    private final Long userId;
-    private final String userName;
-    private final LocalDateTime createdAt;
-    private final String content;
+    private Long userId;
+    private String userName;
+    private LocalDateTime createdAt;
+    private String content;
 }

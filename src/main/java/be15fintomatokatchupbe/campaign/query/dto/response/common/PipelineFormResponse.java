@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 public class PipelineFormResponse {
     /* 파이프라인 제목 */
-    private final String title;
+    private final String name;
 
     /* 고객사 */
     private final Long clientCompanyId;

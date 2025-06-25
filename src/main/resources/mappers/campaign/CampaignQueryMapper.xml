@@ -309,7 +309,94 @@
 
 <!-- 요기부터 detail -->
     <select id="findQuotationDetail" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.QuotationFormDTO">
+        SELECT
+            p.name AS name
+            , cc.client_company_id AS clientCompanyId
+            , cc.client_company_name AS clientCompanyName
+            , cm.client_manager_id AS clientManagerId
+            , cm.name AS clientManagerName
+            , c.campaign_id AS campaignId
+            , c.campaign_name AS campaignName
+            , ps.pipeline_status_id AS pipelineStatusId
+            , ps.status_name AS pipelineStatusName
+            , p.request_at AS requestAt
+            , p.presented_at AS presentAt
+            , p.started_at AS startedAt
+            , p.ended_at
+            , p.expected_revenue AS expectedRevenue
+            , p.available_quantity AS availableQuantity
+            , p.expected_profit AS expectedProfit
+        FROM
+            pipeline p
+        JOIN
+            campaign c ON p.campaign_id = c.campaign_id
+        JOIN
+            pipeline_status ps ON p.pipeline_status_id = ps.pipeline_status_id
+        JOIN
+            client_company cc ON c.client_company_id = cc.client_company_id
+        LEFT JOIN
+            pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id AND picm.client_manager_id IS NOT NULL
+        LEFT JOIN
+            client_manager cm ON cm.client_manager_id = picm.client_manager_id
 
+        WHERE
+            p.is_deleted = 'N'
+        AND
+            p.pipeline_id = #{pipelineId}
+        AND
+            p.pipeline_step_id = #{pipelineStepId}
+    </select>
+
+    <select id="findPipelineInfluencer" resultType="be15fintomatokatchupbe.campaign.query.dto.response.InfluencerInfo">
+        SELECT
+              i.influencer_id AS influencerId
+            , i.name AS influencerName
+        FROM
+            influencer i
+        JOIN
+            pipeline_influencer_client_manager picm ON picm.influencer_id = i.influencer_id AND picm.influencer_id IS NOT NULL
+        WHERE
+            picm.pipeline_id = #{pipelineId}
+    </select>
+    <select id="findPipelineUser" resultType="be15fintomatokatchupbe.campaign.query.dto.response.UserInfo">
+        SELECT
+              u.user_id AS userId
+            , u.name AS userName
+        FROM
+            user u
+        JOIN
+            pipeline_user pu ON pu.user_id = u.user_id
+        WHERE
+            pu.pipeline_id = #{pipelineId}
+    </select>
+
+
+    <select id="findPipeReference" resultType="be15fintomatokatchupbe.campaign.query.dto.response.ReferenceInfo">
+        SELECT
+              p.pipeline_id AS pipelineId
+            , p.name AS name
+        FROM
+            pipeline p
+        WHERE
+            p.is_deleted = 'N'
+        AND
+            p.pipeline_step_id = #{pipelineStepId}
+    </select>
+
+    <select id="findPipeIdea" resultType="be15fintomatokatchupbe.campaign.query.dto.response.IdeaInfo">
+        SELECT
+              u.user_id AS userId
+            , u.name AS userName
+            , i.created_at AS createdAt
+            , i.content AS content
+        FROM
+            idea i
+        JOIN
+            user u ON u.user_id = i.user_id
+        WHERE
+            i.pipeline_id = #{pipelineId}
+        AND
+            i.is_deleted = 'N'
     </select>
 
 

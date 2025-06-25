@@ -2,11 +2,11 @@ package be15fintomatokatchupbe.campaign.query.dto.response;
 
 
 import lombok.Getter;
-import lombok.experimental.SuperBuilder;
+import lombok.Setter;
 
-@SuperBuilder
 @Getter
+@Setter
 public class InfluencerInfo {
-    private final Long influencerId;
-    private final String influencerName;
+    private Long influencerId;
+    private String influencerName;
 }

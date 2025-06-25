@@ -1,19 +1,16 @@
 package be15fintomatokatchupbe.campaign.query.dto.mapper;
 
-import be15fintomatokatchupbe.campaign.query.dto.response.UserInfo;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
-
 import java.time.LocalDate;
-import java.util.List;
 
 @Builder
 @Getter
 @Setter
 public class QuotationFormDTO {
     /* 파이프라인 제목 */
-    private final String title;
+    private final String name;
 
     /* 고객사 */
     private final Long clientCompanyId;
@@ -29,7 +26,7 @@ public class QuotationFormDTO {
 
     /* 파이프라인 상태*/
     private final Long pipelineStatusId;
-    private final String pipelineStepName;
+    private final String pipelineStatusName;
 
     /* 날짜들*/
     private final LocalDate requestAt;
