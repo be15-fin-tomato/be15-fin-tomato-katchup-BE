@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.calendar.query.mapper.PipelineScheduleQueryMapper">
+    <select id = "getPipelineScheduleList" resultType = "be15fintomatokatchupbe.calendar.query.dto.pipeline.PipelineScheduleListDTO">
+        SELECT    p.pipeline_id
+                , pu.user_id
+                , p.name
+                , p.started_at
+                , p.ended_at
+                , p.presented_at
+        FROM pipeline p
+        JOIN pipeline_user pu ON p.pipeline_id = pu.pipeline_id
+        WHERE p.presented_at is NOT NULL
+        AND pu.user_id = #{userId}
+        ORDER BY p.ended_at, p.pipeline_id
+    </select>
+
+</mapper>
