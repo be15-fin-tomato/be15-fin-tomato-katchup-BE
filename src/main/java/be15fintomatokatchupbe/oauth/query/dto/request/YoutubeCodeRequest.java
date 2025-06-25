@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.oauth.query.dto;
+package be15fintomatokatchupbe.oauth.query.dto.request;
 
 import lombok.*;
 
