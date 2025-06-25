@@ -9,5 +9,6 @@ import lombok.Getter;
 public class Pagination {
     private final int currentPage;
     private final int totalPage;
+    private int totalCount;
     private final int size;
 }

@@ -2,20 +2,20 @@ package be15fintomatokatchupbe.campaign.query.service;
 
 
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
-import be15fintomatokatchupbe.campaign.query.dto.ProposalCardDTO;
-import be15fintomatokatchupbe.campaign.query.dto.request.ProposalSearchRequest;
+import be15fintomatokatchupbe.campaign.query.dto.mapper.ProposalCardDTO;
+import be15fintomatokatchupbe.campaign.query.dto.mapper.QuotationCardDTO;
+import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.ProposalCardResponse;
 import be15fintomatokatchupbe.campaign.query.dto.response.ProposalSearchResponse;
+import be15fintomatokatchupbe.campaign.query.dto.response.QuotationCardResponse;
+import be15fintomatokatchupbe.campaign.query.dto.response.QuotationSearchResponse;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
 import be15fintomatokatchupbe.common.dto.Pagination;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -23,52 +23,90 @@ import java.util.Map;
 public class CampaignQueryService {
     private final CampaignQueryMapper campaignQueryMapper;
 
-    public ProposalSearchResponse getProposalList(Long userId, ProposalSearchRequest request) {
+    public ProposalSearchResponse getProposalList(Long userId, PipelineSearchRequest request) {
         int offset = (request.getPage() - 1) * request.getSize();
         int size = request.getSize();
 
         // 1. flat DTO 리스트 조회
-        List<ProposalCardDTO> flatList =
-                campaignQueryMapper.findProposals(request, offset, size, PipelineStepConstants.PROPOSAL);
+        List<ProposalCardDTO> proposalList =
+                campaignQueryMapper.findPipelineList(request, offset, size, PipelineStepConstants.PROPOSAL);
 
-        // 2. 그룹화 처리
-        Map<Long, ProposalCardResponse> grouped = new LinkedHashMap<>();
+        List<ProposalCardResponse> response = new ArrayList<>();
 
-        for (ProposalCardDTO dto : flatList) {
-            ProposalCardResponse existing = grouped.get(dto.getPipelineId());
+        for(ProposalCardDTO dto: proposalList){
+            List<String> userNameList = Arrays.stream(dto.getUserNameInfo().split(",")).toList();
 
-            if (existing == null) {
-                ProposalCardResponse response = ProposalCardResponse.builder()
-                        .pipelineId(dto.getPipelineId())
-                        .name(dto.getName())
-                        .statusId(dto.getStatusId())
-                        .clientCompanyName(dto.getClientCompanyName())
-                        .clientManagerName(dto.getClientManagerName())
-                        .requestAt(dto.getRequestAt())
-                        .presentAt(dto.getPresentAt())
-                        .userName(new ArrayList<>(List.of(dto.getUserName())))
-                        .build();
-                grouped.put(dto.getPipelineId(), response);
-            } else {
-                existing.getUserName().add(dto.getUserName());
-            }
+            ProposalCardResponse proposalCardResponse = ProposalCardResponse.builder()
+                    .pipelineId(dto.getPipelineId())
+                    .name(dto.getName())
+                    .statusName(dto.getStatusName())
+                    .clientManagerName(dto.getClientManagerName())
+                    .clientCompanyName(dto.getClientCompanyName())
+                    .userName(userNameList)
+                    .presentAt(dto.getPresentAt())
+                    .requestAt(dto.getRequestAt())
+                    .build();
+
+            response.add(proposalCardResponse);
         }
 
-        List<ProposalCardResponse> groupedList = new ArrayList<>(grouped.values());
-
         // 3. 총 개수 조회
-        int totalCount = campaignQueryMapper.countProposals(request, PipelineStepConstants.PROPOSAL);
+        int totalCount = campaignQueryMapper.countPipeline(request, PipelineStepConstants.PROPOSAL);
 
         Pagination pagination = Pagination.builder()
                 .currentPage(request.getPage())
                 .size(size)
-                .totalPage(totalCount)
+                .totalPage((int) Math.ceil((double) totalCount /size))
+                .totalCount(totalCount)
                 .build();
 
         return ProposalSearchResponse.builder()
-                .response(groupedList)
+                .response(response)
                 .pagination(pagination)
                 .build();
     }
 
+    public QuotationSearchResponse getQuotationList(Long userId, PipelineSearchRequest request) {
+        int offset = (request.getPage() - 1) * request.getSize();
+        int size = request.getSize();
+
+        // 1. userName을 제외한 유저 정보 조회 (배열로 돌아오는 얘들은 다른 쿼리에서 처리하기!)
+        List<QuotationCardDTO> quotationList =
+                campaignQueryMapper.findQuotationList(request, offset, size, PipelineStepConstants.QUOTATION);
+
+        List<QuotationCardResponse> response = new ArrayList<>();
+        // 2. 해쉬 셋에 {pipelineId}: {DTO} 형태로 저장하기
+        for(QuotationCardDTO dto: quotationList){
+            List<String> userNameList = Arrays.stream(dto.getUserNameInfo().split(",")).toList();
+
+            QuotationCardResponse quotationCardResponse = QuotationCardResponse.builder()
+                    .pipelineId(dto.getPipelineId())
+                    .name(dto.getName())
+                    .statusName(dto.getStatusName())
+                    .clientCompanyName(dto.getClientCompanyName())
+                    .clientManagerName(dto.getClientManagerName())
+                    .productName(dto.getProductName())
+                    .expectedRevenue(dto.getExpectedRevenue())
+                    .userName(userNameList)
+                    .build();
+
+            response.add(quotationCardResponse);
+        }
+
+        int totalCount = campaignQueryMapper.countPipeline(request, PipelineStepConstants.QUOTATION);
+        log.info("totalcount : {}",totalCount);
+
+        Pagination pagination = Pagination.builder()
+                .currentPage(request.getPage())
+                .size(size)
+                .totalPage((int) Math.ceil((double) totalCount /size))
+                .totalCount(totalCount)
+                .build();
+
+        return
+                QuotationSearchResponse.builder()
+                        .response(response)
+                        .pagination(pagination)
+                        .build();
+    }
 }
