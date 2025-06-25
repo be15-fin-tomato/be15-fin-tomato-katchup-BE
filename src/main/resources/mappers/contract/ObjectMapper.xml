@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.contract.query.mapper.ObjectMapper">
+
+    <select id="selectObjectById" resultType="be15fintomatokatchupbe.contract.query.dto.response.ObjectResponse">
+        SELECT
+        object_id AS objectId,
+        title
+        FROM object
+        WHERE object_id = #{objectId}
+    </select>
+
+    <select id="selectAllObjects" resultType="be15fintomatokatchupbe.contract.query.dto.response.ObjectResponse">
+        SELECT
+        object_id AS objectId,
+        title
+        FROM object
+    </select>
+
+</mapper>
