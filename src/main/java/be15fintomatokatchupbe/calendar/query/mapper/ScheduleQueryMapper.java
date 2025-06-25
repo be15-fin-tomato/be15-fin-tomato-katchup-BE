@@ -1,7 +1,7 @@
 package be15fintomatokatchupbe.calendar.query.mapper;
 
-import be15fintomatokatchupbe.calendar.query.dto.ScheduleListsAllDTO;
-import be15fintomatokatchupbe.calendar.query.dto.ScheduleListDTO;
+import be15fintomatokatchupbe.calendar.query.dto.schedule.ScheduleListsAllDTO;
+import be15fintomatokatchupbe.calendar.query.dto.schedule.ScheduleListDTO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.sql.Date;

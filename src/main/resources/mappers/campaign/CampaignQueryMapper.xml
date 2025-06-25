@@ -4,46 +4,57 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper">
-    <select id="findProposals" resultType="be15fintomatokatchupbe.campaign.query.dto.ProposalCardDTO">
+    <select id="findPipelineList" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.ProposalCardDTO">
         SELECT
         p.pipeline_id AS pipelineId,
         p.name AS name,
         ps.status_name AS statusId,
         cc.client_company_name AS clientCompanyName,
         cm.name AS clientManagerName,
-        u.name AS userName,
         DATE_FORMAT(p.request_at, '%Y-%m-%d') AS requestAt,
-        DATE_FORMAT(p.presented_at, '%Y-%m-%d') AS presentAt
+        DATE_FORMAT(p.presented_at, '%Y-%m-%d') AS presentAt,
+        GROUP_CONCAT(u.name SEPARATOR ', ') AS userNameInfo
         FROM
         pipeline p
-        JOIN campaign c ON c.campaign_id = p.campaign_id
-        JOIN client_company cc ON c.client_company_id = cc.client_company_id
-        JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
-        JOIN pipeline_user pu ON p.pipeline_id = pu.pipeline_id
-        JOIN user u ON u.user_id = pu.user_id
-        JOIN client_manager cm ON cm.client_manager_id = picm.client_manager_id
-        LEFT JOIN pipeline_status ps ON p.pipeline_status_id = ps.pipeline_status_id
-        <where>
-            p.pipeline_step_id = #{pipelineStepId} AND p.is_deleted = 'N'
+        JOIN
+        campaign c ON p.campaign_id = c.campaign_id
+        JOIN
+        client_company cc ON c.client_company_id = cc.client_company_id
+        LEFT JOIN
+        pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id AND picm.client_manager_id IS NOT NULL
+        LEFT JOIN
+        client_manager cm ON cm.client_manager_id = picm.client_manager_id
+        LEFT JOIN
+        pipeline_user pu ON pu.pipeline_id = p.pipeline_id
+        LEFT JOIN
+        user u ON pu.user_id = u.user_id
+        JOIN
+        pipeline_status ps ON p.pipeline_status_id = ps.pipeline_status_id
 
-            <if test="req.keyword != null and req.category != null">
-                <choose>
-                    <when test="req.category == 'title'">
-                        AND p.name LIKE CONCAT('%', #{req.keyword}, '%')
-                    </when>
-                    <when test="req.category == 'clientCompany'">
-                        AND cc.client_company_name LIKE CONCAT('%', #{req.keyword}, '%')
-                    </when>
-                    <when test="req.category == 'user'">
-                        AND cm.name LIKE CONCAT('%', #{req.keyword}, '%')
-                    </when>
-                </choose>
-            </if>
+        WHERE
+        p.pipeline_step_id = #{ pipelineStepId }
+        AND
+        p.is_deleted = 'N'
+        <!-- 인플루언서는 조회하지 않음! -->
 
-            <if test="req.userId != null">
-                AND u.user_id = #{req.userId}
+        <!-- 검색 조건 추가하기 -->
+        <if test="req.keyword != null and req.keyword != ''">
+            <if test="req.category == 'title'">
+                AND p.name LIKE CONCAT('%', #{req.keyword}, '%')
             </if>
-        </where>
+            <if test="req.category == 'company'">
+                AND cc.client_company_name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+            <if test="req.category == 'user'">
+                AND cm.name LIKE concat('%', #{req.keyword}, '%')
+            </if>
+        </if>
+        <if test="req.userId != null">
+            AND u.user_id = #{req.userId}
+        </if>
+
+        GROUP BY
+        p.pipeline_id, p.name, ps.status_name, cc.client_company_name, c.product_name, p.expected_revenue, cm.name
 
         ORDER BY
         <choose>
@@ -59,45 +70,334 @@
         LIMIT #{size} OFFSET #{offset}
     </select>
 
-    <select id="countProposals" resultType="int">
-        SELECT COUNT(DISTINCT p.pipeline_id)
-        FROM pipeline p
-        JOIN campaign c ON c.campaign_id = p.campaign_id
+    <select id="findQuotationList" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.QuotationCardDTO">
+        SELECT
+            p.pipeline_id AS pipelineId,
+            p.name AS name,
+            ps.status_name AS statusName,
+            cc.client_company_name AS clientCompanyName,
+            cm.name AS clientManagerName,
+            c.product_name AS productName,
+            p.expected_revenue AS expectedRevenue,
+            GROUP_CONCAT(u.name SEPARATOR ', ') AS userNameInfo
+        FROM
+            pipeline p
+        JOIN
+            campaign c ON p.campaign_id = c.campaign_id
+        JOIN
+            client_company cc ON c.client_company_id = cc.client_company_id
+        LEFT JOIN
+            pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id AND picm.client_manager_id IS NOT NULL
+        LEFT JOIN
+            client_manager cm ON cm.client_manager_id = picm.client_manager_id
+        LEFT JOIN
+            pipeline_user pu ON pu.pipeline_id = p.pipeline_id
+        LEFT JOIN
+            user u ON pu.user_id = u.user_id
+        JOIN
+            pipeline_status ps ON p.pipeline_status_id = ps.pipeline_status_id
 
+        WHERE
+            p.pipeline_step_id = #{ pipelineStepId }
+        AND
+            p.is_deleted = 'N'
+        <!-- 인플루언서는 조회하지 않음! -->
+
+        <!-- 검색 조건 추가하기 -->
+        <if test="req.keyword != null and req.keyword != ''">
+            <if test="req.category == 'title'">
+                AND p.name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+            <if test="req.category == 'company'">
+                AND cc.client_company_name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+            <if test="req.category == 'user'">
+                AND cm.name LIKE concat('%', #{req.keyword}, '%')
+            </if>
+        </if>
         <if test="req.userId != null">
-            JOIN pipeline_user pu ON p.pipeline_id = pu.pipeline_id
-            JOIN user u ON u.user_id = pu.user_id
+            AND u.user_id = #{req.userId}
         </if>
 
-        <if test="req.category == 'user'">
-            JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
-            JOIN client_manager cm ON cm.client_manager_id = picm.client_manager_id
-        </if>
+        GROUP BY
+            p.pipeline_id, p.name, ps.status_name, cc.client_company_name, c.product_name, p.expected_revenue, cm.name
 
-        <where>
-            p.pipeline_step_id = #{pipelineStepId}
-            AND p.is_deleted = 'N'
+        ORDER BY
+        <choose>
+            <when test="req.sort == 'date'">p.created_at</when>
+            <when test="req.sort == 'title'">p.name</when>
+            <otherwise>p.created_at</otherwise>
+        </choose>
+        <choose>
+            <when test="req.sortOrder == 'desc'">DESC</when>
+            <otherwise>ASC</otherwise>
+        </choose>
 
-            <if test="req.keyword != null and req.category != null">
-                <choose>
-                    <when test="req.category == 'title'">
-                        AND p.name LIKE CONCAT('%', #{req.keyword}, '%')
-                    </when>
-                    <when test="req.category == 'clientCompany'">
-                        AND c.client_company_id LIKE CONCAT('%', #{req.keyword}, '%')
-                    </when>
-                    <when test="req.category == 'user'">
-                        AND cm.name = #{req.keyword}
-                    </when>
-                </choose>
-            </if>
-
-            <if test="req.userId != null">
-                AND u.user_id = #{req.userId}
-            </if>
-        </where>
+        LIMIT #{size} OFFSET #{offset}
     </select>
 
+    <select id="findContractList" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.ContractCardDTO">
+        SELECT
+        p.pipeline_id AS pipelineId,
+        p.name AS name,
+        ps.status_name AS statusName,
+        cc.client_company_name AS clientCompanyName,
+        cm.name AS clientManagerName,
+        c.product_name AS productName,
+        p.expected_revenue AS expectedRevenue,
+        GROUP_CONCAT(u.name SEPARATOR ', ') AS userNameInfo
+        FROM
+        pipeline p
+        JOIN
+        campaign c ON p.campaign_id = c.campaign_id
+        JOIN
+        client_company cc ON c.client_company_id = cc.client_company_id
+        LEFT JOIN
+        pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id AND picm.client_manager_id IS NOT NULL
+        LEFT JOIN
+        client_manager cm ON cm.client_manager_id = picm.client_manager_id
+        LEFT JOIN
+        pipeline_user pu ON pu.pipeline_id = p.pipeline_id
+        LEFT JOIN
+        user u ON pu.user_id = u.user_id
+        JOIN
+        pipeline_status ps ON p.pipeline_status_id = ps.pipeline_status_id
+
+        WHERE
+        p.pipeline_step_id = #{ pipelineStepId }
+        AND
+        p.is_deleted = 'N'
+        <!-- 인플루언서는 조회하지 않음! -->
+
+        <!-- 검색 조건 추가하기 -->
+        <if test="req.keyword != null and req.keyword != ''">
+            <if test="req.category == 'title'">
+                AND p.name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+            <if test="req.category == 'company'">
+                AND cc.client_company_name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+            <if test="req.category == 'user'">
+                AND cm.name LIKE concat('%', #{req.keyword}, '%')
+            </if>
+        </if>
+        <if test="req.userId != null">
+            AND u.user_id = #{req.userId}
+        </if>
+
+        GROUP BY
+        p.pipeline_id, p.name, ps.status_name, cc.client_company_name, c.product_name, p.expected_revenue, cm.name
+
+        ORDER BY
+        <choose>
+            <when test="req.sort == 'date'">p.created_at</when>
+            <when test="req.sort == 'title'">p.name</when>
+            <otherwise>p.created_at</otherwise>
+        </choose>
+        <choose>
+            <when test="req.sortOrder == 'desc'">DESC</when>
+            <otherwise>ASC</otherwise>
+        </choose>
+
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+    <select id="findRevenueList" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.RevenueCardDTO">
+        SELECT
+        p.pipeline_id AS pipelineId,
+        p.name AS name,
+        ps.status_name AS statusName,
+        cc.client_company_name AS clientCompanyName,
+        cm.name AS clientManagerName,
+        c.product_name AS productName,
+        p.expected_revenue AS expectedRevenue,
+        GROUP_CONCAT(u.name SEPARATOR ', ') AS userNameInfo
+        FROM
+        pipeline p
+        JOIN
+        campaign c ON p.campaign_id = c.campaign_id
+        JOIN
+        client_company cc ON c.client_company_id = cc.client_company_id
+        LEFT JOIN
+        pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id AND picm.client_manager_id IS NOT NULL
+        LEFT JOIN
+        client_manager cm ON cm.client_manager_id = picm.client_manager_id
+        LEFT JOIN
+        pipeline_user pu ON pu.pipeline_id = p.pipeline_id
+        LEFT JOIN
+        user u ON pu.user_id = u.user_id
+        JOIN
+        pipeline_status ps ON p.pipeline_status_id = ps.pipeline_status_id
+
+        WHERE
+        p.pipeline_step_id = #{ pipelineStepId }
+        AND
+        p.is_deleted = 'N'
+        <!-- 인플루언서는 조회하지 않음! -->
+
+        <!-- 검색 조건 추가하기 -->
+        <if test="req.keyword != null and req.keyword != ''">
+            <if test="req.category == 'title'">
+                AND p.name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+            <if test="req.category == 'company'">
+                AND cc.client_company_name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+            <if test="req.category == 'user'">
+                AND cm.name LIKE concat('%', #{req.keyword}, '%')
+            </if>
+        </if>
+        <if test="req.userId != null">
+            AND u.user_id = #{req.userId}
+        </if>
+
+        GROUP BY
+        p.pipeline_id, p.name, ps.status_name, cc.client_company_name, c.product_name, p.expected_revenue, cm.name
+
+        ORDER BY
+        <choose>
+            <when test="req.sort == 'date'">p.created_at</when>
+            <when test="req.sort == 'title'">p.name</when>
+            <otherwise>p.created_at</otherwise>
+        </choose>
+        <choose>
+            <when test="req.sortOrder == 'desc'">DESC</when>
+            <otherwise>ASC</otherwise>
+        </choose>
+
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countPipeline" resultType="int">
+        SELECT
+        COUNT(DISTINCT p.pipeline_id)
+        FROM
+        pipeline p
+        JOIN
+        campaign c ON p.campaign_id = c.campaign_id
+        JOIN
+        client_company cc ON c.client_company_id = cc.client_company_id
+        LEFT JOIN
+        pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id AND picm.client_manager_id IS NOT NULL
+        LEFT JOIN
+        client_manager cm ON cm.client_manager_id = picm.client_manager_id
+        LEFT JOIN
+        pipeline_user pu ON pu.pipeline_id = p.pipeline_id
+        LEFT JOIN
+        user u ON pu.user_id = u.user_id
+        JOIN
+        pipeline_status ps ON p.pipeline_status_id = ps.pipeline_status_id
+        WHERE
+        p.pipeline_step_id = #{pipelineStepId}
+        AND p.is_deleted = 'N'
+
+        <!-- 검색 조건 동일하게 복붙 -->
+        <if test="req.keyword != null and req.keyword != ''">
+            <if test="req.category == 'title'">
+                AND p.name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+            <if test="req.category == 'company'">
+                AND cc.client_company_name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+            <if test="req.category == 'user'">
+                AND cm.name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+        </if>
+        <if test="req.userId != null">
+            AND u.user_id = #{req.userId}
+        </if>
+    </select>
+
+<!-- 요기부터 detail -->
+    <select id="findQuotationDetail" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.QuotationFormDTO">
+        SELECT
+            p.name AS name
+            , cc.client_company_id AS clientCompanyId
+            , cc.client_company_name AS clientCompanyName
+            , cm.client_manager_id AS clientManagerId
+            , cm.name AS clientManagerName
+            , c.campaign_id AS campaignId
+            , c.campaign_name AS campaignName
+            , ps.pipeline_status_id AS pipelineStatusId
+            , ps.status_name AS pipelineStatusName
+            , p.request_at AS requestAt
+            , p.presented_at AS presentAt
+            , p.started_at AS startedAt
+            , p.ended_at
+            , p.expected_revenue AS expectedRevenue
+            , p.available_quantity AS availableQuantity
+            , p.expected_profit AS expectedProfit
+        FROM
+            pipeline p
+        JOIN
+            campaign c ON p.campaign_id = c.campaign_id
+        JOIN
+            pipeline_status ps ON p.pipeline_status_id = ps.pipeline_status_id
+        JOIN
+            client_company cc ON c.client_company_id = cc.client_company_id
+        LEFT JOIN
+            pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id AND picm.client_manager_id IS NOT NULL
+        LEFT JOIN
+            client_manager cm ON cm.client_manager_id = picm.client_manager_id
+
+        WHERE
+            p.is_deleted = 'N'
+        AND
+            p.pipeline_id = #{pipelineId}
+        AND
+            p.pipeline_step_id = #{pipelineStepId}
+    </select>
+
+    <select id="findPipelineInfluencer" resultType="be15fintomatokatchupbe.campaign.query.dto.response.InfluencerInfo">
+        SELECT
+              i.influencer_id AS influencerId
+            , i.name AS influencerName
+        FROM
+            influencer i
+        JOIN
+            pipeline_influencer_client_manager picm ON picm.influencer_id = i.influencer_id AND picm.influencer_id IS NOT NULL
+        WHERE
+            picm.pipeline_id = #{pipelineId}
+    </select>
+    <select id="findPipelineUser" resultType="be15fintomatokatchupbe.campaign.query.dto.response.UserInfo">
+        SELECT
+              u.user_id AS userId
+            , u.name AS userName
+        FROM
+            user u
+        JOIN
+            pipeline_user pu ON pu.user_id = u.user_id
+        WHERE
+            pu.pipeline_id = #{pipelineId}
+    </select>
+
+
+    <select id="findPipeReference" resultType="be15fintomatokatchupbe.campaign.query.dto.response.ReferenceInfo">
+        SELECT
+              p.pipeline_id AS pipelineId
+            , p.name AS name
+        FROM
+            pipeline p
+        WHERE
+            p.is_deleted = 'N'
+        AND
+            p.pipeline_step_id = #{pipelineStepId}
+    </select>
+
+    <select id="findPipeIdea" resultType="be15fintomatokatchupbe.campaign.query.dto.response.IdeaInfo">
+        SELECT
+              u.user_id AS userId
+            , u.name AS userName
+            , i.created_at AS createdAt
+            , i.content AS content
+        FROM
+            idea i
+        JOIN
+            user u ON u.user_id = i.user_id
+        WHERE
+            i.pipeline_id = #{pipelineId}
+        AND
+            i.is_deleted = 'N'
+    </select>
 
 
 
