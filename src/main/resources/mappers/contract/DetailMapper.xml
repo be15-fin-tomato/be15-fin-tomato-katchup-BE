@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.contract.query.mapper.DetailMapper">
+
+    <select id="selectDetailsByObjectId"
+            resultType="be15fintomatokatchupbe.contract.query.dto.response.DetailListResponse">
+        SELECT
+        detail_id AS detailId,
+        sub_title AS subTitle,
+        created_at AS createdAt
+        FROM detail
+        WHERE object_id = #{objectId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="selectDetailById"
+            resultType="be15fintomatokatchupbe.contract.query.dto.response.DetailInfoResponse">
+        SELECT
+        d.detail_id AS detailId,
+        d.sub_title AS subTitle,
+        d.content,
+        d.created_at AS createdAt,
+        d.updated_at AS updatedAt,
+        f.file_id AS fileId,
+        f.original_name AS originalName,
+        f.file_path AS filePath,
+        f.program
+        FROM detail d
+        LEFT JOIN contract_file f ON d.file_id = f.file_id
+        WHERE d.detail_id = #{detailId}
+    </select>
+
+</mapper>
