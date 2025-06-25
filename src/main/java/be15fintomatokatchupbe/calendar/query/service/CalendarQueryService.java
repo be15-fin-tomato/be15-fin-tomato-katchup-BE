@@ -1,9 +1,12 @@
 package be15fintomatokatchupbe.calendar.query.service;
 
-import be15fintomatokatchupbe.calendar.query.dto.ScheduleListDTO;
-import be15fintomatokatchupbe.calendar.query.dto.ScheduleListResponse;
-import be15fintomatokatchupbe.calendar.query.dto.ScheduleListsAllDTO;
-import be15fintomatokatchupbe.calendar.query.dto.ScheduleListsAllResponse;
+import be15fintomatokatchupbe.calendar.query.dto.pipeline.PipeLineScheduleListResponse;
+import be15fintomatokatchupbe.calendar.query.dto.pipeline.PipelineScheduleListDTO;
+import be15fintomatokatchupbe.calendar.query.dto.schedule.ScheduleListDTO;
+import be15fintomatokatchupbe.calendar.query.dto.schedule.ScheduleListResponse;
+import be15fintomatokatchupbe.calendar.query.dto.schedule.ScheduleListsAllDTO;
+import be15fintomatokatchupbe.calendar.query.dto.schedule.ScheduleListsAllResponse;
+import be15fintomatokatchupbe.calendar.query.mapper.PipelineScheduleQueryMapper;
 import be15fintomatokatchupbe.calendar.query.mapper.ScheduleQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CalendarQueryService {
     private final ScheduleQueryMapper scheduleQueryMapper;
+    private final PipelineScheduleQueryMapper pipelineScheduleQueryMapper;
 
     // 날짜별 일정 조회
     public ScheduleListResponse getScheduleList(Long userId, Date date) {
@@ -31,4 +35,13 @@ public class CalendarQueryService {
                 .scheduleListsAll(scheduleAllDTO)
                 .build();
     }
+
+    // 파이프라인 일정 불러오기
+    public PipeLineScheduleListResponse getPipelineScheduleLists() {
+        List <PipelineScheduleListDTO> pipelineScheduleListDTO = pipelineScheduleQueryMapper.getPipelineScheduleList();
+        return PipeLineScheduleListResponse.builder()
+                .pipelineScheduleList(pipelineScheduleListDTO)
+                .build();
+    }
+
 }

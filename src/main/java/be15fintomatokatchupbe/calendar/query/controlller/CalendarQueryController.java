@@ -1,7 +1,8 @@
 package be15fintomatokatchupbe.calendar.query.controlller;
 
-import be15fintomatokatchupbe.calendar.query.dto.ScheduleListResponse;
-import be15fintomatokatchupbe.calendar.query.dto.ScheduleListsAllResponse;
+import be15fintomatokatchupbe.calendar.query.dto.pipeline.PipeLineScheduleListResponse;
+import be15fintomatokatchupbe.calendar.query.dto.schedule.ScheduleListResponse;
+import be15fintomatokatchupbe.calendar.query.dto.schedule.ScheduleListsAllResponse;
 import be15fintomatokatchupbe.calendar.query.service.CalendarQueryService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
@@ -49,5 +50,15 @@ public class CalendarQueryController {
 
         ScheduleListsAllResponse response = calendarQueryService.getScheduleListsAll(userId);
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    // 파이프라인 일정 불러오기
+    @GetMapping("/schedule/pipeline")
+    @Operation(summary = "파이프라인 일정 불러오기", description = "사용자는 파이프라인 일정을 불러올 수 있다.")
+    public ResponseEntity<ApiResponse<PipeLineScheduleListResponse>> getPipelineScheduleList(){
+
+        PipeLineScheduleListResponse response = calendarQueryService.getPipelineScheduleLists();
+        return ResponseEntity.ok(ApiResponse.success(response));
+
     }
 }

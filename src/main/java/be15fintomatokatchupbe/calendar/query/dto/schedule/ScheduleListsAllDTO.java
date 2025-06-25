@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.calendar.query.dto;
+package be15fintomatokatchupbe.calendar.query.dto.schedule;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import java.time.LocalTime;
 
 @Getter
 @Builder
-public class ScheduleListDTO {
+public class ScheduleListsAllDTO {
 
     private final Long scheduleId;
     private final Long userId;
