@@ -53,11 +53,13 @@ public class CalendarQueryController {
     }
 
     // 파이프라인 일정 불러오기
-    @GetMapping("/schedule/pipeline")
+    @GetMapping("/schedule/pipeline/{userId}")
     @Operation(summary = "파이프라인 일정 불러오기", description = "사용자는 파이프라인 일정을 불러올 수 있다.")
-    public ResponseEntity<ApiResponse<PipeLineScheduleListResponse>> getPipelineScheduleList(){
+    public ResponseEntity<ApiResponse<PipeLineScheduleListResponse>> getPipelineScheduleList(
+            @PathVariable Long userId
+    ){
 
-        PipeLineScheduleListResponse response = calendarQueryService.getPipelineScheduleLists();
+        PipeLineScheduleListResponse response = calendarQueryService.getPipelineScheduleLists(userId);
         return ResponseEntity.ok(ApiResponse.success(response));
 
     }

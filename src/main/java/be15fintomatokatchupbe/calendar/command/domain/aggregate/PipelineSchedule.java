@@ -21,12 +21,14 @@ public class PipelineSchedule {
     private String name;
     private Date startedAt;
     private Date endedAt;
+    private Date presentedAt;
 
     @Builder
-    public PipelineSchedule(Long pipelineId, String name, Date startedAt, Date endedAt) {
+    public PipelineSchedule(Long pipelineId, String name, Date startedAt, Date endedAt, Date presentedAt) {
         this.pipelineId = pipelineId;
         this.name = name;
         this.startedAt = startedAt;
         this.endedAt = endedAt;
+        this.presentedAt = presentedAt;
     }
 }

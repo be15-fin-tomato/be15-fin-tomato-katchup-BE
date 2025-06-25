@@ -37,8 +37,8 @@ public class CalendarQueryService {
     }
 
     // 파이프라인 일정 불러오기
-    public PipeLineScheduleListResponse getPipelineScheduleLists() {
-        List <PipelineScheduleListDTO> pipelineScheduleListDTO = pipelineScheduleQueryMapper.getPipelineScheduleList();
+    public PipeLineScheduleListResponse getPipelineScheduleLists(Long userId) {
+        List <PipelineScheduleListDTO> pipelineScheduleListDTO = pipelineScheduleQueryMapper.getPipelineScheduleList(userId);
         return PipeLineScheduleListResponse.builder()
                 .pipelineScheduleList(pipelineScheduleListDTO)
                 .build();

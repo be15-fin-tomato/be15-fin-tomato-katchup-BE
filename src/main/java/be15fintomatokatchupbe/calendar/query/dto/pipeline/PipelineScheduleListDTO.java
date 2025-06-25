@@ -10,8 +10,10 @@ import java.time.LocalDate;
 public class PipelineScheduleListDTO {
 
     private final Long pipelineId;
+    private final Long userId;
     private final String name;
     private final LocalDate startedAt;
     private final LocalDate endedAt;
+    private final LocalDate presentedAt;
 
 }

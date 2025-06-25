@@ -8,6 +8,6 @@ import java.util.List;
 @Mapper
 public interface PipelineScheduleQueryMapper {
 
-    List<PipelineScheduleListDTO> getPipelineScheduleList();
+    List<PipelineScheduleListDTO> getPipelineScheduleList(Long userId);
 
 }
