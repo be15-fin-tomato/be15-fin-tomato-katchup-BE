@@ -1,9 +1,12 @@
 package be15fintomatokatchupbe.client.query.service;
 
 import be15fintomatokatchupbe.client.query.dto.ClientCompanyDetailResponse;
+import be15fintomatokatchupbe.client.query.dto.ClientCompanyUserResponse;
 import be15fintomatokatchupbe.client.query.mapper.ClientCompanyQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -14,4 +17,8 @@ public class ClientCompanyQueryService {
     public ClientCompanyDetailResponse getClientCompanyDetail(Long clientCompanyId) {
         return clientCompanyQueryMapper.findClientCompanyDetailById(clientCompanyId);
     }
+
+    public List<ClientCompanyUserResponse> getUsersByClientCompanyId(Long clientCompanyId) {
+        return clientCompanyQueryMapper.findUsersByClientCompanyId(clientCompanyId);
+        }
 }
