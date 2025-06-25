@@ -1,7 +1,7 @@
 package be15fintomatokatchupbe.client.query.controller;
 
 import be15fintomatokatchupbe.client.query.dto.ClientCompanyDetailResponse;
-import be15fintomatokatchupbe.client.query.dto.ClientManagerSimpleResponse;
+import be15fintomatokatchupbe.client.query.dto.ClientCompanyUserResponse;
 import be15fintomatokatchupbe.client.query.service.ClientCompanyQueryService;
 import be15fintomatokatchupbe.client.query.service.ClientManagerQueryService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
@@ -29,12 +29,12 @@ public class ClientCompanyQueryController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    @GetMapping("/{clientCompanyId}/managers")
-    @Operation(summary = "특정 고객사를 담당하는 사원 목록 조회")
-    public ResponseEntity<ApiResponse<List<ClientManagerSimpleResponse>>> getManagersByClientCompanyId(
-            @PathVariable Long clientCompanyId
-    ) {
-        List<ClientManagerSimpleResponse> response = clientManagerQueryService.getManagersByClientCompanyId(clientCompanyId);
+    @GetMapping("/{clientCompanyId}/users")
+    @Operation(summary = "고객사를 담당하는 사용자 목록 조회")
+    public ResponseEntity<ApiResponse<List<ClientCompanyUserResponse>>> getUsersByClientCompanyId(
+            @PathVariable Long clientCompanyId) {
+        List<ClientCompanyUserResponse> response =
+                clientCompanyQueryService.getUsersByClientCompanyId(clientCompanyId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
