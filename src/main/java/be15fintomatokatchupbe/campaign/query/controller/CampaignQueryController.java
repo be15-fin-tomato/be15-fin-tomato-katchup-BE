@@ -1,7 +1,8 @@
 package be15fintomatokatchupbe.campaign.query.controller;
 
-import be15fintomatokatchupbe.campaign.query.dto.request.ProposalSearchRequest;
+import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.ProposalSearchResponse;
+import be15fintomatokatchupbe.campaign.query.dto.response.QuotationSearchResponse;
 import be15fintomatokatchupbe.campaign.query.service.CampaignQueryService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name="캠페인")
 @RestController
 @AllArgsConstructor
 @RequestMapping("/campaign")
@@ -26,11 +28,25 @@ public class CampaignQueryController {
     @Operation(summary = "제안 목록 조회", description = "제안 목록을 조회합니다.")
     public ResponseEntity<ApiResponse<ProposalSearchResponse>> getProposalList(
             @AuthenticationPrincipal CustomUserDetail userDetail,
-            @ModelAttribute ProposalSearchRequest request
+            @ModelAttribute PipelineSearchRequest request
             ){
         Long userId = userDetail.getUserId();
         ProposalSearchResponse response = campaignQueryService.getProposalList(userId, request);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @GetMapping("/quotation")
+    @Operation(summary = "견적 목록 조회", description = "견적 목록을 조회합니다.")
+    public ResponseEntity<ApiResponse<QuotationSearchResponse>> getQuotationList(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @ModelAttribute PipelineSearchRequest request
+    ){
+        Long userId = userDetail.getUserId();
+        QuotationSearchResponse response = campaignQueryService.getQuotationList(userId, request);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+
 }

@@ -7,7 +7,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProposalSearchRequest {
+public class PipelineSearchRequest {
     private int page;
     private int size;
     private String category;

@@ -1,8 +1,8 @@
 package be15fintomatokatchupbe.campaign.query.mapper;
 
-import be15fintomatokatchupbe.campaign.query.dto.ProposalCardDTO;
-import be15fintomatokatchupbe.campaign.query.dto.request.ProposalSearchRequest;
-import be15fintomatokatchupbe.campaign.query.dto.response.ProposalCardResponse;
+import be15fintomatokatchupbe.campaign.query.dto.mapper.ProposalCardDTO;
+import be15fintomatokatchupbe.campaign.query.dto.mapper.QuotationCardDTO;
+import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -10,11 +10,19 @@ import java.util.List;
 
 @Mapper
 public interface CampaignQueryMapper {
-    List<ProposalCardDTO> findProposals(
-            @Param("req") ProposalSearchRequest req,
+    List<ProposalCardDTO> findPipelineList(
+            @Param("req") PipelineSearchRequest req,
             @Param("offset") int offset,
             @Param("size") int size,
             @Param("pipelineStepId") Long pipelineStepId
     );
-    int countProposals(@Param("req")ProposalSearchRequest request, @Param("pipelineStepId") Long pipelineStepId);
+
+    List<QuotationCardDTO> findQuotationList(
+            @Param("req") PipelineSearchRequest req,
+            @Param("offset") int offset,
+            @Param("size") int size,
+            @Param("pipelineStepId") Long pipelineStepId
+    );
+
+    int countPipeline(@Param("req")PipelineSearchRequest request, @Param("pipelineStepId") Long pipelineStepId);
 }
