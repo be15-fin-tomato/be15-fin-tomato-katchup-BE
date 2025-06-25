@@ -7,8 +7,10 @@ import lombok.Setter;
 public class EmailSearchRequest {
 
     private Integer page = 1;
-    private Integer size = 10;
-    private String campaignName;
+    private Integer size = 6;
+    private String searchType; // "campaignName", "clientCompanyName", "clientManagerName", "all"
+    private String keyword;
+    private String userName;
 
     public int getOffset() {
         return (page - 1) * size;

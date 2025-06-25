@@ -27,10 +27,26 @@
          JOIN client_company e ON e.client_company_id = d.client_company_id
          LEFT JOIN user f ON f.user_id = p.writer_id
          LEFT JOIN influencer g ON g.influencer_id = c.influencer_id
-        WHERE b.campaign_status_id = 5
-        <if test="campaignName != null">
-            AND b.campaign_name LIKE CONCAT('%', #{campaignName}, '%')
-        </if>
+        <where>
+            b.campaign_status_id = 5
+            <choose>
+                <when test="searchType == 'campaignName' and keyword != null and keyword != ''">
+                    AND b.campaign_name LIKE CONCAT('%', #{keyword}, '%')
+                </when>
+                <when test="searchType == 'clientCompanyName' and keyword != null and keyword != ''">
+                    AND e.client_company_name LIKE CONCAT('%', #{keyword}, '%')
+                </when>
+                <when test="searchType == 'clientManagerName' and keyword != null and keyword != ''">
+                    AND d.name LIKE CONCAT('%', #{keyword}, '%')
+                </when>
+                <otherwise>
+                    AND 1=1
+                </otherwise>
+            </choose>
+            <if test="userName != null and userName != ''">
+                AND f.name LIKE CONCAT('%', #{userName}, '%')
+            </if>
+        </where>
         ORDER BY a.satisfaction_id DESC
         LIMIT #{ limit } OFFSET #{ offset };
     </select>
@@ -46,11 +62,26 @@
         JOIN client_company e ON e.client_company_id = d.client_company_id
         LEFT JOIN user f ON f.user_id = p.writer_id
         LEFT JOIN influencer g ON g.influencer_id = c.influencer_id
-        WHERE b.campaign_status_id = 5
-        <if test="campaignName != null">
-            AND b.campaign_name LIKE CONCAT('%', #{campaignName}, '%')
-        </if>
-
+        <where>
+            b.campaign_status_id = 5
+            <choose>
+                <when test="searchType == 'campaignName' and keyword != null and keyword != ''">
+                    AND b.campaign_name LIKE CONCAT('%', #{keyword}, '%')
+                </when>
+                <when test="searchType == 'clientCompanyName' and keyword != null and keyword != ''">
+                    AND e.client_company_name LIKE CONCAT('%', #{keyword}, '%')
+                </when>
+                <when test="searchType == 'clientManagerName' and keyword != null and keyword != ''">
+                    AND d.name LIKE CONCAT('%', #{keyword}, '%')
+                </when>
+                <otherwise>
+                    AND 1=1
+                </otherwise>
+            </choose>
+            <if test="userName != null and userName != ''">
+                AND f.name LIKE CONCAT('%', #{userName}, '%')
+            </if>
+        </where>
     </select>
 
     <select id="getCampaignSatisfactionResponse" resultType="be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionResponseDTO">
