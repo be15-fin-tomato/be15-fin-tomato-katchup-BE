@@ -307,7 +307,10 @@
         </if>
     </select>
 
+<!-- 요기부터 detail -->
+    <select id="findQuotationDetail" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.QuotationFormDTO">
 
+    </select>
 
 
 

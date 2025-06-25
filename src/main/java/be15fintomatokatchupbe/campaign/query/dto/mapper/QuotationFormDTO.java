@@ -1,0 +1,44 @@
+package be15fintomatokatchupbe.campaign.query.dto.mapper;
+
+import be15fintomatokatchupbe.campaign.query.dto.response.UserInfo;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDate;
+import java.util.List;
+
+@Builder
+@Getter
+@Setter
+public class QuotationFormDTO {
+    /* 파이프라인 제목 */
+    private final String title;
+
+    /* 고객사 */
+    private final Long clientCompanyId;
+    private final String clientCompanyName;
+
+    /* 광고 담당자 */
+    private final Long clientManagerId;
+    private final String clientManagerName;
+
+    /* 캠페인 정보*/
+    private final Long campaignId;
+    private final String campaignName;
+
+    /* 파이프라인 상태*/
+    private final Long pipelineStatusId;
+    private final String pipelineStepName;
+
+    /* 날짜들*/
+    private final LocalDate requestAt;
+    private final LocalDate presentAt;
+    private final LocalDate startedAt;
+    private final LocalDate endedAt;
+
+    /* 견적용 */
+    private final Long expectedRevenue;
+    private final Long availableQuantity;
+    private final Long expectedProfit;
+}

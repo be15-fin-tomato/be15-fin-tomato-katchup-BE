@@ -2,10 +2,7 @@ package be15fintomatokatchupbe.campaign.query.service;
 
 
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
-import be15fintomatokatchupbe.campaign.query.dto.mapper.ContractCardDTO;
-import be15fintomatokatchupbe.campaign.query.dto.mapper.ProposalCardDTO;
-import be15fintomatokatchupbe.campaign.query.dto.mapper.QuotationCardDTO;
-import be15fintomatokatchupbe.campaign.query.dto.mapper.RevenueCardDTO;
+import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
@@ -209,5 +206,24 @@ public class CampaignQueryService {
                         .response(response)
                         .pagination(pagination)
                         .build();
+    }
+
+    public QuotationDetailResponse getQuotationDetail(Long userId, Long pipelineId) {
+        /* 폼 정보 가져오기 */
+        /* 폼 가져오기 */
+        QuotationFormDTO quotationFormDto = campaignQueryMapper.findQuotationDetail(pipelineId);
+
+        /* 인풀루언서 가져오기 */
+
+        /* 담당자 가져오기 */
+
+        /* 참고 목록 가져오기 */
+
+
+        /* 의견 가져오기 */
+
+        /* 조합하기 */
+
+        /* 응답하기 */
     }
 }
