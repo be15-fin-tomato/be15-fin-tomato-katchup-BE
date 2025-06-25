@@ -78,4 +78,15 @@
           AND cm.is_deleted = 'N'
     </select>
 
+    <!-- 해당 고객사의 담당자 목록 조회 -->
+    <select id="findManagersByClientCompanyId" resultType="be15fintomatokatchupbe.client.query.dto.ClientManagerSimpleResponse">
+        SELECT
+            cm.client_manager_id AS clientManagerId,
+            cm.client_company_id AS clientCompanyId,
+            cm.name AS name
+        FROM client_manager cm
+        WHERE cm.client_company_id = #{clientCompanyId}
+          AND cm.is_deleted = 'N'
+    </select>
+
 </mapper>
