@@ -3,12 +3,13 @@ package be15fintomatokatchupbe.campaign.query.dto.mapper;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+
 import java.time.LocalDate;
 
 @Builder
 @Getter
 @Setter
-public class QuotationFormDTO {
+public class ContractFormDTO {
     /* 파이프라인 제목 */
     private final String name;
 

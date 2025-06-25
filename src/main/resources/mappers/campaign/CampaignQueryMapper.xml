@@ -323,6 +323,49 @@
             , p.presented_at AS presentAt
             , p.started_at AS startedAt
             , p.ended_at
+            , p.notes AS notes
+            , p.content AS content
+            , p.expected_revenue AS expectedRevenue
+            , p.available_quantity AS availableQuantity
+            , p.expected_profit AS expectedProfit
+        FROM
+            pipeline p
+        JOIN
+            campaign c ON p.campaign_id = c.campaign_id
+        JOIN
+            pipeline_status ps ON p.pipeline_status_id = ps.pipeline_status_id
+        JOIN
+            client_company cc ON c.client_company_id = cc.client_company_id
+        LEFT JOIN
+            pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id AND picm.client_manager_id IS NOT NULL
+        LEFT JOIN
+            client_manager cm ON cm.client_manager_id = picm.client_manager_id
+
+        WHERE
+            p.is_deleted = 'N'
+        AND
+            p.pipeline_id = #{pipelineId}
+        AND
+            p.pipeline_step_id = #{pipelineStepId}
+    </select>
+
+    <select id="findContractDetail" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.ContractFormDTO">
+        SELECT
+              p.name AS name
+            , cc.client_company_id AS clientCompanyId
+            , cc.client_company_name AS clientCompanyName
+            , cm.client_manager_id AS clientManagerId
+            , cm.name AS clientManagerName
+            , c.campaign_id AS campaignId
+            , c.campaign_name AS campaignName
+            , ps.pipeline_status_id AS pipelineStatusId
+            , ps.status_name AS pipelineStatusName
+            , p.request_at AS requestAt
+            , p.presented_at AS presentAt
+            , p.started_at AS startedAt
+            , p.ended_at
+            , p.notes AS notes
+            , p.content AS content
             , p.expected_revenue AS expectedRevenue
             , p.available_quantity AS availableQuantity
             , p.expected_profit AS expectedProfit
@@ -397,6 +440,17 @@
             i.pipeline_id = #{pipelineId}
         AND
             i.is_deleted = 'N'
+    </select>
+
+    <select id="findPipeFile" resultType="be15fintomatokatchupbe.campaign.query.dto.response.FileInfo">
+        SELECT
+              f.file_id AS fileId
+            , f.file_name AS fileName
+            , f.file_key AS fileKey
+        FROM
+            file f
+        WHERE
+            f.pipeline_id = #{pipelineId}
     </select>
 
 

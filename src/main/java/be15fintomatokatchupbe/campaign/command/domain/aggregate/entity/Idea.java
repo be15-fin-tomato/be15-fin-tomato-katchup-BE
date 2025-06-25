@@ -35,5 +35,6 @@ public class Idea {
     private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private StatusType isDeleted = StatusType.N;
 }
