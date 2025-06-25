@@ -10,12 +10,12 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Object {
+public class ContractObject {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "object_id")
     private Long objectId;
 
-    @Column
+    @Column(name = "title")
     private String title;
 }
