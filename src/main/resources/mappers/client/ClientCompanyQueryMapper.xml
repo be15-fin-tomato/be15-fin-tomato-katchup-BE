@@ -79,14 +79,14 @@
     </select>
 
     <!-- 해당 고객사의 담당자 목록 조회 -->
-    <select id="findManagersByClientCompanyId" resultType="be15fintomatokatchupbe.client.query.dto.ClientManagerSimpleResponse">
+    <select id="findUsersByClientCompanyId" resultType="be15fintomatokatchupbe.client.query.dto.ClientCompanyUserResponse">
         SELECT
-            cm.client_manager_id AS clientManagerId,
-            cm.client_company_id AS clientCompanyId,
-            cm.name AS name
-        FROM client_manager cm
-        WHERE cm.client_company_id = #{clientCompanyId}
-          AND cm.is_deleted = 'N'
+            cu.client_company_id AS clientCompanyId,
+            u.user_id AS userId,
+            u.name AS userName
+        FROM client_company_user cu
+        JOIN user u ON cu.user_id = u.user_id
+        WHERE cu.client_company_id = #{clientCompanyId}
     </select>
 
 </mapper>
