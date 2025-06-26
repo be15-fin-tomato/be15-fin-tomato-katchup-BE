@@ -1,5 +1,7 @@
 package be15fintomatokatchupbe.file.service;
 
+import be15fintomatokatchupbe.contract.command.domain.entity.ContractFile;
+import be15fintomatokatchupbe.contract.command.domain.repository.ContractFileRepository;
 import be15fintomatokatchupbe.file.domain.File;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.file.dto.FileDownloadResult;
@@ -24,6 +26,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class FileService {
     private final FileRepository fileRepository;
+    private final ContractFileRepository contractFileRepository;
 
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucketName;
@@ -93,6 +96,60 @@ public class FileService {
         return uploadedFiles;
     }
 
+    /* 내부 호출용*/
+    public List<ContractFile> uploadContractFile(List<MultipartFile> files) {
+        List<ContractFile> uploadedFiles = new ArrayList<>();
+        log.info(bucketName);
+
+        for (MultipartFile file : files) {
+            try {
+                log.info("파일 위조 확인: {}", fileUtil.validateFile(file));
+
+                if (!fileUtil.validateFile(file)) {
+                    throw new BusinessException(FileErrorCode.FILE_FORMAT_ERROR);
+                }
+
+                if (file.getSize() > MAX_FILE_SIZE) {
+                    throw new BusinessException(FileErrorCode.FILE_TOO_BIG);
+                }
+
+                String originalFilename = file.getOriginalFilename();
+                String extension = fileUtil.getExtension(originalFilename).toLowerCase();
+                String uuidFilename = UUID.randomUUID() + "." + extension;
+
+                String mimeType = fileUtil.detectMimeType(file);
+                boolean isImage = mimeType.startsWith("image/");
+                String dir = isImage ? SAVE_IMAGE_DIR : SAVE_FILE_DIR;
+
+                String fileKey = dir + "/" + uuidFilename;
+
+                Map<String, String> metadata = new HashMap<>();
+                metadata.put("mime-type", mimeType);
+
+                PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(fileKey)
+                        .metadata(metadata)
+                        .build();
+
+                s3Client.putObject(putObjectRequest,
+                        RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+
+                ContractFile fileEntity = ContractFile.builder()
+                        .originalName(originalFilename)
+                        .filePath(fileKey)
+                        .program(mimeType)
+                        .build();
+
+                uploadedFiles.add(fileEntity);
+            } catch (Exception e) {
+                throw new BusinessException(FileErrorCode.FILE_FORMAT_ERROR);
+            }
+        }
+
+        return uploadedFiles;
+    }
+
     public FileDownloadResult downloadFile(String key) {
         File fileInfo = fileRepository.findByFileKey(key)
                 .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND));
@@ -121,5 +178,10 @@ public class FileService {
     /* 내부 호출용*/
     public void saveFile(List<File> filesList){
         fileRepository.saveAll(filesList);
+    }
+
+    /* 내부 호출용*/
+    public void saveContractFile(List<ContractFile> filesList){
+        contractFileRepository.saveAll(filesList);
     }
 }

@@ -7,7 +7,7 @@ import be15fintomatokatchupbe.contract.command.domain.entity.ContractFile;
 import be15fintomatokatchupbe.contract.command.domain.entity.Detail;
 import be15fintomatokatchupbe.contract.command.domain.repository.ContractFileRepository;
 import be15fintomatokatchupbe.contract.command.domain.repository.DetailRepository;
-import be15fintomatokatchupbe.contract.exception.DigitalContractErrorCode;
+import be15fintomatokatchupbe.contract.exception.ContractErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +31,7 @@ public class DetailCommandService {
     @Transactional
     public void updateDetail(Long detailId, DetailUpdateRequest request, MultipartFile file) {
         Detail detail = detailRepository.findById(detailId)
-                .orElseThrow(() -> new BusinessException(DigitalContractErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ContractErrorCode.NOT_FOUND));
 
         if (request.getSubTitle() != null) {
             detail.setSubTitle(request.getSubTitle());
@@ -109,7 +109,7 @@ public class DetailCommandService {
 
                 fileId = savedFile.getFileId();
             } catch (IOException e) {
-                throw new BusinessException(DigitalContractErrorCode.FILE_UPLOAD_FAILED);
+                throw new BusinessException(ContractErrorCode.FILE_UPLOAD_FAILED);
             }
         }
 
@@ -129,7 +129,7 @@ public class DetailCommandService {
     @Transactional
     public void deleteDetail(Long detailId) {
         Detail detail = detailRepository.findById(detailId)
-                .orElseThrow(() -> new BusinessException(DigitalContractErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ContractErrorCode.NOT_FOUND));
 
         Long fileId = detail.getFileId();
 
