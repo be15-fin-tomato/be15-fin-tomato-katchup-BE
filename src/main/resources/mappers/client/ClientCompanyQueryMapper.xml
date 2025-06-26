@@ -97,6 +97,8 @@
             cc.sales,
             cc.address,
             cc.detail_address AS detailAddress,
+            cc.client_company_status_id AS clientCompanyStatusId,
+            cs.status_name AS clientCompanyStatusName,
             (
                 SELECT COUNT(*)
                 FROM client_manager cm
@@ -111,6 +113,7 @@
                 LIMIT 1
             ) AS userName
         FROM client_company cc
+                 JOIN client_company_status cs ON cc.client_company_status_id = cs.client_company_status_id
         WHERE cc.is_deleted = 'N'
         ORDER BY cc.client_company_id DESC
         LIMIT #{limit} OFFSET #{offset}
@@ -177,7 +180,5 @@
         ORDER BY cc.client_company_id DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
-
-    <!-- 이메일 보낼 고객의 이름과 이메일 리스트 조회 -->
 
 </mapper>
