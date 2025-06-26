@@ -89,6 +89,37 @@
         WHERE cu.client_company_id = #{clientCompanyId}
     </select>
 
+    <!-- 고객사 목록 조회 -->
+    <select id="findClientCompanyList" resultType="be15fintomatokatchupbe.client.query.dto.ClientCompanyListResponse">
+        SELECT
+            cc.client_company_id AS clientCompanyId,
+            cc.client_company_name AS clientCompanyName,
+            cc.sales,
+            cc.address,
+            cc.detail_address AS detailAddress,
+            (
+                SELECT COUNT(*)
+                FROM client_manager cm
+                WHERE cm.client_company_id = cc.client_company_id
+                  AND cm.is_deleted = 'N'
+            ) AS employeeCount,
+            (
+                SELECT u.name
+                FROM client_company_user cu
+                         JOIN user u ON cu.user_id = u.user_id
+                WHERE cu.client_company_id = cc.client_company_id
+                LIMIT 1
+            ) AS userName
+        FROM client_company cc
+        WHERE cc.is_deleted = 'N'
+        ORDER BY cc.client_company_id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countClientCompanies" resultType="int">
+        SELECT COUNT(*) FROM client_company cc WHERE cc.is_deleted = 'N'
+    </select>
+
     <!-- 이메일 보낼 고객의 이름과 이메일 리스트 조회 -->
 
 </mapper>
