@@ -3,7 +3,7 @@ package be15fintomatokatchupbe.client.query.dto;
 import lombok.Data;
 
 @Data
-public class ClientManagerDTO {
+public class ClientManagerResponse {
     private Long clientManagerId;
     private String name;
     private String department;

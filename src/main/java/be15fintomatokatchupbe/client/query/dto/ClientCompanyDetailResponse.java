@@ -19,5 +19,5 @@ public class ClientCompanyDetailResponse {
     private String notes;
 
     private List<Long> userIds;
-    private List<ClientManagerDTO> clientManagers;
+    private List<ClientManagerResponse> clientManagers;
 }
