@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.contract.query.mapper.ContractSuccessMapper">
+    <select id="getContractSuccess" resultType="be15fintomatokatchupbe.contract.query.dto.response.ContractSuccessDTO">
+        SELECT
+              a.contract_id
+            , b.campaign_name
+            , b.product_name
+            , c.client_company_name
+            , d.name as influencerName
+            , a.updated_at
+            , e.file_id
+            , e.original_name
+            , e.file_path
+            , e.program
+          FROM contract a
+          JOIN campaign b ON a.campaign_id = b.campaign_id
+          JOIN client_company c ON b.client_company_id = c.client_company_id
+          JOIN influencer d ON a.influencer_id = d.influencer_id
+          LEFT JOIN contract_file e ON a.file_id = e.file_id
+        <where>
+            <!-- 검색 조건 -->
+            <choose>
+                <when test="searchType == 'campaignName' and keyword != null and keyword != ''">
+                    AND b.campaign_name LIKE CONCAT('%', #{keyword}, '%')
+                </when>
+                <when test="searchType == 'productName' and keyword != null and keyword != ''">
+                    AND b.product_name LIKE CONCAT('%', #{keyword}, '%')
+                </when>
+                <when test="searchType == 'clientCompanyName' and keyword != null and keyword != ''">
+                    AND c.client_company_name LIKE CONCAT('%', #{keyword}, '%')
+                </when>
+                <when test="searchType == 'influencerName' and keyword != null and keyword != ''">
+                    AND d.name LIKE CONCAT('%', #{keyword}, '%')
+                </when>
+                <when test="searchType == 'all' and keyword != null and keyword != ''">
+                    AND (
+                    b.campaign_name LIKE CONCAT('%', #{keyword}, '%')
+                    OR b.product_name LIKE CONCAT('%', #{keyword}, '%')
+                    OR c.client_company_name LIKE CONCAT('%', #{keyword}, '%')
+                    OR d.name LIKE CONCAT('%', #{keyword}, '%')
+                    )
+                </when>
+            </choose>
+
+            <!-- 등록 상태 필터 -->
+            <if test="registrationStatus != null and registrationStatus != ''">
+                <choose>
+                    <when test="registrationStatus == 'registered'">
+                        AND a.file_id IS NOT NULL
+                    </when>
+                    <when test="registrationStatus == 'unregistered'">
+                        AND a.file_id IS NULL
+                    </when>
+                </choose>
+            </if>
+        </where>
+        <!-- 정렬 조건 -->
+        <choose>
+            <when test="sortDirection != null and sortDirection != ''">
+                ORDER BY a.created_at
+                <choose>
+                    <when test="sortDirection == 'ASC' or sortDirection =='asc'">
+                        ASC
+                    </when>
+                    <otherwise>
+                        DESC
+                    </otherwise>
+                </choose>
+            </when>
+            <otherwise>
+                ORDER BY a.contract_id DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="getTotalList" resultType="int">
+        SELECT COUNT(*)
+          FROM contract a
+          JOIN campaign b ON a.campaign_id = b.campaign_id
+          JOIN client_company c ON b.client_company_id = c.client_company_id
+          JOIN influencer d ON a.influencer_id = d.influencer_id
+          LEFT JOIN contract_file e ON a.file_id = e.file_id
+        <where>
+            <!-- 검색 조건 -->
+            <choose>
+                <when test="searchType == 'campaignName' and keyword != null and keyword != ''">
+                    AND b.campaign_name LIKE CONCAT('%', #{keyword}, '%')
+                </when>
+                <when test="searchType == 'productName' and keyword != null and keyword != ''">
+                    AND b.product_name LIKE CONCAT('%', #{keyword}, '%')
+                </when>
+                <when test="searchType == 'clientCompanyName' and keyword != null and keyword != ''">
+                    AND c.client_company_name LIKE CONCAT('%', #{keyword}, '%')
+                </when>
+                <when test="searchType == 'influencerName' and keyword != null and keyword != ''">
+                    AND d.name LIKE CONCAT('%', #{keyword}, '%')
+                </when>
+                <when test="searchType == 'all' and keyword != null and keyword != ''">
+                    AND (
+                    b.campaign_name LIKE CONCAT('%', #{keyword}, '%')
+                    OR b.product_name LIKE CONCAT('%', #{keyword}, '%')
+                    OR c.client_company_name LIKE CONCAT('%', #{keyword}, '%')
+                    OR d.name LIKE CONCAT('%', #{keyword}, '%')
+                    )
+                </when>
+            </choose>
+
+            <!-- 등록 상태 필터 -->
+            <if test="registrationStatus != null and registrationStatus != ''">
+                <choose>
+                    <when test="registrationStatus == 'registered'">
+                        AND a.file_id IS NOT NULL
+                    </when>
+                    <when test="registrationStatus == 'unregistered'">
+                        AND a.file_id IS NULL
+                    </when>
+                </choose>
+            </if>
+        </where>
+    </select>
+
+</mapper>
