@@ -22,8 +22,8 @@ public enum InfluencerErrorCode implements ErrorCode {
     TAGS_PARSING_FAILED("20007", "태그 데이터 파싱에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
     INFLUENCER_ALREADY_EXISTS("20008", "이미 존재하는 인플루언서입니다.", HttpStatus.CONFLICT),
 
-    UNAUTHORIZED_ACCESS("2009", "인플루언서 정보에 접근할 권한이 없습니다.", HttpStatus.UNAUTHORIZED)
-    ;
+    UNAUTHORIZED_ACCESS("20009", "인플루언서 정보에 접근할 권한이 없습니다.", HttpStatus.UNAUTHORIZED),
+    YOUTUBE_VIDEO_NOT_FOUND("20010","영상을 찾을 수 없습니다." ,HttpStatus.NOT_FOUND );
 
     private final String code;
     private final String message;
