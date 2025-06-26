@@ -11,6 +11,7 @@
                 , p.started_at
                 , p.ended_at
                 , p.presented_at
+                , p.is_deleted
         FROM pipeline p
         JOIN pipeline_user pu ON p.pipeline_id = pu.pipeline_id
         WHERE p.presented_at is NOT NULL

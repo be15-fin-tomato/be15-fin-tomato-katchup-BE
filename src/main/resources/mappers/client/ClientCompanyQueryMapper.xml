@@ -119,4 +119,6 @@
         SELECT COUNT(*) FROM client_company cc WHERE cc.is_deleted = 'N'
     </select>
 
+    <!-- 이메일 보낼 고객의 이름과 이메일 리스트 조회 -->
+
 </mapper>

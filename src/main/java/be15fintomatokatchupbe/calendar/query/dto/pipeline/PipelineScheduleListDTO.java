@@ -16,4 +16,9 @@ public class PipelineScheduleListDTO {
     private final LocalDate endedAt;
     private final LocalDate presentedAt;
 
+    public enum DeleteStatus {
+        Y, N
+    }
+    private final DeleteStatus isDeleted;
+
 }

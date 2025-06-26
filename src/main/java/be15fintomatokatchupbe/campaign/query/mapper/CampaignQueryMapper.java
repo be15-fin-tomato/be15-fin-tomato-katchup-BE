@@ -1,10 +1,11 @@
 package be15fintomatokatchupbe.campaign.query.mapper;
 
-import be15fintomatokatchupbe.campaign.query.dto.mapper.ContractCardDTO;
-import be15fintomatokatchupbe.campaign.query.dto.mapper.ProposalCardDTO;
-import be15fintomatokatchupbe.campaign.query.dto.mapper.QuotationCardDTO;
-import be15fintomatokatchupbe.campaign.query.dto.mapper.RevenueCardDTO;
+import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
+import be15fintomatokatchupbe.campaign.query.dto.response.IdeaInfo;
+import be15fintomatokatchupbe.campaign.query.dto.response.InfluencerInfo;
+import be15fintomatokatchupbe.campaign.query.dto.response.ReferenceInfo;
+import be15fintomatokatchupbe.campaign.query.dto.response.UserInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -41,4 +42,14 @@ public interface CampaignQueryMapper {
             @Param("size") int size,
             @Param("pipelineStepId") Long pipelineStepId
     );
+
+    QuotationFormDTO findQuotationDetail(Long pipelineId, Long pipelineStepId);
+
+    List<InfluencerInfo> findPipelineInfluencer(Long pipelineId);
+
+    List<UserInfo> findPipelineUser(Long pipelineId);
+
+    List<ReferenceInfo> findPipeReference(Long pipelineId, Long pipelineStepId);
+
+    List<IdeaInfo> findPipeIdea(Long pipelineId);
 }
