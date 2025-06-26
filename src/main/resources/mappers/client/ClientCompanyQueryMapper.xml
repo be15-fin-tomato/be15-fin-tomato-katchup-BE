@@ -120,6 +120,64 @@
         SELECT COUNT(*) FROM client_company cc WHERE cc.is_deleted = 'N'
     </select>
 
+    <!-- 고객사 검색 필터링 -->
+    <select id="searchClientCompanies" resultType="be15fintomatokatchupbe.client.query.dto.ClientCompanyListResponse">
+        SELECT
+        cc.client_company_id AS clientCompanyId,
+        cc.client_company_name AS clientCompanyName,
+        cc.sales,
+        cc.address,
+        cc.detail_address AS detailAddress,
+        (
+        SELECT COUNT(*) FROM client_manager cm
+        WHERE cm.client_company_id = cc.client_company_id AND cm.is_deleted = 'N'
+        ) AS employeeCount,
+        (
+        SELECT GROUP_CONCAT(u.name SEPARATOR ', ')
+        FROM client_company_user cu
+        JOIN user u ON cu.user_id = u.user_id
+        WHERE cu.client_company_id = cc.client_company_id
+        ) AS userName
+        FROM client_company cc
+        WHERE cc.is_deleted = 'N'
+
+        <if test="condition.statusId != null">
+            AND cc.client_company_status_id = #{condition.statusId}
+        </if>
+
+        <if test="condition.keyword != null and condition.keyword != ''">
+            AND (
+            cc.client_company_name LIKE CONCAT('%', #{condition.keyword}, '%')
+            OR EXISTS (
+            SELECT 1
+            FROM client_company_user cu
+            JOIN user u ON cu.user_id = u.user_id
+            WHERE cu.client_company_id = cc.client_company_id
+            AND u.name LIKE CONCAT('%', #{condition.keyword}, '%')
+            )
+            )
+        </if>
+
+        <if test="condition.minSales != null">
+            AND cc.sales &gt;= #{condition.minSales}
+        </if>
+
+        <if test="condition.maxSales != null">
+            AND cc.sales &lt;= #{condition.maxSales}
+        </if>
+
+        <if test="condition.startDate != null">
+            AND cc.created_at &gt;= #{condition.startDate}
+        </if>
+
+        <if test="condition.endDate != null">
+            AND cc.created_at &lt;= #{condition.endDate}
+        </if>
+
+        ORDER BY cc.client_company_id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
     <!-- 이메일 보낼 고객의 이름과 이메일 리스트 조회 -->
 
 </mapper>
