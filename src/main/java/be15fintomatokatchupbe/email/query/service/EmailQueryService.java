@@ -15,6 +15,7 @@ import be15fintomatokatchupbe.email.query.dto.response.SatisfactionAnswerRespons
 import be15fintomatokatchupbe.email.query.mapper.EmailQueryMapper;
 import com.google.api.services.sheets.v4.Sheets;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
@@ -30,6 +31,8 @@ public class EmailQueryService {
     private final EmailCommendService emailCommendService;
     private final SatisfactionRepository satisfactionRepository;
 
+    @Value("${SHEET_ID}")
+    private String sheetId;
     public CampaignSatisfactionResponse getCampaignSatisfaction(EmailSearchRequest emailSearchRequest) {
 
         List<CampaignSatisfactionDTO> responses = emailQueryMapper.getCampaignSatisfaction(emailSearchRequest);
@@ -51,6 +54,7 @@ public class EmailQueryService {
                         .currentPage(page)
                         .totalPage((int) Math.ceil((double) totalList / size))
                         .size(size)
+                        .totalCount(totalList)
                         .build())
                 .build();
     }
@@ -96,13 +100,12 @@ public class EmailQueryService {
     /* 항목별 점수 조회 */
     public SatisfactionAnswerResponse getCampaignSatisfactionScore(Long satisfactionId) {
         try {
-            String spreadSheetId = "1OTHbmdSmwqTtrDK5rKL74VgM-ad87nXnIDW84Q-X2fs";
             Sheets sheets = googleSheetConfig.getSheetsService();
 
             // 질문 제목 (E1:X1) 읽기
             String headerRange = "설문지응답!E1:X1";
             List<Object> questionHeaders = sheets.spreadsheets().values()
-                    .get(spreadSheetId, headerRange)
+                    .get(sheetId, headerRange)
                     .execute()
                     .getValues()
                     .get(0); // E1:X1은 한 줄이니까
