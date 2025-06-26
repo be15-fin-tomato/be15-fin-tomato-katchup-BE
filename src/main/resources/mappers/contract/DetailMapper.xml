@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="be15fintomatokatchupbe.contract.query.mapper.DetailMapper">
 
+    <!-- detail 리스트 조회 -->
     <select id="selectDetailsByObjectId"
             resultType="be15fintomatokatchupbe.contract.query.dto.response.DetailListResponse">
         SELECT
@@ -15,8 +17,9 @@
         ORDER BY created_at DESC
     </select>
 
+    <!-- detail 단건 + file 정보까지 조회 -->
     <select id="selectDetailById"
-            resultType="be15fintomatokatchupbe.contract.query.dto.response.DetailInfoResponse">
+            resultMap="DetailInfoResponseMap">
         SELECT
         d.detail_id AS detailId,
         d.sub_title AS subTitle,
@@ -26,10 +29,26 @@
         f.file_id AS fileId,
         f.original_name AS originalName,
         f.file_path AS filePath,
-        f.program
+        f.program AS program
         FROM detail d
         LEFT JOIN contract_file f ON d.file_id = f.file_id
         WHERE d.detail_id = #{detailId}
     </select>
+
+    <!-- resultMap: 내부 file 객체까지 매핑 -->
+    <resultMap id="DetailInfoResponseMap" type="be15fintomatokatchupbe.contract.query.dto.response.DetailInfoResponse">
+        <id property="detailId" column="detailId"/>
+        <result property="subTitle" column="subTitle"/>
+        <result property="content" column="content"/>
+        <result property="createdAt" column="createdAt"/>
+        <result property="updatedAt" column="updatedAt"/>
+
+        <association property="file" javaType="be15fintomatokatchupbe.contract.query.dto.response.DetailInfoResponse$FileInfo">
+            <id property="fileId" column="fileId"/>
+            <result property="originalName" column="originalName"/>
+            <result property="filePath" column="filePath"/>
+            <result property="program" column="program"/>
+        </association>
+    </resultMap>
 
 </mapper>
