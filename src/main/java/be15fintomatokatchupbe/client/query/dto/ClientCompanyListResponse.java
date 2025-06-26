@@ -10,6 +10,7 @@ public class ClientCompanyListResponse {
     private String clientCompanyName;
     private int employeeCount;
     private String address;
+    private String detailAddress;
     private String userName;
     private Long sales;
 }

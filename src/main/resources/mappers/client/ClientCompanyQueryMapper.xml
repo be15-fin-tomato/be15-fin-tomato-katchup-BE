@@ -96,6 +96,7 @@
             cc.client_company_name AS clientCompanyName,
             cc.sales,
             cc.address,
+            cc.detail_address AS detailAddress,
             (
                 SELECT COUNT(*)
                 FROM client_manager cm
