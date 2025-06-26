@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -114,6 +114,42 @@ public class YoutubeService {
         }
     }
 
+    public Map<String, Long> getVideoMetrics(String videoId) {
+        String url = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/videos")
+                .queryParam("part", "statistics")
+                .queryParam("id", videoId)
+                .queryParam("key", youtubeApiKey)
+                .toUriString();
+
+        try {
+            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+            Map<String, Object> body = response.getBody();
+
+            if (body == null || !body.containsKey("items")) {
+                throw new BusinessException(InfluencerErrorCode.YOUTUBE_VIDEO_NOT_FOUND);
+            }
+
+            var items = (java.util.List<?>) body.get("items");
+            if (items.isEmpty()) {
+                throw new BusinessException(InfluencerErrorCode.YOUTUBE_VIDEO_NOT_FOUND);
+            }
+
+            Map<String, Object> item = (Map<String, Object>) items.get(0);
+            Map<String, Object> statistics = (Map<String, Object>) item.get("statistics");
+
+            // 원하는 메트릭들 추출
+            Map<String, Long> metrics = new HashMap<>();
+            metrics.put("commentCount", Long.parseLong((String) statistics.getOrDefault("commentCount", "0")));
+            metrics.put("likeCount", Long.parseLong((String) statistics.getOrDefault("likeCount", "0")));
+            metrics.put("viewCount", Long.parseLong((String) statistics.getOrDefault("viewCount", "0")));
+
+            return metrics;
+
+        } catch (Exception e) {
+            log.error("유튜브 영상 메트릭 조회 실패", e);
+            throw new BusinessException(InfluencerErrorCode.FAILED_TO_FETCH_YOUTUBE_DATA);
+        }
+    }
 
     private String extractThumbnailUrl(Map<String, Object> snippet) {
         try {
