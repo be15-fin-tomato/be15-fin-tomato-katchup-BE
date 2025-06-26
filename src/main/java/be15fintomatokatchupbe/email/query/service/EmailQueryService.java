@@ -51,6 +51,7 @@ public class EmailQueryService {
                         .currentPage(page)
                         .totalPage((int) Math.ceil((double) totalList / size))
                         .size(size)
+                        .totalCount(totalList)
                         .build())
                 .build();
     }
