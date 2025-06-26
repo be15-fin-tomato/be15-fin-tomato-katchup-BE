@@ -69,6 +69,19 @@ public class CampaignQueryController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @GetMapping("/contract/{id}")
+    @Operation(summary = "견적 상세 조회", description = "견적 상세 조회를 합니다.")
+    public ResponseEntity<ApiResponse<ContractDetailResponse>> getContractDetail(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable("id") Long pipelineId
+    ){
+        Long userId = userDetail.getUserId();
+        ContractDetailResponse response = campaignQueryService.getContractDetail(userId, pipelineId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+
+    }
+
     @GetMapping("/revenue")
     @Operation(summary = "매출 목록 조회", description = "매출 목록을 조회합니다.")
     public ResponseEntity<ApiResponse<RevenueSearchResponse>> getRevenueList(
