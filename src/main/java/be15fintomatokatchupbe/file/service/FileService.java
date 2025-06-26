@@ -181,7 +181,12 @@ public class FileService {
     }
 
     /* 내부 호출용*/
-    public void saveContractFile(List<ContractFile> filesList){
+    public void saveContractFile(List<ContractFile> filesList, String encryptPassword) {
+        for (ContractFile file : filesList) {
+            file.passwordUpdate(encryptPassword);
+        }
+
         contractFileRepository.saveAll(filesList);
     }
+
 }

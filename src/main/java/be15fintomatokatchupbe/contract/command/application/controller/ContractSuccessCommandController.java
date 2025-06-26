@@ -28,9 +28,10 @@ public class ContractSuccessCommandController {
     @PutMapping("/sign/{contractId}")
     public ResponseEntity<ApiResponse<Void>> signContract(
             @PathVariable Long contractId,
+            @RequestPart String password,
             @RequestPart(required = false) List<MultipartFile> files
             ){
-        commandService.signContract(contractId, files);
+        commandService.signContract(contractId, files, password);
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }
