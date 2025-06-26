@@ -55,7 +55,7 @@
             <result column="userId"/>
         </collection>
 
-        <collection property="clientManagers" ofType="be15fintomatokatchupbe.client.query.dto.ClientManagerDTO">
+        <collection property="clientManagers" ofType="be15fintomatokatchupbe.client.query.dto.ClientManagerResponse">
             <result property="clientManagerId" column="managerId"/>
             <result property="name" column="managerName"/>
             <result property="department" column="managerDepartment"/>
