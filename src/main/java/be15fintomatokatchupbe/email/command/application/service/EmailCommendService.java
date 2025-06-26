@@ -15,6 +15,7 @@ import com.google.api.services.sheets.v4.model.ValueRange;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,9 @@ public class EmailCommendService {
     private final SatisfactionRepository satisfactionRepository;
     private final ClientManagerRepository clientManagerRepository;
     private final GoogleSheetConfig googleSheetConfig;
+
+    @Value("${SHEET_ID}")
+    private String sheetId;
 
     @Transactional
     public void sendSatisfaction(Long satisfactionId) {
@@ -109,12 +113,12 @@ public class EmailCommendService {
     }
 
     public List<Object> findRowBySatisfactionId(Long satisfactionId) throws Exception {
-        String spreadSheetId = "1OTHbmdSmwqTtrDK5rKL74VgM-ad87nXnIDW84Q-X2fs";
+
         Sheets sheets = googleSheetConfig.getSheetsService();
         String range = "설문지응답!A2:Y";
 
         ValueRange valueRange = sheets.spreadsheets().values()
-                .get(spreadSheetId, range)
+                .get(sheetId, range)
                 .execute();
 
         List<List<Object>> rows = valueRange.getValues();

@@ -1,9 +1,6 @@
 package be15fintomatokatchupbe.client.query.mapper;
 
-import be15fintomatokatchupbe.client.query.dto.ClientCompanyDetailResponse;
-import be15fintomatokatchupbe.client.query.dto.ClientCompanyListResponse;
-import be15fintomatokatchupbe.client.query.dto.ClientCompanyUserResponse;
-import be15fintomatokatchupbe.client.query.dto.ClientManagerSimpleResponse;
+import be15fintomatokatchupbe.client.query.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -20,4 +17,13 @@ public interface ClientCompanyQueryMapper {
     List<ClientCompanyListResponse> findClientCompanyList(@Param("offset") int offset, @Param("limit") int limit);
 
     int countClientCompanies();
+
+    List<ClientCompanyListResponse> searchClientCompanies(
+            @Param("condition")ClientCompanySearchCondition condition,
+            @Param("offset") int offset,
+            @Param("limit") int limit
+        );
+    int countClientCompaniesByCondition(@Param("condition") ClientCompanySearchCondition condition);
+
+
 }
