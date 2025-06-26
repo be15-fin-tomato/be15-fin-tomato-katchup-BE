@@ -131,6 +131,9 @@
         cc.sales,
         cc.address,
         cc.detail_address AS detailAddress,
+        cc.client_company_status_id AS clientCompanyStatusId,
+        cs.status_name AS clientCompanyStatusName,
+
         (
         SELECT COUNT(*) FROM client_manager cm
         WHERE cm.client_company_id = cc.client_company_id AND cm.is_deleted = 'N'
@@ -142,6 +145,8 @@
         WHERE cu.client_company_id = cc.client_company_id
         ) AS userName
         FROM client_company cc
+        JOIN katchup.client_company_status cs
+            ON cc.client_company_status_id = cs.client_company_status_id
         WHERE cc.is_deleted = 'N'
 
         <if test="condition.statusId != null">
@@ -179,6 +184,46 @@
 
         ORDER BY cc.client_company_id DESC
         LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 고객사 검색 조건 포함 개수 조회 -->
+    <select id="countClientCompaniesByCondition" resultType="int">
+        SELECT COUNT(*)
+        FROM client_company cc
+        WHERE cc.is_deleted = 'N'
+
+        <if test="condition.statusId != null">
+            AND cc.client_company_status_id = #{condition.statusId}
+        </if>
+
+        <if test="condition.keyword != null and condition.keyword != ''">
+            AND (
+            cc.client_company_name LIKE CONCAT('%', #{condition.keyword}, '%')
+            OR EXISTS (
+            SELECT 1
+            FROM client_company_user cu
+            JOIN user u ON cu.user_id = u.user_id
+            WHERE cu.client_company_id = cc.client_company_id
+            AND u.name LIKE CONCAT('%', #{condition.keyword}, '%')
+            )
+            )
+        </if>
+
+        <if test="condition.minSales != null">
+            AND cc.sales &gt;= #{condition.minSales}
+        </if>
+
+        <if test="condition.maxSales != null">
+            AND cc.sales &lt;= #{condition.maxSales}
+        </if>
+
+        <if test="condition.startDate != null">
+            AND cc.created_at &gt;= #{condition.startDate}
+        </if>
+
+        <if test="condition.endDate != null">
+            AND cc.created_at &lt;= #{condition.endDate}
+        </if>
     </select>
 
 </mapper>
