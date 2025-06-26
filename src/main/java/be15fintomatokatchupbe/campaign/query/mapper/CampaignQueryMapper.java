@@ -53,4 +53,8 @@ public interface CampaignQueryMapper {
     ContractFormDTO findContractDetail(Long pipelineId, Long pipelineStepId);
 
     List<FileInfo> findPipeFile(Long pipelineId);
+
+    RevenueFormDTO findRevenueDetail(Long pipelineId, Long pipelineStepId);
+
+    List<InfluencerRevenueInfo> findPipelineRevenueInfluencer(Long pipelineId);
 }

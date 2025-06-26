@@ -12,7 +12,7 @@ public class RevenueDetailResponse {
     RevenueFormResponse form;
 
     /* 참고에 들어갈 내용 */
-    List<ReferenceInfo> referenceInfoList;
+    List<ReferenceInfo> referenceList;
 
     /* 의견에 들어갈 내용 */
     List<IdeaInfo> ideaList;
