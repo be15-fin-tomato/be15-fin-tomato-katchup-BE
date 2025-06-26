@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @AllArgsConstructor
@@ -149,19 +150,19 @@ public class CampaignCommandService {
 
         pipelineRepository.save(pipeline);
 
-        List<Idea> ideaList = request
-                .getIdeaList()
+        List<Idea> ideaList = Optional.ofNullable(request.getIdeaList())
+                .orElse(List.of()) // null인 경우 빈 리스트로 처리
                 .stream()
-                .map(idea ->
-                        Idea
-                                .builder()
-                                .content(idea.getContent())
-                                .user(writer)
-                                .pipeline(pipeline)
-                                .build()
-                ).toList();
+                .map(idea -> Idea.builder()
+                        .content(idea.getContent())
+                        .user(writer)
+                        .pipeline(pipeline)
+                        .build())
+                .toList();
 
-        ideaRepository.saveAll(ideaList);
+        if (!ideaList.isEmpty()) {
+            ideaRepository.saveAll(ideaList);
+        }
 
         /* 부가 데이터 각 테이블에 저장하기
          * : 광고 담당자, 인플루언서 강점-비고, 담당자*/
@@ -204,19 +205,19 @@ public class CampaignCommandService {
                 .build();
         pipelineRepository.save(pipeline);
 
-        List<Idea> ideaList = request
-                .getIdeaList()
+        List<Idea> ideaList = Optional.ofNullable(request.getIdeaList())
+                .orElse(List.of()) // null인 경우 빈 리스트로 처리
                 .stream()
-                .map(idea ->
-                        Idea
-                                .builder()
-                                .content(idea.getContent())
-                                .user(writer)
-                                .pipeline(pipeline)
-                                .build()
-                ).toList();
+                .map(idea -> Idea.builder()
+                        .content(idea.getContent())
+                        .user(writer)
+                        .pipeline(pipeline)
+                        .build())
+                .toList();
 
-        ideaRepository.saveAll(ideaList);
+        if (!ideaList.isEmpty()) {
+            ideaRepository.saveAll(ideaList);
+        }
 
         pipeInfClientManagerService.saveClientManager(clientManager, pipeline);
         pipeInfClientManagerService.saveInfluencer(request.getInfluencerId(), pipeline);
@@ -252,19 +253,19 @@ public class CampaignCommandService {
 
         pipelineRepository.save(pipeline);
 
-        List<Idea> ideaList = request
-                .getIdeaList()
+        List<Idea> ideaList = Optional.ofNullable(request.getIdeaList())
+                .orElse(List.of()) // null인 경우 빈 리스트로 처리
                 .stream()
-                .map(idea ->
-                        Idea
-                                .builder()
-                                .content(idea.getContent())
-                                .user(writer)
-                                .pipeline(pipeline)
-                                .build()
-                ).toList();
+                .map(idea -> Idea.builder()
+                        .content(idea.getContent())
+                        .user(writer)
+                        .pipeline(pipeline)
+                        .build())
+                .toList();
 
-        ideaRepository.saveAll(ideaList);
+        if (!ideaList.isEmpty()) {
+            ideaRepository.saveAll(ideaList);
+        }
 
         /* 파일 저장*/
         if(files != null && !files.isEmpty()){
@@ -310,19 +311,19 @@ public class CampaignCommandService {
 
         pipelineRepository.save(pipeline);
 
-        List<Idea> ideaList = request
-                .getIdeaList()
+        List<Idea> ideaList = Optional.ofNullable(request.getIdeaList())
+                .orElse(List.of()) // null인 경우 빈 리스트로 처리
                 .stream()
-                .map(idea ->
-                        Idea
-                                .builder()
-                                .content(idea.getContent())
-                                .user(writer)
-                                .pipeline(pipeline)
-                                .build()
-                ).toList();
+                .map(idea -> Idea.builder()
+                        .content(idea.getContent())
+                        .user(writer)
+                        .pipeline(pipeline)
+                        .build())
+                .toList();
 
-        ideaRepository.saveAll(ideaList);
+        if (!ideaList.isEmpty()) {
+            ideaRepository.saveAll(ideaList);
+        }
 
         /* 파일 저장*/
         if(files != null && !files.isEmpty()){
