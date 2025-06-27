@@ -87,4 +87,16 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    // 캠페인 상세 수정
+    @PutMapping("/chance/update")
+    public ResponseEntity<ApiResponse<Void>> updateChance(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestBody UpdateChanceRequest request
+    ) {
+        log.info("[Controller] 캠페인 수정 요청 들어옴. campaignId = {}", request.getCampaignId());
+
+        campaignCommandService.updateChance(user.getUserId(), request);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
 }
