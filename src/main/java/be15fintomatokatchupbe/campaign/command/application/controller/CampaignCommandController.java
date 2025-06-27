@@ -112,7 +112,7 @@ public class CampaignCommandController {
             @PathVariable Long campaignId
     ) {
         log.info("[Controller] 캠페인 삭제 요청. campaignId = {}", campaignId);
-        campaignCommandService.deleteCampaign(user.getUserId(), campaignId);
+        campaignCommandService.deleteCampaign(campaignId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 }

@@ -133,7 +133,7 @@ public class CampaignCommandService {
 
     // 캠페인 상세 삭제
     @Transactional
-    public void deleteCampaign(Long userId, Long campaignId) {
+    public void deleteCampaign(Long campaignId) {
         log.info("[Service] deleteCampaign 실행. campaignId = {}", campaignId);
 
         // 존재하는 캠페인인지 확인
