@@ -31,6 +31,8 @@ public class Contract {
     @Column(name = "campaign_id")
     private Long campaignId;
 
-    @Column(name = "file_id")
-    private Long fileId;
+    @Setter
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "file_id")
+    private ContractFile file;
 }

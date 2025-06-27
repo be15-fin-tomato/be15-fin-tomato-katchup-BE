@@ -13,4 +13,6 @@ public class ClientCompanyListResponse {
     private String detailAddress;
     private String userName;
     private Long sales;
+    private Long clientCompanyStatusId;
+    private String clientCompanyStatusName;
 }

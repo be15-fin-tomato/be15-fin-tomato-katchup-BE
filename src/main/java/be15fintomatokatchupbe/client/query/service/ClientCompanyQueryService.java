@@ -1,9 +1,6 @@
 package be15fintomatokatchupbe.client.query.service;
 
-import be15fintomatokatchupbe.client.query.dto.ClientCompanyDetailResponse;
-import be15fintomatokatchupbe.client.query.dto.ClientCompanyListPagedResponse;
-import be15fintomatokatchupbe.client.query.dto.ClientCompanyListResponse;
-import be15fintomatokatchupbe.client.query.dto.ClientCompanyUserResponse;
+import be15fintomatokatchupbe.client.query.dto.*;
 import be15fintomatokatchupbe.client.query.mapper.ClientCompanyQueryMapper;
 import be15fintomatokatchupbe.common.dto.Pagination;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +22,11 @@ public class ClientCompanyQueryService {
         return clientCompanyQueryMapper.findUsersByClientCompanyId(clientCompanyId);
     }
 
-    public ClientCompanyListPagedResponse getClientCompanyList(int page, int size) {
+    public ClientCompanyListPagedResponse getClientCompanyList(int page, int size, ClientCompanySearchCondition condition) {
         int offset = (page - 1) * size;
-        List<ClientCompanyListResponse> content = clientCompanyQueryMapper.findClientCompanyList(offset, size);
-        int totalCount = clientCompanyQueryMapper.countClientCompanies();
+        List<ClientCompanyListResponse> content =
+                clientCompanyQueryMapper.searchClientCompanies(condition, offset, size);
+        int totalCount = clientCompanyQueryMapper.countClientCompaniesByCondition(condition);
         int totalPage = (int) Math.ceil((double) totalCount / size);
 
         Pagination pagination = Pagination.builder()

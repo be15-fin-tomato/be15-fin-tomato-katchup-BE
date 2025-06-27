@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.client.query.controller;
 
 import be15fintomatokatchupbe.client.query.dto.ClientCompanyDetailResponse;
 import be15fintomatokatchupbe.client.query.dto.ClientCompanyListPagedResponse;
+import be15fintomatokatchupbe.client.query.dto.ClientCompanySearchCondition;
 import be15fintomatokatchupbe.client.query.dto.ClientCompanyUserResponse;
 import be15fintomatokatchupbe.client.query.service.ClientCompanyQueryService;
 import be15fintomatokatchupbe.client.query.service.ClientManagerQueryService;
@@ -43,9 +44,10 @@ public class ClientCompanyQueryController {
     @Operation(summary = "고객사 목록 조회 (페이지네이션)")
     public ResponseEntity<ApiResponse<ClientCompanyListPagedResponse>> getClientCompanies(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "6") int size
-    ) {
-        ClientCompanyListPagedResponse response = clientCompanyQueryService.getClientCompanyList(page, size);
+            @RequestParam(defaultValue = "6") int size,
+            @ModelAttribute ClientCompanySearchCondition condition
+            ) {
+        ClientCompanyListPagedResponse response = clientCompanyQueryService.getClientCompanyList(page, size, condition);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

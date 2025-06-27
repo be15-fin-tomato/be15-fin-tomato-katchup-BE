@@ -7,12 +7,11 @@ import be15fintomatokatchupbe.contract.command.domain.entity.Detail;
 import be15fintomatokatchupbe.contract.command.domain.repository.ContractFileRepository;
 import be15fintomatokatchupbe.contract.command.domain.repository.DetailRepository;
 import be15fintomatokatchupbe.contract.command.domain.repository.ObjectRepository;
-import be15fintomatokatchupbe.contract.exception.DigitalContractErrorCode;
+import be15fintomatokatchupbe.contract.exception.ContractErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
 import java.util.List;
 
 @Service
@@ -27,7 +26,7 @@ public class ContractObjectCommandService {
     @Transactional
     public void deleteObject(Long objectId) {
         ContractObject contractObject = objectRepository.findById(objectId)
-                .orElseThrow(() -> new BusinessException(DigitalContractErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ContractErrorCode.NOT_FOUND));
 
         List<Detail> details = detailRepository.findAllByObjectId(objectId);
 
@@ -43,7 +42,7 @@ public class ContractObjectCommandService {
     @Transactional
     public void updateObject(Long objectId, ContractObjectUpdateRequest request) {
         ContractObject object = objectRepository.findById(objectId)
-                .orElseThrow(() -> new BusinessException(DigitalContractErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ContractErrorCode.NOT_FOUND));
         object.setTitle(request.getTitle());
         objectRepository.save(object);
     }
