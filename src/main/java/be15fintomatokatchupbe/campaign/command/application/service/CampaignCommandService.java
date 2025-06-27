@@ -340,4 +340,37 @@ public class CampaignCommandService {
         pipeUserService.saveUserList(request.getUserId(), pipeline);
 
     }
+
+    // 캠페인 상세 수정
+    @Transactional
+    public void updateChance(Long userId, UpdateChanceRequest request) {
+        // 로그 찍기
+        log.info("[Service] updateChance 실행. campaignId = {}", request.getCampaignId());
+
+        // 캠페인 조회
+        Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
+
+        // 엔티티 조회
+        CampaignStatus status = campaignStatusRepository.findById(request.getCampaignStatusId())
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.CAMPAIGN_STATUS_NOT_FOUND));
+
+        ClientCompany clientCompany = clientHelperService.findValidClientCompany(request.getClientCompanyId());
+
+        // 업데이트
+        campaign.update(
+                request.getCampaignName(),
+                status,
+                clientCompany,
+                request.getProductName(),
+                request.getProductPrice(),
+                request.getAwarenessPath()
+        );
+
+        // 저장
+        campaignRepository.save(campaign);
+
+        // 태그 업데이트
+        hashInfCampService.updateCampaignTags(campaign, request.getCategoryList());
+
+    }
 }
