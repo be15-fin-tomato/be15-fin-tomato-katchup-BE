@@ -53,4 +53,15 @@ public class Campaign {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private StatusType isDeleted = StatusType.N;
+
+    public void update(String name, CampaignStatus status, ClientCompany company,
+                       String productName, Long productPrice, String awarenessPath) {
+        this.campaignName = name;
+        this.campaignStatus = status;
+        this.clientCompany = company;
+        this.productName = productName;
+        this.productPrice = productPrice;
+        this.awarenessPath = awarenessPath;
+        this.updatedAt = LocalDateTime.now();
+    }
 }
