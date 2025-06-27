@@ -93,4 +93,16 @@ public class CampaignQueryController {
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @GetMapping("/revenue/{id}")
+    @Operation(summary = "매출 상세 조회", description = "매출 상세 정보를 조회합니다.")
+    public ResponseEntity<ApiResponse<RevenueDetailResponse>> getRevenueDetail(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable("id") Long pipelineId
+    ){
+        Long userId = userDetail.getUserId();
+        RevenueDetailResponse response = campaignQueryService.getRevenueDetail(userId, pipelineId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 }

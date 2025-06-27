@@ -308,4 +308,53 @@ public class CampaignQueryService {
                 .ideaList(ideaDto)
                 .build();
     }
+
+    public RevenueDetailResponse getRevenueDetail(Long userId, Long pipelineId) {
+        RevenueFormDTO revenueFormDto = campaignQueryMapper.findRevenueDetail(pipelineId, PipelineStepConstants.REVENUE);
+
+        /* 담당자 가져오기 */
+        List<UserInfo> userDto = campaignQueryMapper.findPipelineUser(pipelineId);
+
+        /* 인플루언서 가져오기 (URL도)*/
+        List<InfluencerRevenueInfo> influencerDto = campaignQueryMapper.findPipelineRevenueInfluencer(pipelineId);
+
+        /* 참고 목록 가져오기 */
+        List<ReferenceInfo> referenceDto = campaignQueryMapper.findPipeReference(pipelineId, PipelineStepConstants.CONTRACT);
+
+        /* 의견 가져오기 */
+        List<IdeaInfo> ideaDto = campaignQueryMapper.findPipeIdea(pipelineId);
+
+        /* 파일 목록 가져오기 */
+        List<FileInfo> fileDto = campaignQueryMapper.findPipeFile(pipelineId);
+
+        /* 조합하기 */
+        RevenueFormResponse form = RevenueFormResponse.builder()
+                .name(revenueFormDto.getName())
+                .clientCompanyId(revenueFormDto.getClientCompanyId())
+                .clientCompanyName(revenueFormDto.getClientCompanyName())
+                .clientManagerId(revenueFormDto.getClientManagerId())
+                .clientManagerName(revenueFormDto.getClientManagerName())
+                .userList(userDto)
+                .campaignId(revenueFormDto.getCampaignId())
+                .campaignName(revenueFormDto.getCampaignName())
+                .pipelineStatusId(revenueFormDto.getPipelineStatusId())
+                .pipelineStatusName(revenueFormDto.getPipelineStatusName())
+                .requestAt(revenueFormDto.getRequestAt())
+                .presentAt(revenueFormDto.getPresentAt())
+                .startedAt(revenueFormDto.getStartedAt())
+                .endedAt(revenueFormDto.getEndedAt())
+                .notes(revenueFormDto.getNotes())
+                .content(revenueFormDto.getContent())
+                .influencerList(influencerDto)
+                .productPrice(revenueFormDto.getProductPrice())
+                .salesQuantity(revenueFormDto.getSalesQuantity())
+                .build();
+
+        return RevenueDetailResponse.builder()
+                .form(form)
+                .fileList(fileDto)
+                .referenceList(referenceDto)
+                .ideaList(ideaDto)
+                .build();
+    }
 }
