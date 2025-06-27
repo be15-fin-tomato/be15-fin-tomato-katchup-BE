@@ -21,11 +21,12 @@ public class CampaignDashboardQueryController {
     private final CampaignDashboardQueryService campaignDashboardQueryService;
 
     @Operation(summary = "캠페인 컨텐츠 정보 조회", description = "사용자는 진행한 캠페인에 대한 컨텐츠 분석 정보를 조회할 수 있다.")
-    @GetMapping("/content/{campaignId}")
+    @GetMapping("/content/{campaignId}/{influencerId}")
     public ResponseEntity<ApiResponse<CampaignContentResponse>> getCampaignContent(
-            @PathVariable Long campaignId
+            @PathVariable Long campaignId,
+            @PathVariable Long influencerId
     ){
-        CampaignContentResponse response = campaignDashboardQueryService.getCampaignContent(campaignId);
+        CampaignContentResponse response = campaignDashboardQueryService.getCampaignContent(campaignId, influencerId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

@@ -17,20 +17,26 @@ public class CampaignDashboardQueryService {
     private final CampaignDashboardQueryMapper mapper;
     private final YoutubeService youtubeService;
 
-    public CampaignContentResponse getCampaignContent(Long pipelineId) {
-        // 1. DB에서 캠페인에 연결된 YouTube 영상 링크 조회
+    public CampaignContentResponse getCampaignContent(Long campaignId, Long influencerId) {
+        // 1. pipelineId 조회
+        Long pipelineId = mapper.findPipelineIdByCampaignIdAndInfluencerId(campaignId, influencerId);
+        if (pipelineId == null) {
+            throw new BusinessException(CampaignErrorCode.PIPELINE_STATUS_NOT_FOUND);
+        }
+
+        // 2. 유튜브 링크 조회
         String youtubeLink = mapper.findYoutubeLinkByPipelineId(pipelineId);
         if (youtubeLink == null || youtubeLink.isEmpty()) {
             throw new BusinessException(CampaignErrorCode.INVALID_YOUTUBE_LINK);
         }
 
-        // 2. 링크에서 videoId 추출
+        // 3. videoId 추출
         String videoId = YoutubeService.extractVideoId(youtubeLink);
 
-        // 3. YouTubeService로 영상 통계 데이터 조회
+        // 4. 유튜브 메트릭 조회
         Map<String, Long> metrics = youtubeService.getVideoMetrics(videoId);
 
-        // 4. DTO로 반환
+        // 5. 응답 객체 생성
         return new CampaignContentResponse(metrics);
     }
 }
