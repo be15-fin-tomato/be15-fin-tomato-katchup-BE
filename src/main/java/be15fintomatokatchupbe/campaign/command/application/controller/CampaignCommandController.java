@@ -105,4 +105,14 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    // 캠페인 상세 삭제
+    @DeleteMapping("/{campaignId}")
+    public ResponseEntity<ApiResponse<Void>> deleteCampaign(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @PathVariable Long campaignId
+    ) {
+        log.info("[Controller] 캠페인 삭제 요청. campaignId = {}", campaignId);
+        campaignCommandService.deleteCampaign(campaignId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }

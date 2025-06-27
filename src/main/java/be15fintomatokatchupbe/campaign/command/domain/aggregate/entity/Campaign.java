@@ -64,4 +64,9 @@ public class Campaign {
         this.awarenessPath = awarenessPath;
         this.updatedAt = LocalDateTime.now();
     }
+
+    public void softDelete() {
+        this.isDeleted = StatusType.Y;
+        this.deletedAt = LocalDateTime.now();
+    }
 }
