@@ -16,7 +16,9 @@ public enum ContractErrorCode implements ErrorCode {
     INVALID_TEMPLATE_NAME("30004", "유효하지 않은 템플릿 이름입니다.", HttpStatus.BAD_REQUEST),
     EMPTY_CONTENT("30005", "내용이 비어 있습니다.", HttpStatus.BAD_REQUEST),
     FILE_UPLOAD_FAILED("30006","파일을 찾을 수 없습니다." ,HttpStatus.INTERNAL_SERVER_ERROR ),
-    NON_UPLOAD_FILE("30006","파일을 찾을 수 없습니다." ,HttpStatus.INTERNAL_SERVER_ERROR );
+    NON_UPLOAD_FILE("30007","파일을 찾을 수 없습니다." ,HttpStatus.INTERNAL_SERVER_ERROR ),
+    PASSWORD_ERROR("30008","파일 비밀번호가 틀렸습니다." ,HttpStatus.INTERNAL_SERVER_ERROR ),
+    CONTRACT_NOT_REGISTERED("30009","계약서가 등록되지 않았습니다." ,HttpStatus.INTERNAL_SERVER_ERROR );
 
     private final String code;
     private final String message;
