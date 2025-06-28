@@ -5,11 +5,14 @@ import be15fintomatokatchupbe.common.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -56,6 +59,94 @@ public class YoutubeService {
             throw e;
         } catch (Exception e) {
             log.error("유튜브 API 호출 실패", e);
+            throw new BusinessException(InfluencerErrorCode.FAILED_TO_FETCH_YOUTUBE_DATA);
+        }
+    }
+
+    public static String extractVideoId(String youtubeUrl) {
+        try {
+            if (youtubeUrl == null || !youtubeUrl.contains("watch?v=")) {
+                throw new BusinessException(InfluencerErrorCode.YOUTUBE_VIDEO_NOT_FOUND);
+            }
+            return youtubeUrl.split("watch\\?v=")[1].split("&")[0];
+        } catch (Exception e) {
+            throw new BusinessException(InfluencerErrorCode.YOUTUBE_VIDEO_NOT_FOUND);
+        }
+    }
+
+    public String getUploadDate(String videoId) {
+        String url = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/videos")
+                .queryParam("part", "snippet")
+                .queryParam("id", videoId)
+                .queryParam("key", youtubeApiKey)
+                .toUriString();
+
+        try {
+            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+            Map<String, Object> body = response.getBody();
+
+            if (body == null || !body.containsKey("items")) {
+                throw new BusinessException(InfluencerErrorCode.YOUTUBE_VIDEO_NOT_FOUND);
+            }
+
+            var items = (java.util.List<?>) body.get("items");
+            if (items.isEmpty()) {
+                throw new BusinessException(InfluencerErrorCode.YOUTUBE_VIDEO_NOT_FOUND);
+            }
+
+            Map<String, Object> item = (Map<String, Object>) items.get(0);
+            Map<String, Object> snippet = (Map<String, Object>) item.get("snippet");
+
+            String publishedAt = (String) snippet.get("publishedAt");
+
+            // ISO 8601 형식 문자열을 LocalDateTime으로 변환 후 날짜만 반환
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+            LocalDateTime uploadDateTime = LocalDateTime.parse(publishedAt, formatter);
+
+            // Convert LocalDate to String
+            return uploadDateTime.toLocalDate().toString(); // return the date as a string
+
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("유튜브 업로드 날짜 조회 실패", e);
+            throw new BusinessException(InfluencerErrorCode.FAILED_TO_FETCH_YOUTUBE_DATA);
+        }
+    }
+
+    public Map<String, Long> getVideoMetrics(String videoId) {
+        String url = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/videos")
+                .queryParam("part", "statistics")
+                .queryParam("id", videoId)
+                .queryParam("key", youtubeApiKey)
+                .toUriString();
+
+        try {
+            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+            Map<String, Object> body = response.getBody();
+
+            if (body == null || !body.containsKey("items")) {
+                throw new BusinessException(InfluencerErrorCode.YOUTUBE_VIDEO_NOT_FOUND);
+            }
+
+            var items = (java.util.List<?>) body.get("items");
+            if (items.isEmpty()) {
+                throw new BusinessException(InfluencerErrorCode.YOUTUBE_VIDEO_NOT_FOUND);
+            }
+
+            Map<String, Object> item = (Map<String, Object>) items.get(0);
+            Map<String, Object> statistics = (Map<String, Object>) item.get("statistics");
+
+            // 원하는 메트릭들 추출
+            Map<String, Long> metrics = new HashMap<>();
+            metrics.put("commentCount", Long.parseLong((String) statistics.getOrDefault("commentCount", "0")));
+            metrics.put("likeCount", Long.parseLong((String) statistics.getOrDefault("likeCount", "0")));
+            metrics.put("viewCount", Long.parseLong((String) statistics.getOrDefault("viewCount", "0")));
+
+            return metrics;
+
+        } catch (Exception e) {
+            log.error("유튜브 영상 메트릭 조회 실패", e);
             throw new BusinessException(InfluencerErrorCode.FAILED_TO_FETCH_YOUTUBE_DATA);
         }
     }

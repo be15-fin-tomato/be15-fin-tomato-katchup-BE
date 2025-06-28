@@ -30,11 +30,15 @@ public class PipelineFormResponse {
 
     /* 파이프라인 상태*/
     private final Long pipelineStatusId;
-    private final String pipelineStepName;
+    private final String pipelineStatusName;
 
     /* 날짜들*/
     private final LocalDate requestAt;
     private final LocalDate presentAt;
     private final LocalDate startedAt;
     private final LocalDate endedAt;
+
+    /* 내용 */
+    private final String notes;
+    private final String content;
 }

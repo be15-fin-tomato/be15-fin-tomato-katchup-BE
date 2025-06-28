@@ -1,7 +1,7 @@
 package be15fintomatokatchupbe.campaign.command.application.controller;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.*;
-import be15fintomatokatchupbe.campaign.command.application.service.CampaignCommandService;
+import be15fintomatokatchupbe.campaign.command.application.service.*;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,6 +22,11 @@ import java.util.List;
 public class CampaignCommandController {
 
     private final CampaignCommandService campaignCommandService;
+    private final ProposalCommandService proposalCommandService;
+    private final ContractCommandService contractCommandService;
+    private final ListupCommandService listupCommandService;
+    private final QuotationCommandService quotationCommandService;
+    private final RevenueCommandService revenueCommandService;
 
 
     @PostMapping("/chance/create")
@@ -44,7 +49,8 @@ public class CampaignCommandController {
             ){
         Long userId = user.getUserId();
 
-        campaignCommandService.createProposal(userId, request);
+//        campaignCommandService.createProposal(userId, request);
+        proposalCommandService.createProposal(userId, request);
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }
@@ -56,7 +62,7 @@ public class CampaignCommandController {
     ) {
         Long userId = user.getUserId();
 
-        campaignCommandService.createQuotation(userId, request);
+        quotationCommandService.createQuotation(userId, request);
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }
@@ -69,7 +75,7 @@ public class CampaignCommandController {
     ){
         Long userId = userDetail.getUserId();
 
-        campaignCommandService.createContract(userId, request, files);
+        contractCommandService.createContract(userId, request, files);
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }
@@ -82,9 +88,31 @@ public class CampaignCommandController {
     ){
         Long userId = userDetail.getUserId();
 
-        campaignCommandService.createRevenue(userId, request, files);
+        revenueCommandService.createRevenue(userId, request, files);
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    // 캠페인 상세 수정
+    @PutMapping("/chance/update")
+    public ResponseEntity<ApiResponse<Void>> updateChance(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestBody UpdateChanceRequest request
+    ) {
+        log.info("[Controller] 캠페인 수정 요청 들어옴. campaignId = {}", request.getCampaignId());
+
+        campaignCommandService.updateChance(user.getUserId(), request);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    // 캠페인 상세 삭제
+    @DeleteMapping("/{campaignId}")
+    public ResponseEntity<ApiResponse<Void>> deleteCampaign(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @PathVariable Long campaignId
+    ) {
+        log.info("[Controller] 캠페인 삭제 요청. campaignId = {}", campaignId);
+        campaignCommandService.deleteCampaign(campaignId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }

@@ -26,4 +26,11 @@ public class ContractFile {
 
     @Column(name = "program")
     private String program;
+
+    @Column(name = "password")
+    private String password;
+
+    public void passwordUpdate(String encryptPassword) {
+        this.password = encryptPassword;
+    }
 }

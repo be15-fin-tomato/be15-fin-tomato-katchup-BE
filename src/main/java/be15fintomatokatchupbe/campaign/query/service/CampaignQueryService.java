@@ -243,6 +243,8 @@ public class CampaignQueryService {
                 .expectedRevenue(quotationFormDto.getExpectedRevenue())
                 .availableQuantity(quotationFormDto.getAvailableQuantity())
                 .expectedProfit(quotationFormDto.getExpectedProfit())
+                .content(quotationFormDto.getContent())
+                .notes(quotationFormDto.getNotes())
                 .build();
 
         /* 응답하기 */
@@ -250,6 +252,108 @@ public class CampaignQueryService {
                 .builder()
                 .form(form)
                 .refrenceList(referenceDto)
+                .ideaList(ideaDto)
+                .build();
+    }
+
+    public ContractDetailResponse getContractDetail(Long userId, Long pipelineId) {
+        /* 폼 정보 가져오기 */
+        /* 폼 가져오기 */
+        ContractFormDTO contractFormDto = campaignQueryMapper.findContractDetail(pipelineId, PipelineStepConstants.CONTRACT);
+
+        /* 인플루언서 가져오기 */
+        List<InfluencerInfo> influencerDto = campaignQueryMapper.findPipelineInfluencer(pipelineId);
+
+        /* 담당자 가져오기 */
+        List<UserInfo> userDto = campaignQueryMapper.findPipelineUser(pipelineId);
+
+        /* 참고 목록 가져오기 */
+        List<ReferenceInfo> referenceDto = campaignQueryMapper.findPipeReference(pipelineId, PipelineStepConstants.QUOTATION);
+
+        /* 의견 가져오기 */
+        List<IdeaInfo> ideaDto = campaignQueryMapper.findPipeIdea(pipelineId);
+
+        /* 파일 목록 가져오기 */
+        List<FileInfo> fileDto = campaignQueryMapper.findPipeFile(pipelineId);
+
+        /* 조합하기 */
+        ContractFormResponse form = ContractFormResponse.builder()
+                .name(contractFormDto.getName())
+                .clientCompanyId(contractFormDto.getClientCompanyId())
+                .clientCompanyName(contractFormDto.getClientCompanyName())
+                .clientManagerId(contractFormDto.getClientManagerId())
+                .clientManagerName(contractFormDto.getClientManagerName())
+                .userList(userDto)
+                .campaignId(contractFormDto.getCampaignId())
+                .campaignName(contractFormDto.getCampaignName())
+                .pipelineStatusId(contractFormDto.getPipelineStatusId())
+                .pipelineStatusName(contractFormDto.getPipelineStatusName())
+                .requestAt(contractFormDto.getRequestAt())
+                .presentAt(contractFormDto.getPresentAt())
+                .startedAt(contractFormDto.getStartedAt())
+                .endedAt(contractFormDto.getEndedAt())
+                .notes(contractFormDto.getNotes())
+                .content(contractFormDto.getContent())
+                .influencerList(influencerDto)
+                .expectedRevenue(contractFormDto.getExpectedRevenue())
+                .availableQuantity(contractFormDto.getAvailableQuantity())
+                .expectedProfit(contractFormDto.getExpectedProfit())
+                .build();
+
+        /* 응답하기 */
+        return ContractDetailResponse.builder()
+                .form(form)
+                .fileList(fileDto)
+                .referenceList(referenceDto)
+                .ideaList(ideaDto)
+                .build();
+    }
+
+    public RevenueDetailResponse getRevenueDetail(Long userId, Long pipelineId) {
+        RevenueFormDTO revenueFormDto = campaignQueryMapper.findRevenueDetail(pipelineId, PipelineStepConstants.REVENUE);
+
+        /* 담당자 가져오기 */
+        List<UserInfo> userDto = campaignQueryMapper.findPipelineUser(pipelineId);
+
+        /* 인플루언서 가져오기 (URL도)*/
+        List<InfluencerRevenueInfo> influencerDto = campaignQueryMapper.findPipelineRevenueInfluencer(pipelineId);
+
+        /* 참고 목록 가져오기 */
+        List<ReferenceInfo> referenceDto = campaignQueryMapper.findPipeReference(pipelineId, PipelineStepConstants.CONTRACT);
+
+        /* 의견 가져오기 */
+        List<IdeaInfo> ideaDto = campaignQueryMapper.findPipeIdea(pipelineId);
+
+        /* 파일 목록 가져오기 */
+        List<FileInfo> fileDto = campaignQueryMapper.findPipeFile(pipelineId);
+
+        /* 조합하기 */
+        RevenueFormResponse form = RevenueFormResponse.builder()
+                .name(revenueFormDto.getName())
+                .clientCompanyId(revenueFormDto.getClientCompanyId())
+                .clientCompanyName(revenueFormDto.getClientCompanyName())
+                .clientManagerId(revenueFormDto.getClientManagerId())
+                .clientManagerName(revenueFormDto.getClientManagerName())
+                .userList(userDto)
+                .campaignId(revenueFormDto.getCampaignId())
+                .campaignName(revenueFormDto.getCampaignName())
+                .pipelineStatusId(revenueFormDto.getPipelineStatusId())
+                .pipelineStatusName(revenueFormDto.getPipelineStatusName())
+                .requestAt(revenueFormDto.getRequestAt())
+                .presentAt(revenueFormDto.getPresentAt())
+                .startedAt(revenueFormDto.getStartedAt())
+                .endedAt(revenueFormDto.getEndedAt())
+                .notes(revenueFormDto.getNotes())
+                .content(revenueFormDto.getContent())
+                .influencerList(influencerDto)
+                .productPrice(revenueFormDto.getProductPrice())
+                .salesQuantity(revenueFormDto.getSalesQuantity())
+                .build();
+
+        return RevenueDetailResponse.builder()
+                .form(form)
+                .fileList(fileDto)
+                .referenceList(referenceDto)
                 .ideaList(ideaDto)
                 .build();
     }

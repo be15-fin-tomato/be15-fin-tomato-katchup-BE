@@ -33,6 +33,8 @@ public class QuotationFormDTO {
     private final LocalDate presentAt;
     private final LocalDate startedAt;
     private final LocalDate endedAt;
+    private final String notes;
+    private final String content;
 
     /* 견적용 */
     private final Long expectedRevenue;
