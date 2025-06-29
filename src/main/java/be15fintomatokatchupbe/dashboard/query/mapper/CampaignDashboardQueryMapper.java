@@ -1,7 +1,10 @@
 package be15fintomatokatchupbe.dashboard.query.mapper;
 
+import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignGetRevenueDTO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 @Mapper
 public interface CampaignDashboardQueryMapper {
@@ -18,4 +21,5 @@ public interface CampaignDashboardQueryMapper {
 
     Long findPipelineIdByCampaignIdAndInfluencerId(Long campaignId, Long influencerId);
 
+    List<CampaignGetRevenueDTO> getRevenue(Long campaignId, Long influencerId);
 }

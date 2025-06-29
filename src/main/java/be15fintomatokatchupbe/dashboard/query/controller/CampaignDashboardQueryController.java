@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.dashboard.query.controller;
 
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignContentResponse;
+import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignGetRevenueResponse;
 import be15fintomatokatchupbe.dashboard.query.service.CampaignDashboardQueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,6 +28,17 @@ public class CampaignDashboardQueryController {
             @PathVariable Long influencerId
     ){
         CampaignContentResponse response = campaignDashboardQueryService.getCampaignContent(campaignId, influencerId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @Operation(summary = "성과 대시보드 수익요약 조회", description = "사용자는 성과 대시보드 수익요약을 조회할 수 있다.")
+    @GetMapping("/get/revenue/{campaignId}/{influencerId}")
+    public ResponseEntity<ApiResponse<CampaignGetRevenueResponse>> getRevenue (
+            @PathVariable Long campaignId,
+            @PathVariable Long influencerId
+    ) {
+        CampaignGetRevenueResponse response = campaignDashboardQueryService.getRevenue(campaignId, influencerId);
+
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
