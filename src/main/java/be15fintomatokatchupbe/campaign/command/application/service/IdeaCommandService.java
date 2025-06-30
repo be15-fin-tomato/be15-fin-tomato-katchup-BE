@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.campaign.command.application.service;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.IdeaRequest;
+import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelperService;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Idea;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Pipeline;
 import be15fintomatokatchupbe.campaign.command.domain.repository.IdeaRepository;
@@ -17,23 +18,22 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class IdeaCommandService {
     private final IdeaRepository ideaRepository;
-    private final PipelineRepository pipelineRepository;
+    private final CampaignHelperService campaignHelperService;
 
     @Transactional
     public void createIdea(User user, IdeaRequest request) {
 
-        Pipeline pipeline = pipelineRepository.findById(request.getPipeline())
-                .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_NOT_FOUND));
+        if(request.getContent() == null || request.getContent().isBlank()){
+            throw new BusinessException(CampaignErrorCode.IDEA_IS_BLANK);
+        }
+
+        Pipeline pipeline = campaignHelperService.findValidPipeline(request.getPipeline());
 
         Idea idea = Idea.builder()
                 .pipeline(pipeline)
                 .content(request.getContent())
                 .user(user)
                 .build();
-
-        if(idea.getContent() == null || idea.getContent().isBlank()){
-            throw new BusinessException(CampaignErrorCode.IDEA_IS_BLANK);
-        }
 
         ideaRepository.save(idea);
     }
