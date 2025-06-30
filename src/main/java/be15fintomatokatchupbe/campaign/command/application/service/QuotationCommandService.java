@@ -97,6 +97,7 @@ public class QuotationCommandService {
         pipeUserService.saveUserList(request.getUserId(), pipeline);
     }
 
+    @Transactional
     public void updateQuotation(Long userId, UpdateQuotationRequest request) {
 
         /* 요청이 승인일 경우 승인 된게 있는지 체크 해주기 */
@@ -140,6 +141,8 @@ public class QuotationCommandService {
                 request.getExpectedProfit(),
                 request.getAvailableQuantity()
         );
+
+        /* 영속상태 조회 후 필드 값 수정하기 때문에 .save() 필요 없음!*/
 
         /* 연관 테이블 입력 해주기 */
         pipeInfClientManagerService.saveClientManager(clientManager, foundPipeline);
