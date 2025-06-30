@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.dashboard.query.mapper.CampaignDashboardQueryMapper">
+    <select id="getRevenue" parameterType="long" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.CampaignGetRevenueDTO">
+        SELECT
+            CAST(c.sales_quantity AS CHAR) AS salesQuantity,
+
+            CASE
+            WHEN c.sales_quantity > 0 THEN ROUND(p.total_profit / c.sales_quantity, 2)
+            ELSE NULL
+            END AS averageUnitPrice,
+
+            (
+            SELECT SUM(pp.total_profit)
+            FROM pipeline pp
+            WHERE pp.campaign_id = c.campaign_id
+            AND pp.pipeline_status_id = 3
+            ) AS totalProfit,
+
+            CASE
+            WHEN c.sales_quantity > 0 AND c.product_price > 0 THEN
+            ROUND((p.total_profit / (c.sales_quantity * c.product_price)) * 100, 2)
+            ELSE NULL
+            END AS roasPercentage,
+
+            CASE
+            WHEN c.available_quantity > 0 THEN
+            ROUND((c.sales_quantity / c.available_quantity) * 100, 2)
+            ELSE NULL
+            END AS conversionRatePercent
+
+          FROM campaign c
+          LEFT JOIN pipeline p ON c.campaign_id = p.campaign_id
+          LEFT JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
+        WHERE c.campaign_id = #{campaignId}
+        AND picm.influencer_id = #{influencerId}
+        AND p.pipeline_step_id = 6
+        LIMIT 1
+    </select>
+</mapper>

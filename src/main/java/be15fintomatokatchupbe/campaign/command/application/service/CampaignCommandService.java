@@ -130,4 +130,18 @@ public class CampaignCommandService {
         hashInfCampService.updateCampaignTags(campaign, request.getCategoryList());
 
     }
+
+    // 캠페인 상세 삭제
+    @Transactional
+    public void deleteCampaign(Long campaignId) {
+        log.info("[Service] deleteCampaign 실행. campaignId = {}", campaignId);
+
+        // 존재하는 캠페인인지 확인
+        Campaign campaign = campaignHelperService.findValidCampaign(campaignId);
+
+        campaign.softDelete();
+
+        campaignRepository.save(campaign);
+    }
+
 }

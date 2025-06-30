@@ -45,15 +45,16 @@ public class InstagramQueryController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    @Operation(summary = "인스타그램 통계 조회", description = "사용자는 인플루언서 인스타그램의 통계 자료를 조회할 수 있다. ")
+    @Operation(summary = "인스타그램 통계 조회", description = "사용자는 인플루언서 인스타그램의 통계 자료를 조회할 수 있다.")
     @GetMapping("/stats")
-    public ResponseEntity<ApiResponse<InstagramStatsResponse>> getInstagramStats(
-            @Parameter(description = "Instagram access token") @RequestParam("accessToken") String accessToken,
-            @Parameter(description = "Instagram 비즈니스 계정 ID") @RequestParam("igAccountId") String igAccountId
+    public ResponseEntity<ApiResponse<InstagramStatsResponse>> fetchInstagramStats(
+            @RequestParam("token") String token,
+            @RequestParam("igAccountId") String igAccountId
     ) {
-        log.info("[GET] /oauth2/instagram/stats - accessToken=***{}, igAccountId={} ", accessToken.length(), igAccountId);
-        InstagramStatsResponse response = instagramStatsQueryService.fetchStats(accessToken, igAccountId);
+        InstagramStatsResponse response = instagramStatsQueryService.fetchStats(token, igAccountId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+
 
 }

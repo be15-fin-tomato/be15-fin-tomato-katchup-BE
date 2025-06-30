@@ -1,11 +1,14 @@
 package be15fintomatokatchupbe.oauth.query.service;
 
+import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
 import be15fintomatokatchupbe.oauth.query.dto.InstagramMediaStats;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramStatsResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -14,187 +17,286 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InstagramStatsQueryService {
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
 
-    private static final String BASE_URL = "https://graph.facebook.com/v23.0";
+    @Value("${facebook.base-url}")
+    private String baseUrl;
 
-    public InstagramStatsResponse fetchStats(String accessToken, String igAccountId) {
-        LocalDate today = LocalDate.now();
-
-        Double dailyAvgViews = calculateAverageViews(accessToken, igAccountId, today.minusDays(7), today);
-        Double monthlyAvgViews = calculateAverageViews(accessToken, igAccountId, today.minusDays(30), today);
-
-        Map<String, Integer> followTypeViews = fetchBreakdownData(accessToken, igAccountId, "views", "follow_type", today.minusDays(7), today);
-        int totalViews = followTypeViews.values().stream().mapToInt(Integer::intValue).sum();
-        Double followerRatio = totalViews == 0 ? 0.0 : followTypeViews.getOrDefault("followed", 0) * 100.0 / totalViews;
-        Double nonFollowerRatio = totalViews == 0 ? 0.0 : followTypeViews.getOrDefault("unfollowed", 0) * 100.0 / totalViews;
-
-        Map<String, Integer> ageDistribution = fetchDemographicData(accessToken, igAccountId, "age");
-        Map<String, Integer> genderDistribution = fetchDemographicData(accessToken, igAccountId, "gender");
-
-        List<Integer> followerCounts = fetchTimeSeriesData(accessToken, igAccountId, "follower_count", today.minusDays(35), today);
-        Double dailyGrowthRate = calculateGrowthRate(followerCounts, 1);
-        Double weeklyGrowthRate = calculateGrowthRate(followerCounts, 7);
-        Double monthlyGrowthRate = calculateGrowthRate(followerCounts, 30);
-
-        List<InstagramMediaStats> topPosts = fetchTopMedia(accessToken, igAccountId, "IMAGE");
-        List<InstagramMediaStats> topVideos = fetchTopMedia(accessToken, igAccountId, "VIDEO");
-
-        return InstagramStatsResponse.builder()
-                .dailyAverageViews(dailyAvgViews)
-                .monthlyAverageViews(monthlyAvgViews)
-                .followerRatio(followerRatio)
-                .nonFollowerRatio(nonFollowerRatio)
-                .followerAgeDistribution(ageDistribution)
-                .followerGenderDistribution(genderDistribution)
-                .dailyFollowerGrowthRate(dailyGrowthRate)
-                .weeklyFollowerGrowthRate(weeklyGrowthRate)
-                .monthlyFollowerGrowthRate(monthlyGrowthRate)
-                .topPosts(topPosts)
-                .topVideos(topVideos)
-                .build();
-    }
-
-    private Double calculateAverageViews(String token, String igId, LocalDate from, LocalDate to) {
-        List<Integer> views = fetchTimeSeriesData(token, igId, "views", from, to);
-        return views.isEmpty() ? 0.0 : views.stream().mapToInt(Integer::intValue).average().orElse(0.0);
-    }
-
-    private Map<String, Integer> fetchBreakdownData(String token, String igId, String metric, String breakdown, LocalDate from, LocalDate to) {
-        String url = buildUrl(igId, "/insights", Map.of(
-                "metric", metric,
-                "period", "day",
-                "metric_type", "total_value",
-                "breakdown", breakdown,
-                "since", toUnix(from),
-                "until", toUnix(to),
-                "access_token", token
-        ));
-
-        JsonNode root = getJson(url);
-        return extractBreakdownValues(root, breakdown);
-    }
-
-    private Map<String, Integer> fetchDemographicData(String token, String igId, String type) {
-        String url = buildUrl(igId, "/insights", Map.of(
-                "metric", "follower_demographics",
-                "period", "lifetime",
-                "timeframe", "this_month",
-                "metric_type", "total_value",
-                "breakdown", type,
-                "access_token", token
-        ));
-
-        JsonNode root = getJson(url);
-        return extractBreakdownValues(root, type);
-    }
-
-    private List<Integer> fetchTimeSeriesData(String token, String igId, String metric, LocalDate from, LocalDate to) {
-        String url = buildUrl(igId, "/insights", Map.of(
-                "metric", metric,
-                "period", "day",
-                "since", toUnix(from),
-                "until", toUnix(to),
-                "access_token", token
-        ));
-
-        JsonNode root = getJson(url);
-        List<Integer> values = new ArrayList<>();
+    public InstagramStatsResponse fetchStats(String token, String igId) {
         try {
-            for (JsonNode val : root.path("data").get(0).path("values")) {
-                values.add(val.path("value").asInt());
-            }
+            Double dailyAvgViews = calculateAverage(token, igId, "views", 7);
+            Double monthlyAvgViews = calculateAverage(token, igId, "views", 30);
+
+            int totalFollowers = fetchFollowerCount(token, igId);
+
+            Map<String, Double> followerRatioMap = fetchFollowTypeRatio(token, igId);
+            Map<String, Double> genderDist = fetchDemographics(token, igId, "gender");
+            Map<String, Double> ageDist = fetchDemographics(token, igId, "age");
+            Map<String, Double> growthRates = fetchFollowerGrowthRate(token, igId);
+
+            List<InstagramMediaStats> mediaStats = fetchTopMediaStats(token, igId);
+            List<InstagramMediaStats> topPosts = mediaStats.stream()
+                    .filter(m -> m.getMediaType().equals("IMAGE") || m.getMediaType().equals("CAROUSEL_ALBUM"))
+                    .limit(3)
+                    .collect(Collectors.toList());
+            List<InstagramMediaStats> topVideos = mediaStats.stream()
+                    .filter(m -> m.getMediaType().equals("VIDEO") || m.getMediaType().equals("REELS"))
+                    .limit(3)
+                    .collect(Collectors.toList());
+
+            return new InstagramStatsResponse(
+                    dailyAvgViews,
+                    monthlyAvgViews,
+                    followerRatioMap.getOrDefault("FOLLOWER", 0.0),
+                    followerRatioMap.getOrDefault("NON_FOLLOWER", 0.0),
+                    ageDist,
+                    genderDist,
+                    growthRates.getOrDefault("daily", 0.0),
+                    growthRates.getOrDefault("weekly", 0.0),
+                    growthRates.getOrDefault("monthly", 0.0),
+                    topPosts,
+                    topVideos,
+                    totalFollowers
+            );
         } catch (Exception e) {
-            log.warn("Time series 추출 실패: {}", metric, e);
-        }
-        return values;
-    }
-
-    private Double calculateGrowthRate(List<Integer> counts, int days) {
-        if (counts.size() < days + 1) return 0.0;
-        int start = counts.get(counts.size() - 1 - days);
-        int end = counts.get(counts.size() - 1);
-        return start == 0 ? 0.0 : (end - start) * 100.0 / start;
-    }
-
-    private List<InstagramMediaStats> fetchTopMedia(String token, String igId, String type) {
-        List<InstagramMediaStats> mediaList = new ArrayList<>();
-        String mediaUrl = buildUrl(igId, "/media", Map.of(
-                "fields", "id,caption,media_type",
-                "access_token", token
-        ));
-
-        JsonNode mediaNodes = getJson(mediaUrl);
-        for (JsonNode media : mediaNodes.path("data")) {
-            if (!media.path("media_type").asText().equalsIgnoreCase(type)) continue;
-
-            String id = media.path("id").asText();
-            String caption = media.path("caption").asText("");
-            String detailUrl = BASE_URL + "/" + id + "/insights?metric=impressions,reach,engagement&access_token=" + token;
-
-            try {
-                JsonNode insights = getJson(detailUrl);
-                int impressions = insights.path("data").get(0).path("values").get(0).path("value").asInt();
-                int reach = insights.path("data").get(1).path("values").get(0).path("value").asInt();
-                int engagement = insights.path("data").get(2).path("values").get(0).path("value").asInt();
-
-                mediaList.add(InstagramMediaStats.builder()
-                        .mediaId(id)
-                        .caption(caption)
-                        .mediaType(type)
-                        .impressions(impressions)
-                        .reach(reach)
-                        .engagement(engagement)
-                        .build());
-            } catch (Exception e) {
-                log.warn("미디어 통계 조회 실패: {}", id, e);
-            }
-        }
-
-        return mediaList.stream()
-                .sorted(Comparator.comparingInt(InstagramMediaStats::getEngagement).reversed())
-                .limit(5)
-                .collect(Collectors.toList());
-    }
-
-    private String buildUrl(String igId, String path, Map<String, String> params) {
-        StringBuilder url = new StringBuilder(BASE_URL + "/" + igId + path + "?");
-        params.forEach((k, v) -> url.append(k).append("=").append(v).append("&"));
-        return url.toString();
-    }
-
-    private String toUnix(LocalDate date) {
-        return String.valueOf(date.atStartOfDay().toEpochSecond(ZoneOffset.UTC));
-    }
-
-    private JsonNode getJson(String url) {
-        try {
-            String body = webClient.get().uri(url).retrieve().bodyToMono(String.class).block();
-            return objectMapper.readTree(body);
-        } catch (Exception e) {
-            log.warn("Instagram API 호출 실패: {}", url, e);
-            return objectMapper.createObjectNode();
+            log.error("[fetchStats] Failed to fetch Instagram stats", e);
+            throw new BusinessException(OAuthErrorCode.INSTAGRAM_STATS_ERROR);
         }
     }
 
-    private Map<String, Integer> extractBreakdownValues(JsonNode root, String keyName) {
-        Map<String, Integer> result = new HashMap<>();
-        try {
-            JsonNode results = root.path("data").get(0).path("total_value").path("breakdowns").get(0).path("results");
-            for (JsonNode breakdown : results) {
-                String key = breakdown.path("dimension_values").get(0).asText();
-                int value = breakdown.path("value").asInt();
-                result.put(key, value);
-            }
-        } catch (Exception e) {
-            log.warn("Breakdown 값 추출 실패: {}", keyName, e);
+    private Double calculateAverage(String token, String igId, String metric, int days) {
+        LocalDate now = LocalDate.now();
+        LocalDate since = now.minusDays(days);
+
+        String url = String.format("%s/%s/insights?metric=%s&period=day&metric_type=total_value&since=%d&until=%d&access_token=%s",
+                baseUrl, igId, metric,
+                since.atStartOfDay().toEpochSecond(ZoneOffset.UTC),
+                now.atStartOfDay().toEpochSecond(ZoneOffset.UTC),
+                token);
+
+        JsonNode data = fetchJson(url);
+        JsonNode valuesNode = Optional.ofNullable(data.path("data"))
+                .filter(JsonNode::isArray)
+                .filter(d -> d.size() > 0)
+                .map(d -> d.get(0))
+                .map(n -> n.path("values"))
+                .orElse(null);
+
+        if (valuesNode == null || !valuesNode.isArray()) {
+            log.warn("No insight data returned for metric={}, igId={}", metric, igId);
+            return 0.0;
+        }
+
+        int total = valuesNode.findValues("value").stream()
+                .mapToInt(JsonNode::asInt)
+                .sum();
+        int count = valuesNode.size();
+
+        return count > 0 ? total / (double) count : 0.0;
+    }
+
+    private int fetchFollowerCount(String token, String igId) {
+        String url = String.format("%s/%s/?fields=followers_count&access_token=%s",
+                baseUrl, igId, token);
+
+        JsonNode valuesNode = Optional.ofNullable(fetchJson(url).path("data"))
+                .filter(JsonNode::isArray)
+                .filter(d -> d.size() > 0)
+                .map(d -> d.get(0))
+                .map(n -> n.path("values"))
+                .orElse(null);
+
+        if (valuesNode == null || !valuesNode.isArray() || valuesNode.size() == 0) {
+            log.warn("No follower_count data for igId={}", igId);
+            return 0;
+        }
+
+        return valuesNode.get(valuesNode.size() - 1).path("value").asInt();
+    }
+
+    private Map<String, Double> fetchFollowTypeRatio(String token, String igId) {
+        String url = String.format("%s/%s/insights?metric=views&period=day&metric_type=total_value&breakdown=follow_type&access_token=%s",
+                baseUrl, igId, token);
+
+        JsonNode results = fetchJson(url);
+        JsonNode breakdowns = Optional.ofNullable(results.path("data"))
+                .filter(JsonNode::isArray)
+                .filter(d -> d.size() > 0)
+                .map(d -> d.get(0))
+                .map(n -> n.path("total_value"))
+                .map(n -> n.path("breakdowns"))
+                .filter(JsonNode::isArray)
+                .filter(b -> b.size() > 0)
+                .map(b -> b.get(0))
+                .map(n -> n.path("results"))
+                .orElse(null);
+
+        if (breakdowns == null || !breakdowns.isArray()) {
+            log.warn("No follow_type breakdowns found for igId={}", igId);
+            return Map.of();
+        }
+
+        Map<String, Double> map = new HashMap<>();
+        int total = 0;
+        for (JsonNode r : breakdowns) {
+            String type = r.path("dimension_values").get(0).asText();
+            int value = r.path("value").asInt();
+            total += value;
+            map.put(type, (double) value);
+        }
+        for (String key : map.keySet()) {
+            map.put(key, Math.round((map.get(key) / total) * 10000.0) / 100.0);
+        }
+        return map;
+    }
+
+    private Map<String, Double> fetchDemographics(String token, String igId, String breakdown) {
+        String url = String.format("%s/%s/insights?metric=follower_demographics&period=lifetime&timeframe=this_month&metric_type=total_value&breakdown=%s&access_token=%s",
+                baseUrl, igId, breakdown, token);
+
+        JsonNode data = fetchJson(url);
+        JsonNode results = Optional.ofNullable(data.path("data"))
+                .filter(JsonNode::isArray)
+                .filter(d -> d.size() > 0)
+                .map(d -> d.get(0))
+                .map(n -> n.path("total_value"))
+                .map(n -> n.path("breakdowns"))
+                .filter(JsonNode::isArray)
+                .filter(b -> b.size() > 0)
+                .map(b -> b.get(0))
+                .map(n -> n.path("results"))
+                .orElse(null);
+
+        if (results == null || !results.isArray()) {
+            log.warn("No demographic data for breakdown={}, igId={}", breakdown, igId);
+            return Map.of();
+        }
+
+        Map<String, Double> result = new LinkedHashMap<>();
+        int total = 0;
+        for (JsonNode r : results) {
+            String key = r.path("dimension_values").get(0).asText();
+            int value = r.path("value").asInt();
+            result.put(key, (double) value);
+            total += value;
+        }
+        for (String key : result.keySet()) {
+            result.put(key, Math.round((result.get(key) / total) * 10000.0) / 100.0);
         }
         return result;
     }
+
+    private Map<String, Double> fetchFollowerGrowthRate(String token, String igId) {
+        String url = String.format("%s/%s/insights?metric=follower_count&period=day&access_token=%s",
+                baseUrl, igId, token);
+
+        JsonNode valuesNode = Optional.ofNullable(fetchJson(url).path("data"))
+                .filter(JsonNode::isArray)
+                .filter(d -> d.size() > 0)
+                .map(d -> d.get(0))
+                .map(n -> n.path("values"))
+                .orElse(null);
+
+        if (valuesNode == null || !valuesNode.isArray()) {
+            log.warn("No follower_count data for igId={}", igId);
+            return Map.of();
+        }
+
+        List<Integer> counts = new ArrayList<>();
+        for (JsonNode v : valuesNode) counts.add(v.path("value").asInt());
+
+        double daily = 0.0, weekly = 0.0, monthly = 0.0;
+        if (counts.size() >= 2) {
+            daily = ((double) (counts.get(counts.size() - 1) - counts.get(counts.size() - 2)) / counts.get(counts.size() - 2)) * 100;
+        }
+        if (counts.size() >= 8) {
+            weekly = ((double) (counts.get(counts.size() - 1) - counts.get(counts.size() - 8)) / counts.get(counts.size() - 8)) * 100;
+        }
+        if (counts.size() >= 30) {
+            monthly = ((double) (counts.get(counts.size() - 1) - counts.get(0)) / counts.get(0)) * 100;
+        }
+        return Map.of(
+                "daily", Math.round(daily * 100.0) / 100.0,
+                "weekly", Math.round(weekly * 100.0) / 100.0,
+                "monthly", Math.round(monthly * 100.0) / 100.0
+        );
+    }
+
+    private List<InstagramMediaStats> fetchTopMediaStats(String token, String igId) {
+        String url = String.format("%s/%s/media?fields=id,media_type,media_url&access_token=%s",
+                baseUrl, igId, token);
+        JsonNode mediaList = fetchJson(url).path("data");
+
+        if (mediaList == null || !mediaList.isArray()) {
+            log.warn("No media data for igId={}", igId);
+            return List.of();
+        }
+
+        List<InstagramMediaStats> results = new ArrayList<>();
+        for (JsonNode media : mediaList) {
+            String id = media.path("id").asText();
+            String type = media.path("media_type").asText();
+            String mediaUrl = media.path("media_url").asText();
+            String insightUrl = String.format(
+                    "%s/%s/insights?metric=reach,likes,comments,saved,shares&access_token=%s",
+                    baseUrl, id, token
+            );
+
+            JsonNode insights = fetchJson(insightUrl).path("data");
+
+            Map<String, Integer> metrics = new HashMap<>();
+            if (insights.isArray()) {
+                for (JsonNode m : insights) {
+                    metrics.put(m.path("name").asText(), m.path("values").get(0).path("value").asInt());
+                }
+            }
+
+            results.add(new InstagramMediaStats(id, type, mediaUrl,
+                    0,  // removed impressions metric
+                    metrics.getOrDefault("reach", 0),
+                    metrics.getOrDefault("likes", 0) +
+                            metrics.getOrDefault("comments", 0) +
+                            metrics.getOrDefault("saved", 0) +
+                            metrics.getOrDefault("shares", 0)));
+        }
+
+        return results.stream()
+                .sorted(Comparator.comparingInt(InstagramMediaStats::getEngagement).reversed())
+                .collect(Collectors.toList());
+    }
+
+    private JsonNode fetchJson(String url) {
+        try {
+            String body = webClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            JsonNode json = objectMapper.readTree(body);
+
+            if (json.has("error")) {
+                JsonNode errorNode = json.get("error");
+                String msg = errorNode.path("message").asText();
+                int code = errorNode.path("code").asInt();
+                log.error("[fetchJson] API returned error: {} (code: {})", msg, code);
+                throw new BusinessException(OAuthErrorCode.INSTAGRAM_STATS_ERROR);
+            }
+
+            return json;
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("[fetchJson] Failed URL: {}", url);
+            log.error("[fetchJson] Error Message: {}", e.getMessage(), e);
+            throw new BusinessException(OAuthErrorCode.INSTAGRAM_STATS_ERROR);
+        }
+    }
+
 }

@@ -123,4 +123,13 @@
         </where>
     </select>
 
+    <select id="getContentView" resultType="be15fintomatokatchupbe.contract.query.dto.response.ContractViewDTO">
+        SELECT
+              original_name
+            , file_path
+            , program
+          FROM contract_file
+        WHERE file_id = #{fileId}
+    </select>
+
 </mapper>

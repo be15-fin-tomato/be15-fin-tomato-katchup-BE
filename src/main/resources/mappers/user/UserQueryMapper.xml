@@ -35,4 +35,14 @@
         WHERE i.is_deleted = 'N'
           AND i.user_id = #{ userId }
     </select>
+
+    <select id="findUserNamesByIds" resultType="be15fintomatokatchupbe.chat.query.application.dto.response.UserSimpleDto">
+        SELECT user_id AS senderId, name AS senderName
+        FROM user
+        WHERE user_id IN
+        <foreach item="id" collection="senderIds" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
 </mapper>
