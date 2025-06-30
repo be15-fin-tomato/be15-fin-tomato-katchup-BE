@@ -2,12 +2,14 @@ package be15fintomatokatchupbe.campaign.command.application.service;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateRevenueRequest;
 import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelperService;
+import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStatusConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.*;
 import be15fintomatokatchupbe.campaign.command.domain.repository.*;
 import be15fintomatokatchupbe.campaign.exception.CampaignErrorCode;
 import be15fintomatokatchupbe.client.command.application.support.ClientHelperService;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManager;
+import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.file.domain.File;
 import be15fintomatokatchupbe.file.service.FileService;
@@ -46,6 +48,20 @@ public class RevenueCommandService {
 
     @Transactional
     public void createRevenue(Long userId, CreateRevenueRequest request, List<MultipartFile> files) {
+        /* 승인 완료가 존재 할 경우 더이상 등록하지 못하게 하기 ! */
+        /* 해당 캠페인의 매출 중에 승인된 파이프라인이 존재할 경우 더이상 등록 불가능 */
+        /* CampaignId, 스텝 ID,상태 ID, 삭제 여부로 존재 확인! */
+        Pipeline existPipeline = pipelineRepository.findApprovePipeline(
+                request.getCampaignId(),
+                PipelineStepConstants.REVENUE,
+                PipelineStatusConstants.APPROVED
+        );
+
+        if(existPipeline != null){
+            throw new BusinessException(CampaignErrorCode.APPROVED_REVENUE_ALREADY_EXISTS);
+        }
+
+
         ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
         Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
         PipelineStep pipelineStep = pipelineStepRepository.findById(PipelineStepConstants.REVENUE)

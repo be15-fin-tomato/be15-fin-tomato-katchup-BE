@@ -23,6 +23,9 @@ public class ChatSocketController {
                             @Header("simpSessionAttributes") Map<String, Object> sessionAttributes) {
 
         Long userId = (Long) sessionAttributes.get("userId");
+        System.out.println(">>> userId: " + userId);
+        System.out.println(">>> 받은 chatId: " + message.getChatId());
+        System.out.println(">>> 받은 message: " + message.getMessage());
         message.setSenderId(userId);
         message.setSentAt(LocalDateTime.now());
 
