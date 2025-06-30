@@ -13,4 +13,6 @@ public interface ChatRoomQueryMapper {
 
     List<ChatParticipantDto> findParticipantsByChatId(@Param("chatId") Long chatId);
 
+    boolean existsByChatIdAndUserId(@Param("chatId") Long chatId, @Param("userId") Long userId);
+
 }

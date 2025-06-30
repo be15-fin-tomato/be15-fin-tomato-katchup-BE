@@ -9,24 +9,28 @@
 <body>
 <h1>Chat WebSocket 테스트</h1>
 
-<!-- 🔐 토큰 입력 필드 -->
 <label>JWT 토큰: </label>
-<input type="text" id="tokenInput" style="width: 500px;" placeholder="Postman에서 복사한 토큰을 여기에 붙여넣기"><br><br>
+<input type="password" id="tokenInput" style="width: 500px;" placeholder="Postman에서 복사한 토큰을 여기에 붙여넣기"><br><br>
 
-<!-- 📦 채팅 ID 입력 -->
 <label>채팅방 ID: </label>
 <input type="number" id="chatIdInput" placeholder="예: 1"><br><br>
 
-<!-- 💬 메시지 입력 -->
 <label>메시지: </label>
 <input type="text" id="messageInput" placeholder="전송할 메시지를 입력하세요"><br><br>
 
-<!-- 🖱 버튼 -->
 <button onclick="connect()">Connect</button>
 <button onclick="sendMessage()">Send Message</button>
 
+<pre id="log" style="border:1px solid #ccc; background:#fafafa; padding:10px;"></pre>
+
 <script>
     let stompClient = null;
+
+    function log(message, isError = false) {
+        const logElement = document.getElementById("log");
+        const formatted = isError ? `\n❗ ${message}\n` : `\n${message}\n`;
+        logElement.textContent += formatted;
+    }
 
     function getToken() {
         return document.getElementById("tokenInput").value;
@@ -35,7 +39,7 @@
     function connect() {
         const token = getToken();
         if (!token) {
-            alert("❗ JWT 토큰을 입력해주세요.");
+            log("JWT 토큰을 입력해주세요.", true);
             return;
         }
 
@@ -45,24 +49,22 @@
         stompClient.connect(
             { Authorization: 'Bearer ' + token },
             frame => {
-                console.log("✅ 연결 성공:", frame);
-
+                log("연결 성공: " + frame);
                 const chatId = document.getElementById("chatIdInput").value || 1;
-
                 stompClient.subscribe('/topic/room.' + chatId, message => {
                     const body = JSON.parse(message.body);
-                    console.log("📥 받은 메시지:", body);
+                    log("받은 메시지: " + JSON.stringify(body));
                 });
             },
             error => {
-                console.error("❌ 연결 실패:", error);
+                log("연결 실패: " + error, true);
             }
         );
     }
 
     function sendMessage() {
         if (!stompClient || !stompClient.connected) {
-            console.warn("🚫 먼저 연결을 해주세요.");
+            log("먼저 연결을 해주세요.", true);
             return;
         }
 
@@ -74,7 +76,7 @@
             message: messageText
         }));
 
-        console.log("📤 메시지 전송 완료");
+        log(`메시지 전송 요청 → chatId: ${chatId}, message: ${messageText}`);
     }
 </script>
 </body>

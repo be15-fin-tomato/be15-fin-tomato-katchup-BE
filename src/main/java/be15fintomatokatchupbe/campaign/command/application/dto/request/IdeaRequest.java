@@ -8,5 +8,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @NoArgsConstructor
 public class IdeaRequest {
+
     private String content;
+
 }

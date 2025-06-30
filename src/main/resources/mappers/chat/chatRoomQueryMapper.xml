@@ -24,4 +24,12 @@
         AND uc.is_deleted = 'N'
     </select>
 
+    <select id="existsByChatIdAndUserId" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM user_chat
+        WHERE chat_id = #{chatId}
+        AND user_id = #{userId}
+        AND is_deleted = 'N'
+    </select>
+
 </mapper>
