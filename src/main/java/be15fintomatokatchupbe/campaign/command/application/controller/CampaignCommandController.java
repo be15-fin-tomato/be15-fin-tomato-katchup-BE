@@ -105,4 +105,17 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @PutMapping("/quotation")
+    public ResponseEntity<ApiResponse<Void>> updateQuotation(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestBody UpdateQuotationRequest request
+    ){
+        Long userId = user.getUserId();
+
+        quotationCommandService.updateQuotation(userId, request);
+
+        /* TODO 응답 값 추가하기 */
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
 }

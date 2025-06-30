@@ -8,6 +8,9 @@ import java.util.List;
 @SuperBuilder
 @Getter
 public class UpdateQuotationRequest extends BasePipelineRequest{
+    // 수정할 파이프라인 이름
+    private Long pipelineId;
+
     // 인플루언서 정보
     private List<Long> influencerId;
 
