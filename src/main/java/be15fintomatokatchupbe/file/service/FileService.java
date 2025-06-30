@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.file.service;
 
+import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Pipeline;
 import be15fintomatokatchupbe.contract.command.domain.entity.ContractFile;
 import be15fintomatokatchupbe.contract.command.domain.repository.ContractFileRepository;
 import be15fintomatokatchupbe.file.domain.File;
@@ -187,6 +188,11 @@ public class FileService {
         }
 
         contractFileRepository.saveAll(filesList);
+    }
+
+    /* 내부 호출용 */
+    public void deleteByPipeline(Pipeline pipeline){
+        fileRepository.deleteAllByPipeline(pipeline);
     }
 
 }
