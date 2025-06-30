@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.campaign.command.application.service;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateContractRequest;
 import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelperService;
+import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStatusConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.*;
 import be15fintomatokatchupbe.campaign.command.domain.repository.*;
@@ -46,6 +47,16 @@ public class ContractCommandService {
 
     @Transactional
     public void createContract(Long userId, CreateContractRequest request, List<MultipartFile> files) {
+        Pipeline existPipeline = pipelineRepository.findApprovePipeline(
+                request.getCampaignId(),
+                PipelineStepConstants.CONTRACT,
+                PipelineStatusConstants.APPROVED
+        );
+
+        if(existPipeline != null){
+            throw new BusinessException(CampaignErrorCode.APPROVED_CONTRACT_ALREADY_EXISTS);
+        }
+
         ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
         Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
         PipelineStep pipelineStep = pipelineStepRepository.findById(PipelineStepConstants.CONTRACT)

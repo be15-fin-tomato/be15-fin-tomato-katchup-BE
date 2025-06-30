@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 public class BasePipelineRequest {
     private Long campaignId;
-    private Long pipelineStepId;
+//    private Long pipelineStepId;  // 넣지 않기!
     private Long pipelineStatusId;
     private Long clientCompanyId;
     private Long clientManagerId;

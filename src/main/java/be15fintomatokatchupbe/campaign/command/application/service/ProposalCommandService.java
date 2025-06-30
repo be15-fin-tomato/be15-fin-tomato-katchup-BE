@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.campaign.command.application.service;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateProposalRequest;
 import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelperService;
+import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStatusConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.*;
 import be15fintomatokatchupbe.campaign.command.domain.repository.*;
@@ -43,6 +44,15 @@ public class ProposalCommandService {
 
     @Transactional
     public void createProposal(Long userId, CreateProposalRequest request) {
+        Pipeline existPipeline = pipelineRepository.findApprovePipeline(
+                request.getCampaignId(),
+                PipelineStepConstants.PROPOSAL,
+                PipelineStatusConstants.APPROVED
+        );
+
+        if(existPipeline != null){
+            throw new BusinessException(CampaignErrorCode.APPROVED_PROPOSAL_ALREADY_EXISTS);
+        }
         /* 외부 엔티티 가져오기
          * : 광고 담당자, 캠페인, 파이프라인 단계 */
 
