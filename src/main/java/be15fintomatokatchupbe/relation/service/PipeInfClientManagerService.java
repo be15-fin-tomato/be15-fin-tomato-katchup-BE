@@ -10,6 +10,7 @@ import be15fintomatokatchupbe.relation.repository.PipeInfClientManagerRepository
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,6 +22,7 @@ public class PipeInfClientManagerService {
 
     private final InfluencerHelperService influencerHelperService;
 
+    @Transactional
     public void saveClientManager(ClientManager clientManager, Pipeline pipeline){
         PipelineInfluencerClientManager pipelineInfluencerClientManager
                 = PipelineInfluencerClientManager.builder()
@@ -31,6 +33,7 @@ public class PipeInfClientManagerService {
         pipeInfClientManagerRepository.save(pipelineInfluencerClientManager);
     }
 
+    @Transactional
     public void saveInfluencerInfo(List<InfluencerProposalRequest> influencerList, Pipeline pipeline) {
         List<PipelineInfluencerClientManager> resultList =
                 influencerList
@@ -47,6 +50,7 @@ public class PipeInfClientManagerService {
         pipeInfClientManagerRepository.saveAll(resultList);
     }
 
+    @Transactional
     public void saveInfluencer(List<Long> influencerList, Pipeline pipeline) {
         List<PipelineInfluencerClientManager> resultList = influencerList.stream()
                 .map(influencer -> PipelineInfluencerClientManager.builder()
@@ -58,6 +62,7 @@ public class PipeInfClientManagerService {
         pipeInfClientManagerRepository.saveAll(resultList);
     }
 
+    @Transactional
     public void saveInfluencerRevenue(List<InfluencerRevenueRequest> influencerList, Pipeline pipeline){
         List<PipelineInfluencerClientManager> resultList = influencerList.stream()
                 .map(influencer -> PipelineInfluencerClientManager.builder()
@@ -70,5 +75,10 @@ public class PipeInfClientManagerService {
                 .toList();
 
         pipeInfClientManagerRepository.saveAll(resultList);
+    }
+
+    @Transactional
+    public void deleteByPipeline(Pipeline pipeline){
+        pipeInfClientManagerRepository.deleteAllByPipeline(pipeline);
     }
 }

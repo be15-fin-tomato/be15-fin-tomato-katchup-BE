@@ -10,10 +10,7 @@ import be15fintomatokatchupbe.campaign.command.domain.repository.*;
 import be15fintomatokatchupbe.campaign.exception.CampaignErrorCode;
 import be15fintomatokatchupbe.client.command.application.support.ClientHelperService;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManager;
-import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
-import be15fintomatokatchupbe.file.service.FileService;
-import be15fintomatokatchupbe.relation.service.HashInfCampService;
 import be15fintomatokatchupbe.relation.service.PipeInfClientManagerService;
 import be15fintomatokatchupbe.relation.service.PipeUserService;
 import be15fintomatokatchupbe.user.command.application.support.UserHelperService;
@@ -33,14 +30,11 @@ import java.util.Optional;
 public class QuotationCommandService {
     private final PipeUserService pipeUserService;
     private final PipeInfClientManagerService pipeInfClientManagerService;
-    private final HashInfCampService hashInfCampService;
-    private final FileService fileService;
 
     private final ClientHelperService clientHelperService;
     private final CampaignHelperService campaignHelperService;
     private final UserHelperService userHelperService;
 
-    private final CampaignRepository campaignRepository;
     private final PipelineRepository pipelineRepository;
     private final PipelineStepRepository pipelineStepRepository;
     private final PipelineStatusRepository pipelineStatusRepository;
@@ -127,9 +121,29 @@ public class QuotationCommandService {
         /* 수정할 파이프라인 찾아주기 */
         Pipeline foundPipeline = campaignHelperService.findValidPipeline(request.getPipelineId());
 
+        /* 연관 테이블 지워주기 */
+        campaignHelperService.deleteRelationTable(foundPipeline);
 
+        /* 파이프라인 값 입력해주기 */
+        foundPipeline.updateQuotation(
+                pipelineStatus,
+                writer,
+                request.getName(),
+                request.getRequestAt(),
+                request.getStartedAt(),
+                request.getEndedAt(),
+                request.getPresentedAt(),
+                campaign,
+                request.getContent(),
+                request.getNotes(),
+                request.getExpectedRevenue(),
+                request.getExpectedProfit(),
+                request.getAvailableQuantity()
+        );
 
-
-
+        /* 연관 테이블 입력 해주기 */
+        pipeInfClientManagerService.saveClientManager(clientManager, foundPipeline);
+        pipeInfClientManagerService.saveInfluencer(request.getInfluencerId(), foundPipeline);
+        pipeUserService.saveUserList(request.getUserId(), foundPipeline);
     }
 }
