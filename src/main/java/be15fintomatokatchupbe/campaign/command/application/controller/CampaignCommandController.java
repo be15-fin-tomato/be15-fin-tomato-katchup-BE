@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.campaign.command.application.dto.request.*;
 import be15fintomatokatchupbe.campaign.command.application.service.*;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,7 @@ public class CampaignCommandController {
     private final ListupCommandService listupCommandService;
     private final QuotationCommandService quotationCommandService;
     private final RevenueCommandService revenueCommandService;
+    private final IdeaCommandService ideaCommandService;
 
 
     @PostMapping("/chance/create")
@@ -66,6 +68,18 @@ public class CampaignCommandController {
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    // 견적 의견 삭제 기능
+    @Operation(summary = "견적 의견 삭제", description = "사용자는 견적에 작성된 의견을 삭제할 수 있다.(soft delete)")
+    @DeleteMapping("quotation/idea/{quotationIdeaId}")
+    public ResponseEntity<ApiResponse<Void>> deleteQuotationIdea(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @PathVariable Long quotationIdeaId
+    ){
+        ideaCommandService.deleteQuotationIdea(user.getUserId(), quotationIdeaId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
 
     @PostMapping("/contract/create")
     public ResponseEntity<ApiResponse<Void>> createContract(
