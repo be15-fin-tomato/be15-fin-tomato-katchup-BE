@@ -123,7 +123,18 @@ public class CampaignCommandController {
 
         quotationCommandService.updateQuotation(userId, request);
 
-        /* TODO 응답 값 추가하기 */
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PutMapping("/contract")
+    public ResponseEntity<ApiResponse<Void>> updateContract(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestPart("request") UpdateContractRequest request,
+            @RequestPart(required = false) List<MultipartFile> files
+    ){
+        Long userId = user.getUserId();
+        contractCommandService.updateContract(userId, request, files);
+
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 

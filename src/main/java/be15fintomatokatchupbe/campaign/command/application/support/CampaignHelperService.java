@@ -42,5 +42,4 @@ public class CampaignHelperService {
         pipeInfClientManagerService.deleteByPipeline(pipeline);
         pipeUserService.deleteByPipeline(pipeline);
     }
-
 }

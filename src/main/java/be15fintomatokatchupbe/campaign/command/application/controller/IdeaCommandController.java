@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "캠페인 의견")
+@Tag(name = "캠페인 파이프라인 의견")
 @RestController
 @Slf4j
 @AllArgsConstructor
@@ -26,15 +26,15 @@ public class IdeaCommandController {
     private final IdeaCommandService ideaCommandService;
     private final UserHelperService userHelperService;
 
-    // 견적 의견 삭제 기능
-    @Operation(summary = "견적 의견 삭제", description = "사용자는 견적에 작성된 의견을 삭제할 수 있다.(soft delete)")
-    @DeleteMapping("quotation/{ideaId}")
-    public ResponseEntity<ApiResponse<Void>> deleteQuotationIdea(
+    // 파이프라인 의견 삭제 기능
+    @Operation(summary = "파이프라인 의견 삭제", description = "사용자는 파이프라인에 작성된 의견을 삭제할 수 있다.(soft delete)")
+    @DeleteMapping("{ideaId}")
+    public ResponseEntity<ApiResponse<Void>> deleteIdea(
             @AuthenticationPrincipal CustomUserDetail customUserDetail,
             @PathVariable Long ideaId
     ){
         User user = userHelperService.findValidUser(customUserDetail.getUserId());
-        ideaCommandService.deleteQuotationIdea(user, ideaId);
+        ideaCommandService.deleteIdea(user, ideaId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 }
