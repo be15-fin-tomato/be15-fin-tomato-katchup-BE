@@ -3,7 +3,11 @@ package be15fintomatokatchupbe.campaign.command.application.controller;
 import be15fintomatokatchupbe.campaign.command.application.dto.request.*;
 import be15fintomatokatchupbe.campaign.command.application.service.*;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
+import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
+import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
+import be15fintomatokatchupbe.user.command.domain.aggregate.User;
+import be15fintomatokatchupbe.user.exception.UserErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -29,6 +33,7 @@ public class CampaignCommandController {
     private final QuotationCommandService quotationCommandService;
     private final RevenueCommandService revenueCommandService;
     private final IdeaCommandService ideaCommandService;
+    private final UserRepository userRepository;
 
 
     @PostMapping("/chance/create")
@@ -71,12 +76,17 @@ public class CampaignCommandController {
 
     // 견적 의견 삭제 기능
     @Operation(summary = "견적 의견 삭제", description = "사용자는 견적에 작성된 의견을 삭제할 수 있다.(soft delete)")
-    @DeleteMapping("quotation/idea/{quotationIdeaId}")
+    @DeleteMapping("quotation/idea/{ideaId}")
     public ResponseEntity<ApiResponse<Void>> deleteQuotationIdea(
-            @AuthenticationPrincipal CustomUserDetail user,
-            @PathVariable Long quotationIdeaId
+            @AuthenticationPrincipal CustomUserDetail customUserDetail,
+            @PathVariable Long ideaId
     ){
-        ideaCommandService.deleteQuotationIdea(user.getUserId(), quotationIdeaId);
+        User user = userRepository.findByUserId(customUserDetail.getUserId());
+        if (user == null) {
+            throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
+        }
+
+        ideaCommandService.deleteQuotationIdea(user, ideaId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 

@@ -5,6 +5,9 @@ import be15fintomatokatchupbe.campaign.command.domain.repository.IdeaRepository;
 import be15fintomatokatchupbe.campaign.exception.CampaignErrorCode;
 import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
+import be15fintomatokatchupbe.user.command.domain.aggregate.User;
+import be15fintomatokatchupbe.user.exception.UserErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,13 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class IdeaCommandService {
     private final IdeaRepository ideaRepository;
+    private final UserRepository userRepository;
 
     @Transactional
-    public void deleteQuotationIdea(Long userId, Long quotationIdeaId) {
-        Idea idea = ideaRepository.findByIdAndUserIdAndIsDeleted(quotationIdeaId, userId, StatusType.N)
+    public void deleteQuotationIdea(User user, Long ideaId) {
+        Idea idea = ideaRepository.findByIdeaIdAndUserAndIsDeleted(ideaId, user, StatusType.N)
                 .orElseThrow(() -> new BusinessException(CampaignErrorCode.IDEA_ACCESS_DENIED));
         idea.softDelete();
-
     }
-
 }
