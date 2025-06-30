@@ -103,7 +103,7 @@ public class QuotationCommandService {
         if(Objects.equals(request.getPipelineStatusId(), PipelineStatusConstants.APPROVED)){
             Pipeline existPipeline = pipelineRepository.findApprovePipeline(
                     request.getCampaignId(),
-                    PipelineStepConstants.REVENUE,
+                    PipelineStepConstants.QUOTATION,
                     PipelineStatusConstants.APPROVED
             );
 

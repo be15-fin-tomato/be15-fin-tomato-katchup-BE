@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.campaign.command.application.service;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateContractRequest;
+import be15fintomatokatchupbe.campaign.command.application.dto.request.UpdateContractRequest;
 import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelperService;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStatusConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -111,5 +113,35 @@ public class ContractCommandService {
         pipeInfClientManagerService.saveClientManager(clientManager, pipeline);
         pipeInfClientManagerService.saveInfluencer(request.getInfluencerId(), pipeline);
         pipeUserService.saveUserList(request.getUserId(), pipeline);
+    }
+
+    @Transactional
+    public void updateContract(Long userId, UpdateContractRequest request, List<MultipartFile> files){
+        /* S3는 비용 때문에 파일 찾아서 존재하지 않는 애들만 추가해주기!*/
+
+        /* 요청이 승인일 경우 승인 된게 있는지 체크 해주기 */
+        if(Objects.equals(request.getPipelineStatusId(), PipelineStatusConstants.APPROVED)){
+            Pipeline existPipeline = pipelineRepository.findApprovePipeline(
+                    request.getCampaignId(),
+                    PipelineStepConstants.CONTRACT,
+                    PipelineStatusConstants.APPROVED
+            );
+
+            if(existPipeline != null){
+                throw new BusinessException(CampaignErrorCode.APPROVED_REVENUE_ALREADY_EXISTS);
+            }
+        }
+
+        ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
+        Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
+        PipelineStatus pipelineStatus = pipelineStatusRepository.findById(request.getPipelineStatusId())
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STATUS_NOT_FOUND));
+        User writer = userHelperService.findValidUser(userId);
+
+        Pipeline foundPipeline = campaignHelperService.findValidPipeline(request.getPipelineId());
+
+        /* 연관 테이블 지워주기 */
+        campaignHelperService.deleteRelationTable(foundPipeline);
+
     }
 }
