@@ -1,11 +1,13 @@
 package be15fintomatokatchupbe.campaign.command.application.service;
 
+import be15fintomatokatchupbe.campaign.command.application.dto.request.IdeaRequest;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Idea;
+import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Pipeline;
 import be15fintomatokatchupbe.campaign.command.domain.repository.IdeaRepository;
+import be15fintomatokatchupbe.campaign.command.domain.repository.PipelineRepository;
 import be15fintomatokatchupbe.campaign.exception.CampaignErrorCode;
 import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
-import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +17,26 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class IdeaCommandService {
     private final IdeaRepository ideaRepository;
-    private final UserRepository userRepository;
+    private final PipelineRepository pipelineRepository;
+
+    @Transactional
+    public void createIdea(User user, IdeaRequest request) {
+
+        Pipeline pipeline = pipelineRepository.findById(request.getPipeline())
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_NOT_FOUND));
+
+        Idea idea = Idea.builder()
+                .pipeline(pipeline)
+                .content(request.getContent())
+                .user(user)
+                .build();
+
+        if(idea.getContent() == null || idea.getContent().isBlank()){
+            throw new BusinessException(CampaignErrorCode.IDEA_IS_BLANK);
+        }
+
+        ideaRepository.save(idea);
+    }
 
     @Transactional
     public void deleteIdea(User user, Long ideaId) {
