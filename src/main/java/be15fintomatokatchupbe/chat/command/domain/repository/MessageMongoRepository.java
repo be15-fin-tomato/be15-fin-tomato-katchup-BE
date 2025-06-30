@@ -13,4 +13,6 @@ public interface MessageMongoRepository extends MongoRepository<Message, String>
     Optional<Message> findFirstByChatIdOrderBySentAtDesc(Long chatId);
 
     List<Message> findByChatIdOrderBySentAtAsc(Long chatId);
+
+    long countByChatIdAndReadUserIdsNotContaining(Long chatId, Long userId);
 }

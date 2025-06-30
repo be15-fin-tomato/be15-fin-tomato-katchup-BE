@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class ChatSocketController {
         System.out.println(">>> 받은 message: " + message.getMessage());
         message.setSenderId(userId);
         message.setSentAt(LocalDateTime.now());
+        message.setReadUserIds(Set.of(userId));
 
         messageRepository.save(message);
         messagingTemplate.convertAndSend("/topic/room." + message.getChatId(), message);
