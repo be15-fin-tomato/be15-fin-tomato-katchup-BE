@@ -6,6 +6,7 @@ import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
+import be15fintomatokatchupbe.user.command.application.support.UserHelperService;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import be15fintomatokatchupbe.user.exception.UserErrorCode;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,6 +35,7 @@ public class CampaignCommandController {
     private final RevenueCommandService revenueCommandService;
     private final IdeaCommandService ideaCommandService;
     private final UserRepository userRepository;
+    private final UserHelperService userHelperService;
 
 
     @PostMapping("/chance/create")
@@ -81,11 +83,7 @@ public class CampaignCommandController {
             @AuthenticationPrincipal CustomUserDetail customUserDetail,
             @PathVariable Long ideaId
     ){
-        User user = userRepository.findByUserId(customUserDetail.getUserId());
-        if (user == null) {
-            throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
-        }
-
+        User user = userHelperService.findValidUser(customUserDetail.getUserId());
         ideaCommandService.deleteQuotationIdea(user, ideaId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
