@@ -7,7 +7,6 @@ import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
-import be15fintomatokatchupbe.user.exception.UserErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +18,7 @@ public class IdeaCommandService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void deleteQuotationIdea(User user, Long ideaId) {
+    public void deleteIdea(User user, Long ideaId) {
         // 삭제 여부 관계 없이 먼저 찾고
         Idea idea = ideaRepository.findById(ideaId)
                 .orElseThrow(() -> new BusinessException(CampaignErrorCode.IDEA_NOT_FOUND));
