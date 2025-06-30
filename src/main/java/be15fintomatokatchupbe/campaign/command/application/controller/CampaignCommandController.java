@@ -24,7 +24,6 @@ public class CampaignCommandController {
     private final CampaignCommandService campaignCommandService;
     private final ProposalCommandService proposalCommandService;
     private final ContractCommandService contractCommandService;
-    private final ListupCommandService listupCommandService;
     private final QuotationCommandService quotationCommandService;
     private final RevenueCommandService revenueCommandService;
 
