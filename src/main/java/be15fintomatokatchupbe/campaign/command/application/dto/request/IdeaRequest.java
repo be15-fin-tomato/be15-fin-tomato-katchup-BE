@@ -9,6 +9,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 public class IdeaRequest {
 
+    private Long pipeline;
     private String content;
 
 }
