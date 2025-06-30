@@ -28,7 +28,7 @@ public class IdeaCommandController {
 
     // 견적 의견 삭제 기능
     @Operation(summary = "견적 의견 삭제", description = "사용자는 견적에 작성된 의견을 삭제할 수 있다.(soft delete)")
-    @DeleteMapping("quotation/idea/{ideaId}")
+    @DeleteMapping("quotation/{ideaId}")
     public ResponseEntity<ApiResponse<Void>> deleteQuotationIdea(
             @AuthenticationPrincipal CustomUserDetail customUserDetail,
             @PathVariable Long ideaId
