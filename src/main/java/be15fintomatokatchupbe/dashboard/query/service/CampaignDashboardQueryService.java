@@ -3,11 +3,14 @@ package be15fintomatokatchupbe.dashboard.query.service;
 import be15fintomatokatchupbe.campaign.exception.CampaignErrorCode;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignContentResponse;
+import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignGetRevenueDTO;
+import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignGetRevenueResponse;
 import be15fintomatokatchupbe.dashboard.query.mapper.CampaignDashboardQueryMapper;
 import be15fintomatokatchupbe.influencer.query.service.YoutubeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -38,5 +41,14 @@ public class CampaignDashboardQueryService {
 
         // 5. 응답 객체 생성
         return new CampaignContentResponse(metrics);
+    }
+
+    public CampaignGetRevenueResponse getRevenue(Long campaignId, Long influencerId) {
+
+        List<CampaignGetRevenueDTO> response = mapper.getRevenue(campaignId, influencerId);
+
+        return CampaignGetRevenueResponse.builder()
+                .campaignGetRevenue(response)
+                .build();
     }
 }
