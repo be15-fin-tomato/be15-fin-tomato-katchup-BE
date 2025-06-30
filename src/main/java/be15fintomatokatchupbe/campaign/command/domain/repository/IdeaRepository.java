@@ -9,5 +9,5 @@ import java.util.Optional;
 
 public interface IdeaRepository extends JpaRepository<Idea, Long> {
 
-    Optional<Idea> findByIdeaIdAndUserAndIsDeleted(Long ideaId, User user, StatusType isDeleted);
+    Optional<Idea> findById(Long ideaId);
 }

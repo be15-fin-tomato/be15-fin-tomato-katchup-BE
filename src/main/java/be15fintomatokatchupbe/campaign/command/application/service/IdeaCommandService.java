@@ -20,8 +20,20 @@ public class IdeaCommandService {
 
     @Transactional
     public void deleteQuotationIdea(User user, Long ideaId) {
-        Idea idea = ideaRepository.findByIdeaIdAndUserAndIsDeleted(ideaId, user, StatusType.N)
-                .orElseThrow(() -> new BusinessException(CampaignErrorCode.IDEA_ACCESS_DENIED));
+        // 삭제 여부 관계 없이 먼저 찾고
+        Idea idea = ideaRepository.findById(ideaId)
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.IDEA_NOT_FOUND));
+
+        // 사용자 불일치
+        if (!idea.getUser().getUserId().equals(user.getUserId())) {
+            throw new BusinessException(CampaignErrorCode.INVALID_USER);
+        }
+
+        // 이미 삭제된 의견
+        if (idea.getIsDeleted() == StatusType.Y) {
+            throw new BusinessException(CampaignErrorCode.DELETED_IDEA);
+        }
+
         idea.softDelete();
     }
 }
