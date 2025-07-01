@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.chat.command.application.dto.response.ChatResponse
 import be15fintomatokatchupbe.chat.command.domain.aggregate.entity.Message;
 import be15fintomatokatchupbe.chat.command.domain.repository.MessageRepository;
 import be15fintomatokatchupbe.chat.exception.ChatErrorCode;
+import be15fintomatokatchupbe.chat.query.application.mapper.ChatRoomQueryMapper;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.chat.command.domain.repository.UserChatRepository;
 import be15fintomatokatchupbe.notification.command.application.service.FcmService;
