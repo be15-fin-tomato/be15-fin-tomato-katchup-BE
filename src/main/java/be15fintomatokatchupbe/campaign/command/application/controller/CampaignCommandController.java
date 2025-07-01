@@ -138,4 +138,16 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @PutMapping("/revenue")
+    public ResponseEntity<ApiResponse<Void>> updateRevenue(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestPart("request") UpdateRevenueRequest request,
+            @RequestPart(required = false) List<MultipartFile> files
+    ){
+        Long userId = user.getUserId();
+        revenueCommandService.updateRevenue(userId, request, files);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
 }
