@@ -7,7 +7,6 @@ import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -154,11 +153,47 @@ public class CampaignCommandController {
     @DeleteMapping("/proposal/{pipelineId}")
     public ResponseEntity<ApiResponse<Void>> deleteProposal(
             @AuthenticationPrincipal CustomUserDetail user,
-            @RequestParam("pipelineId") Long pipelineId
+            @PathVariable Long pipelineId
     ) {
         Long userId = user.getUserId();
 
-        proposalCommandService.deleteProposal(userId, pipelineId);
+        proposalCommandService.deleteProposal(pipelineId);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/quotation/{pipelineId}")
+    public ResponseEntity<ApiResponse<Void>> deleteQuotation(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @PathVariable Long pipelineId
+    ) {
+        Long userId = user.getUserId();
+
+        quotationCommandService.deleteQuotation(pipelineId);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/contract/{pipelineId}")
+    public ResponseEntity<ApiResponse<Void>> deleteContract(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @PathVariable Long pipelineId
+    ) {
+        Long userId = user.getUserId();
+
+        contractCommandService.deleteContract(pipelineId);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/revenue/{pipelineId}")
+    public ResponseEntity<ApiResponse<Void>> deleteRevenue(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @PathVariable Long pipelineId
+    ) {
+        Long userId = user.getUserId();
+
+        revenueCommandService.deleteRevenue(pipelineId);
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }
