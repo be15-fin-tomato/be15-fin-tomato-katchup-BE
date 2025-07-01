@@ -14,6 +14,7 @@ public class IdeaDTO {
     private Long ideaId;
     private Long pipelineId;
     private Long userId;
+    private String name;
     private String content;
     private LocalDateTime createdAt;
 
