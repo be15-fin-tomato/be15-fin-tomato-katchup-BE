@@ -1,0 +1,34 @@
+package be15fintomatokatchupbe.oauth.query.service;
+
+import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+
+import java.util.concurrent.TimeUnit;
+
+@Service
+@RequiredArgsConstructor
+public class InstagramRedisService {
+    private final RedisTemplate<String, Object> redisTemplate;
+
+    private static final String TOKEN_PREFIX = "instagram:token:";
+
+    /* 액세스 토큰 저장 (기본 1시간 유효) */
+    public void saveAccessToken(String userId, String accessToken, long ttlSeconds) {
+        String key = TOKEN_PREFIX + userId;
+        redisTemplate.opsForValue().set(key, accessToken, ttlSeconds, TimeUnit.SECONDS);
+    }
+
+    /*  액세스 토큰 조회 */
+    public String getAccessToken(String igAccountId) {
+        String key = "instagram:token:" + igAccountId;
+        Object tokenObj = redisTemplate.opsForValue().get(key);
+        if (tokenObj == null) {
+            throw new BusinessException(OAuthErrorCode.TOKEN_NOT_FOUND);
+        }
+        return tokenObj.toString();
+    }
+
+}

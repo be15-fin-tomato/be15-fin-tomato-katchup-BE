@@ -21,4 +21,7 @@ public class Instagram {
 
     @Column(name = "follower")
     private Long follower;
+
+    @Column(name = "name", length = 50)
+    private String name;
 }

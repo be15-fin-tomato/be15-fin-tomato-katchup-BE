@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>WebSocket Chat Test</title>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
@@ -28,7 +28,7 @@
 
     function log(message, isError = false) {
         const logElement = document.getElementById("log");
-        const formatted = isError ? `\n❗ ${message}\n` : `\n${message}\n`;
+        const formatted = isError ? `\n ${message}\n` : `\n${message}\n`;
         logElement.textContent += formatted;
     }
 
@@ -39,11 +39,12 @@
     function connect() {
         const token = getToken();
         if (!token) {
-            log("JWT 토큰을 입력해주세요.", true);
+            log("WT 토큰을 입력해주세요.", true);
             return;
         }
 
-        const socket = new SockJS('http://localhost:8080/api/v1/ws?token=' + token);
+        const socketUrl = window.location.origin + '/api/v1/ws?token=' + token;
+        const socket = new SockJS(socketUrl);
         stompClient = Stomp.over(socket);
 
         stompClient.connect(
