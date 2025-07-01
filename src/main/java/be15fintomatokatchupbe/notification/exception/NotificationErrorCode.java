@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.notifycation.exception;
+package be15fintomatokatchupbe.notification.exception;
 
 import be15fintomatokatchupbe.common.exception.ErrorCode;
 import lombok.AccessLevel;

@@ -25,6 +25,9 @@ repositories {
 
 dependencies {
 
+    //firebase
+    implementation 'com.google.firebase:firebase-admin:9.3.0'
+
     //sheet
     implementation 'com.google.apis:google-api-services-sheets:v4-rev516-1.23.0'
     implementation 'com.google.auth:google-auth-library-oauth2-http:0.20.0'

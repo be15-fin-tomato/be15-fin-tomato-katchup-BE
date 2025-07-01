@@ -54,6 +54,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     private GenderType gender;
 
+    private String fcmToken;
+
     public void update(String randomString) {
         this.password = randomString;
     }

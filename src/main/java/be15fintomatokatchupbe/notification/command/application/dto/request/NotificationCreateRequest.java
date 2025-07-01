@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.notifycation.application.dto.request;
+package be15fintomatokatchupbe.notification.command.application.dto.request;
 
 import lombok.Builder;
 import lombok.Getter;

@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.notifycation.domain.aggregate;
+package be15fintomatokatchupbe.notification.command.domain.aggregate;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
