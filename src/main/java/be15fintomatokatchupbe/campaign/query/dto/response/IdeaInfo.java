@@ -8,8 +8,10 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class IdeaInfo {
+
     private Long userId;
     private String userName;
     private LocalDateTime createdAt;
     private String content;
+
 }

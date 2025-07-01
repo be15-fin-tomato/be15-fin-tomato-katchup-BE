@@ -512,9 +512,4 @@
         WHERE
             f.pipeline_id = #{pipelineId}
     </select>
-
-
-
-
-
 </mapper>
