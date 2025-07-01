@@ -57,4 +57,10 @@ public interface CampaignQueryMapper {
     RevenueFormDTO findRevenueDetail(Long pipelineId, Long pipelineStepId);
 
     List<InfluencerRevenueInfo> findPipelineRevenueInfluencer(Long pipelineId);
+
+    // 캠페인 상세
+    CampaignDetailDto selectCampaignDetail(@Param("campaignId") Long campaignId);
+
+    List<PipelineTimelineDto> selectPipelineTimeline(@Param("campaignId") Long campaignId);
+
 }
