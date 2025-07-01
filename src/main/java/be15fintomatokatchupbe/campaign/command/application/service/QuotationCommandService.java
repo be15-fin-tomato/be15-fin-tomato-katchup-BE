@@ -149,4 +149,19 @@ public class QuotationCommandService {
         pipeInfClientManagerService.saveInfluencer(request.getInfluencerId(), foundPipeline);
         pipeUserService.saveUserList(request.getUserId(), foundPipeline);
     }
+
+    public void deleteQuotation(Long pipelineId) {
+        // 1. 삭제할 파이프라인 찾아 주기
+        Pipeline foundPipeline = campaignHelperService.findValidPipeline(pipelineId);
+
+        if(foundPipeline.getPipelineStatus().getPipelineStatusId().equals(PipelineStatusConstants.APPROVED)){
+            throw new BusinessException(CampaignErrorCode.APPROVED_PIPELINE_CANNOT_BE_DELETED);
+        }
+
+        // 2. 파이프라인 소프트 딜리트 하기
+        foundPipeline.softDelete();
+
+        // 3. 관련 테이블 지워주기
+        campaignHelperService.deleteRelationTable(foundPipeline);
+    }
 }

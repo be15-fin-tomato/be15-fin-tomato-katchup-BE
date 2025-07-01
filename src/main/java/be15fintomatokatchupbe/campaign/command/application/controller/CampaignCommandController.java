@@ -150,4 +150,52 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @DeleteMapping("/proposal/{pipelineId}")
+    public ResponseEntity<ApiResponse<Void>> deleteProposal(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @PathVariable Long pipelineId
+    ) {
+        Long userId = user.getUserId();
+
+        proposalCommandService.deleteProposal(pipelineId);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/quotation/{pipelineId}")
+    public ResponseEntity<ApiResponse<Void>> deleteQuotation(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @PathVariable Long pipelineId
+    ) {
+        Long userId = user.getUserId();
+
+        quotationCommandService.deleteQuotation(pipelineId);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/contract/{pipelineId}")
+    public ResponseEntity<ApiResponse<Void>> deleteContract(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @PathVariable Long pipelineId
+    ) {
+        Long userId = user.getUserId();
+
+        contractCommandService.deleteContract(pipelineId);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/revenue/{pipelineId}")
+    public ResponseEntity<ApiResponse<Void>> deleteRevenue(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @PathVariable Long pipelineId
+    ) {
+        Long userId = user.getUserId();
+
+        revenueCommandService.deleteRevenue(pipelineId);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
 }

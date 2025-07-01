@@ -34,7 +34,6 @@ import java.util.Optional;
 public class RevenueCommandService {
     private final PipeUserService pipeUserService;
     private final PipeInfClientManagerService pipeInfClientManagerService;
-    private final HashInfCampService hashInfCampService;
     private final FileService fileService;
 
     private final ClientHelperService clientHelperService;
@@ -176,5 +175,23 @@ public class RevenueCommandService {
         pipeInfClientManagerService.saveInfluencerRevenue(request.getInfluencerList(), foundPipeline);
         pipeUserService.saveUserList(request.getUserId(), foundPipeline);
 
+    }
+
+    public void deleteRevenue(Long pipelineId) {
+        // 1. 삭제할 파이프라인 찾아 주기
+        Pipeline foundPipeline = campaignHelperService.findValidPipeline(pipelineId);
+
+        if(foundPipeline.getPipelineStatus().getPipelineStatusId().equals(PipelineStatusConstants.APPROVED)){
+            throw new BusinessException(CampaignErrorCode.APPROVED_PIPELINE_CANNOT_BE_DELETED);
+        }
+
+        // 2. 파이프라인 소프트 딜리트 하기
+        foundPipeline.softDelete();
+
+        // 3. 관련 테이블 지워주기
+        campaignHelperService.deleteRelationTable(foundPipeline);
+
+        /* 파일 테이블 지워주기 */
+        fileService.deleteByPipeline(foundPipeline);
     }
 }
