@@ -357,4 +357,17 @@ public class CampaignQueryService {
                 .ideaList(ideaDto)
                 .build();
     }
+
+    public CampaignDetailWithTimelineResponse getCampaignDetailWithTimeline(Long campaignId) {
+        // 캠페인 기본 정보 조회
+        CampaignDetailDto campaignDetail = campaignQueryMapper.selectCampaignDetail(campaignId);
+        if (campaignDetail == null) {
+            throw new IllegalArgumentException("존재하지 않는 캠페인입니다. id=" + campaignId);
+        }
+
+        // 파이프라인 타임라인 조회
+        List<PipelineTimelineDto> timeline = campaignQueryMapper.selectPipelineTimeline(campaignId);
+
+        return new CampaignDetailWithTimelineResponse(campaignDetail, timeline);
+    }
 }
