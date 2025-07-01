@@ -24,7 +24,9 @@ public enum CampaignErrorCode implements ErrorCode {
     IDEA_ACCESS_DENIED("40012", "해당 의견에 대한 권한이 없습니다.", HttpStatus.FORBIDDEN),
     DELETED_IDEA("40013", "이미 삭제된 의견입니다.", HttpStatus.BAD_REQUEST),
     INVALID_USER("40014", "귀하가 작성한 의견이 아닙니다.", HttpStatus.FORBIDDEN),
-    IDEA_NOT_FOUND("40015", "존재하지 않는 의견입니다.", HttpStatus.NOT_FOUND);
+    IDEA_NOT_FOUND("40015", "존재하지 않는 의견입니다.", HttpStatus.NOT_FOUND),
+    IDEA_IS_BLANK("40016", "의견 내용을 입력해 주세요.", HttpStatus.BAD_REQUEST),
+    APPROVED_PIPELINE_CANNOT_BE_DELETED("40017", "승인된 파이프라인은 삭제할 수 없습니다.", HttpStatus.BAD_REQUEST);
 
 
     private final String code;

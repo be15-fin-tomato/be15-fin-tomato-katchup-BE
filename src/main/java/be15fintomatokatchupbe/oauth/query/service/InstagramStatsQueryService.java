@@ -24,17 +24,22 @@ public class InstagramStatsQueryService {
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
+    private final InstagramRedisService instagramRedisService;
 
     @Value("${facebook.base-url}")
     private String baseUrl;
 
-    public InstagramStatsResponse fetchStats(String token, String igId) {
+    public InstagramStatsResponse fetchStats(String igId) {
+        String token = instagramRedisService.getAccessToken(igId);
+        if (token == null) {
+            log.warn("[fetchStats] Redis에 토큰 없음. igId={}", igId);
+            throw new BusinessException(OAuthErrorCode.TOKEN_NOT_FOUND);
+        }
+
         try {
             Double dailyAvgViews = calculateAverage(token, igId, "views", 7);
             Double monthlyAvgViews = calculateAverage(token, igId, "views", 30);
-
             int totalFollowers = fetchFollowerCount(token, igId);
-
             Map<String, Double> followerRatioMap = fetchFollowTypeRatio(token, igId);
             Map<String, Double> genderDist = fetchDemographics(token, igId, "gender");
             Map<String, Double> ageDist = fetchDemographics(token, igId, "age");

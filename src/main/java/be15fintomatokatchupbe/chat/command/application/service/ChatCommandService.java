@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.chat.command.application.service;
 
+import be15fintomatokatchupbe.chat.command.application.dto.request.CreateChatRoomRequest;
 import be15fintomatokatchupbe.chat.command.application.dto.response.CreateChatRoomResponse;
 import be15fintomatokatchupbe.chat.command.application.dto.response.ExitChatRoomResponse;
 import be15fintomatokatchupbe.chat.command.domain.aggregate.entity.Chat;
@@ -7,16 +8,17 @@ import be15fintomatokatchupbe.chat.command.domain.aggregate.entity.UserChat;
 import be15fintomatokatchupbe.chat.command.domain.repository.ChatRoomRepository;
 import be15fintomatokatchupbe.chat.command.domain.repository.UserChatRepository;
 import be15fintomatokatchupbe.chat.exception.ChatErrorCode;
+import be15fintomatokatchupbe.chat.query.application.dto.response.UserSimpleDto;
 import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.user.query.mapper.UserQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,21 +26,37 @@ public class ChatCommandService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final UserChatRepository userChatRepository;
+    private final UserQueryMapper userQueryMapper;
 
     @Transactional
-    public CreateChatRoomResponse createChatRoom(Long creatorId, List<Long> userIds) {
-        if (userIds == null || userIds.isEmpty()) {
+    public CreateChatRoomResponse createChatRoom(CreateChatRoomRequest request) {
+        Long creatorId = request.getUserId();
+        List<Long> userIds = request.getUserIds();
+
+        if (userIds == null) {
             throw new BusinessException(ChatErrorCode.INVALID_CHAT_ROOM_REQUEST);
         }
-
         Set<Long> participants = new HashSet<>(userIds);
         participants.add(creatorId);
 
-        if (participants.size() == 1) {
+        if (participants.size() <= 1) {
             throw new BusinessException(ChatErrorCode.SINGLE_PARTICIPANT_NOT_ALLOWED);
         }
 
-        Chat chatRoom = chatRoomRepository.save(new Chat());
+
+        // 채팅방 이름 지정
+        String chatName = request.getChatName();
+        if (chatName == null || chatName.isBlank()) {
+            List<UserSimpleDto> users = userQueryMapper.findUserNamesByIds(participants);
+            chatName = users.stream()
+                    .map(UserSimpleDto::getUserName)
+                    .collect(Collectors.joining(", "));
+        }
+
+        Chat chatRoom = chatRoomRepository.save(Chat.builder()
+                .chatName(chatName)
+                .createdAt(LocalDateTime.now())
+                .build());
 
         for (Long userId : participants) {
             UserChat userChat = UserChat.builder()
@@ -51,6 +69,8 @@ public class ChatCommandService {
 
         return new CreateChatRoomResponse(chatRoom.getChatId(), "채팅방이 생성되었습니다.");
     }
+
+
     @Transactional
     public ExitChatRoomResponse exitRoom(Long userId, Long chatId)
     {

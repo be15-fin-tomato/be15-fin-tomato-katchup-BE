@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -125,5 +126,33 @@ public class Pipeline {
         this.expectedRevenue = expectedRevenue;
         this.expectedProfit = expectedProfit;
         this.availableQuantity = availableQuantity;
+    }
+
+    public void updateRevenue(
+            PipelineStatus pipelineStatus,
+            Campaign campaign,
+            String name,
+            LocalDateTime requestAt,
+            LocalDateTime startedAt,
+            LocalDateTime endedAt,
+            LocalDateTime presentedAt,
+            String content,
+            String notes,
+            User writer
+    ){
+        this.pipelineStatus = pipelineStatus;
+        this.writer = writer;
+        this.name = name;
+        this.requestAt = requestAt;
+        this.startedAt = startedAt;
+        this.endedAt = endedAt;
+        this.presentedAt = presentedAt;
+        this.campaign = campaign;
+        this.content = content;
+        this.notes = notes;
+    }
+
+    public void softDelete(){
+        this.isDeleted = StatusType.Y;
     }
 }

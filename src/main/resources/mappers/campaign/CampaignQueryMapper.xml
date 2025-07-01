@@ -559,5 +559,4 @@
         ORDER BY p.presented_at ASC
     </select>
 
-
 </mapper>

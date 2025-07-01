@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.campaign.command.application.service;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateRevenueRequest;
+import be15fintomatokatchupbe.campaign.command.application.dto.request.UpdateRevenueRequest;
 import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelperService;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStatusConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
@@ -9,7 +10,6 @@ import be15fintomatokatchupbe.campaign.command.domain.repository.*;
 import be15fintomatokatchupbe.campaign.exception.CampaignErrorCode;
 import be15fintomatokatchupbe.client.command.application.support.ClientHelperService;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManager;
-import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.file.domain.File;
 import be15fintomatokatchupbe.file.service.FileService;
@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -33,7 +34,6 @@ import java.util.Optional;
 public class RevenueCommandService {
     private final PipeUserService pipeUserService;
     private final PipeInfClientManagerService pipeInfClientManagerService;
-    private final HashInfCampService hashInfCampService;
     private final FileService fileService;
 
     private final ClientHelperService clientHelperService;
@@ -117,5 +117,81 @@ public class RevenueCommandService {
         pipeInfClientManagerService.saveInfluencerRevenue(request.getInfluencerList(), pipeline);
         pipeUserService.saveUserList(request.getUserId(), pipeline);
 
+    }
+
+    @Transactional
+    public void updateRevenue(Long userId, UpdateRevenueRequest request, List<MultipartFile> files){
+        if(Objects.equals(request.getPipelineStatusId(), PipelineStatusConstants.APPROVED)){
+            Pipeline existPipeline = pipelineRepository.findApprovePipeline(
+                    request.getCampaignId(),
+                    PipelineStepConstants.REVENUE,
+                    PipelineStatusConstants.APPROVED
+            );
+
+            if(existPipeline != null){
+                throw new BusinessException(CampaignErrorCode.APPROVED_REVENUE_ALREADY_EXISTS);
+            }
+        }
+
+        ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
+        Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
+        PipelineStatus pipelineStatus = pipelineStatusRepository.findById(request.getPipelineStatusId())
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STATUS_NOT_FOUND));
+        User writer = userHelperService.findValidUser(userId);
+
+        Pipeline foundPipeline = campaignHelperService.findValidPipeline(request.getPipelineId());
+
+        /* 연관 테이블 지워주기 */
+        campaignHelperService.deleteRelationTable(foundPipeline);
+
+        /* 파일 테이블 지워주기 */
+        fileService.deleteByPipeline(foundPipeline);
+
+        foundPipeline.updateRevenue(
+                pipelineStatus,
+                campaign,
+                request.getName(),
+                request.getRequestAt(),
+                request.getStartedAt(),
+                request.getEndedAt(),
+                request.getPresentedAt(),
+                request.getContent(),
+                request.getNotes(),
+                writer
+        );
+
+        /* 파일 저장하기 */
+        if(files != null && !files.isEmpty()){
+            // 1. 파일 S3에 올리고 돌려 받기
+            List<File> fileList = fileService.uploadFile(files);
+            fileList.forEach(file -> file.setPipeline(foundPipeline));
+
+            // 2. 파일 DB에 저장하기
+            fileService.saveFile(fileList);
+        }
+
+
+        pipeInfClientManagerService.saveClientManager(clientManager, foundPipeline);
+        pipeInfClientManagerService.saveInfluencerRevenue(request.getInfluencerList(), foundPipeline);
+        pipeUserService.saveUserList(request.getUserId(), foundPipeline);
+
+    }
+
+    public void deleteRevenue(Long pipelineId) {
+        // 1. 삭제할 파이프라인 찾아 주기
+        Pipeline foundPipeline = campaignHelperService.findValidPipeline(pipelineId);
+
+        if(foundPipeline.getPipelineStatus().getPipelineStatusId().equals(PipelineStatusConstants.APPROVED)){
+            throw new BusinessException(CampaignErrorCode.APPROVED_PIPELINE_CANNOT_BE_DELETED);
+        }
+
+        // 2. 파이프라인 소프트 딜리트 하기
+        foundPipeline.softDelete();
+
+        // 3. 관련 테이블 지워주기
+        campaignHelperService.deleteRelationTable(foundPipeline);
+
+        /* 파일 테이블 지워주기 */
+        fileService.deleteByPipeline(foundPipeline);
     }
 }
