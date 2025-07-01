@@ -7,6 +7,7 @@ import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -146,6 +147,18 @@ public class CampaignCommandController {
     ){
         Long userId = user.getUserId();
         revenueCommandService.updateRevenue(userId, request, files);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("/proposal/{pipelineId}")
+    public ResponseEntity<ApiResponse<Void>> deleteProposal(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestParam("pipelineId") Long pipelineId
+    ) {
+        Long userId = user.getUserId();
+
+        proposalCommandService.deleteProposal(userId, pipelineId);
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }

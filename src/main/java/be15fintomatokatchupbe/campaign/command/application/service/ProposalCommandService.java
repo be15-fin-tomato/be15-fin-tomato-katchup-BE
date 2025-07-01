@@ -121,4 +121,8 @@ public class ProposalCommandService {
         /* 담당자*/
         pipeUserService.saveUserList(request.getUserId(), pipeline);
     }
+
+    public void deleteProposal(Long userId, Long pipelineId) {
+        Pipeline foundPipeline = campaignHelperService.findValidPipeline(pipelineId);
+    }
 }
