@@ -17,7 +17,8 @@ public enum ChatErrorCode implements ErrorCode {
     UNAUTHORIZED_CHAT_ACCESS("70005", "채팅 기능은 로그인 후 이용 가능합니다.", HttpStatus.UNAUTHORIZED),
     CHAT_ROOM_NOT_FOUND("70006", "채팅방을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     ALREADY_EXITED_CHAT("70007","이미 나간 상태입니다." , HttpStatus.CONFLICT ),
-    NOT_CHAT_MEMBER("70008", "해당 채팅방의 참여자가 아닙니다.", HttpStatus.FORBIDDEN);
+    NOT_CHAT_MEMBER("70008", "해당 채팅방의 참여자가 아닙니다.", HttpStatus.FORBIDDEN),
+    ALREADY_JOINED_CHAT("70009","이미 채팅방에 있습니다." ,HttpStatus.CONFLICT );
 
     private final String code;
     private final String message;

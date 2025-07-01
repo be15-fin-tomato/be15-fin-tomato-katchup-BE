@@ -45,4 +45,12 @@
         </foreach>
     </select>
 
+    <select id="findUserIdsByIds" parameterType="list" resultType="long">
+        SELECT user_id
+        FROM user
+        WHERE user_id IN
+        <foreach item="id" collection="userIds" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 </mapper>
