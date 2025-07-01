@@ -513,8 +513,51 @@
             f.pipeline_id = #{pipelineId}
     </select>
 
+    <!-- 캠페인 기본 정보 조회 -->
+    <select id="selectCampaignDetail" resultType="be15fintomatokatchupbe.campaign.query.dto.response.CampaignDetailDto">
+        SELECT
+        c.campaign_id AS campaignId,
+        c.campaign_name AS campaignName,
+        c.product_name AS productName,
+        c.product_price AS productPrice,
+        c.sales_quantity AS salesQuantity,
+        c.created_at AS createdAt,
+        cc.client_company_name AS clientCompanyName
+        FROM campaign c
+        JOIN client_company cc ON c.client_company_id = cc.client_company_id
+        WHERE c.campaign_id = #{campaignId}
+        AND c.is_deleted = 'N'
+    </select>
 
-
+    <!-- 파이프라인 타임라인 조회 -->
+    <select id="selectPipelineTimeline" resultType="be15fintomatokatchupbe.campaign.query.dto.response.PipelineTimelineDto">
+        SELECT
+        ps.step_name AS stepType,
+        p.name AS pipelineTitle,
+        cc.client_company_name AS clientCompanyName,
+        (
+        SELECT cm.name
+        FROM pipeline_influencer_client_manager picm
+        JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
+        WHERE picm.pipeline_id = p.pipeline_id
+        AND cm.is_deleted = 'N'
+        ORDER BY cm.client_manager_id ASC
+        LIMIT 1
+        ) AS managerName,
+        p.presented_at AS presentedAt,
+        (
+        SELECT COUNT(*)
+        FROM pipeline_influencer_client_manager picm
+        WHERE picm.pipeline_id = p.pipeline_id
+        ) AS influencerCount
+        FROM pipeline p
+        JOIN pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
+        JOIN campaign c ON p.campaign_id = c.campaign_id
+        JOIN client_company cc ON c.client_company_id = cc.client_company_id
+        WHERE p.campaign_id = #{campaignId}
+        AND p.is_deleted = 'N'
+        ORDER BY p.presented_at ASC
+    </select>
 
 
 </mapper>
