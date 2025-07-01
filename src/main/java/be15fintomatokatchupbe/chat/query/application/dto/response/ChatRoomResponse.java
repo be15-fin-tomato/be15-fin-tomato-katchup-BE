@@ -14,6 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 public class ChatRoomResponse {
     private Long chatId;
+    private String name;
     private String lastMessage;
     private LocalDateTime lastSentAt;
     private List<ChatParticipantDto> participants;

@@ -21,10 +21,11 @@ public class ChatCommandController {
 
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<CreateChatRoomResponse>> createChat(
-            @RequestBody CreateChatRoomRequest request , @AuthenticationPrincipal CustomUserDetail user
-    ){
-        request.setUserId(user.getUserId());
-        CreateChatRoomResponse response = chatCommandService.createChatRoom(user.getUserId(),request.getUserIds());
+            @RequestBody CreateChatRoomRequest request,
+            @AuthenticationPrincipal CustomUserDetail user
+    ) {
+        request.setUserId(user.getUserId()); // 사용자 정보 셋팅만
+        CreateChatRoomResponse response = chatCommandService.createChatRoom(request); // 요청 전체 위임
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 

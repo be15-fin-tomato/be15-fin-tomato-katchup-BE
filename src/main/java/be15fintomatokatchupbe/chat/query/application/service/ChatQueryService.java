@@ -20,7 +20,17 @@ public class ChatQueryService {
     private final UserQueryMapper userQueryMapper;
 
     public List<ChatRoomResponse> getChatRoomsWithLastMessage(Long userId) {
-        List<ChatRoomResponse> chatRooms = chatRoomMapper.findChatRoomsByUserId(userId);
+        return getChatRoomsWithLastMessage(userId, null);
+    }
+
+    public List<ChatRoomResponse> getChatRoomsWithLastMessage(Long userId, String keyword) {
+        List<ChatRoomResponse> chatRooms;
+
+        if (keyword == null || keyword.isBlank()) {
+            chatRooms = chatRoomMapper.findChatRoomsByUserId(userId);
+        } else {
+            chatRooms = chatRoomMapper.searchChatRoomsByUserIdAndKeyword(userId, keyword);
+        }
 
         return chatRooms.stream()
                 .map(chatRoom -> {
@@ -36,6 +46,7 @@ public class ChatQueryService {
 
                     return ChatRoomResponse.builder()
                             .chatId(chatRoom.getChatId())
+                            .name(chatRoom.getName())
                             .lastMessage(lastMessage != null ? lastMessage.getMessage() : null)
                             .lastSentAt(lastMessage != null ? lastMessage.getSentAt() : null)
                             .participants(participants)
