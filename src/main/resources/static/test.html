@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>WebSocket Chat Test</title>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
@@ -39,32 +39,34 @@
     function connect() {
         const token = getToken();
         if (!token) {
-            log("JWT 토큰을 입력해주세요.", true);
+            log("❗ JWT 토큰을 입력해주세요.", true);
             return;
         }
 
-        const socket = new SockJS('http://localhost:8080/api/v1/ws?token=' + token);
+        // ✅ 현재 주소 기반으로 자동으로 WebSocket 주소 구성
+        const socketUrl = window.location.origin + '/api/v1/ws?token=' + token;
+        const socket = new SockJS(socketUrl);
         stompClient = Stomp.over(socket);
 
         stompClient.connect(
             { Authorization: 'Bearer ' + token },
             frame => {
-                log("연결 성공: " + frame);
+                log("✅ 연결 성공: " + frame);
                 const chatId = document.getElementById("chatIdInput").value || 1;
                 stompClient.subscribe('/topic/room.' + chatId, message => {
                     const body = JSON.parse(message.body);
-                    log("받은 메시지: " + JSON.stringify(body));
+                    log("📩 받은 메시지: " + JSON.stringify(body));
                 });
             },
             error => {
-                log("연결 실패: " + error, true);
+                log("❗ 연결 실패: " + error, true);
             }
         );
     }
 
     function sendMessage() {
         if (!stompClient || !stompClient.connected) {
-            log("먼저 연결을 해주세요.", true);
+            log("❗ 먼저 연결을 해주세요.", true);
             return;
         }
 
@@ -76,7 +78,7 @@
             message: messageText
         }));
 
-        log(`메시지 전송 요청 → chatId: ${chatId}, message: ${messageText}`);
+        log(`📤 메시지 전송 요청 → chatId: ${chatId}, message: ${messageText}`);
     }
 </script>
 </body>
