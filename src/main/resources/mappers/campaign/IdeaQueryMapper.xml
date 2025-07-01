@@ -15,7 +15,7 @@
         JOIN user u ON i.user_id = u.user_id
         WHERE i.is_deleted = 'N'
         AND i.user_id = #{userId}
-        ORDER BY i.created_at
+        ORDER BY i.created_at, i.idea_id
     </select>
 
 </mapper>
