@@ -37,6 +37,5 @@ public class ChatQueryController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-
 }
 
