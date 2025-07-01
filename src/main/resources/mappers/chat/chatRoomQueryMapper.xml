@@ -7,7 +7,8 @@
     <select id="findChatRoomsByUserId"
             resultType="be15fintomatokatchupbe.chat.query.application.dto.response.ChatRoomResponse">
         SELECT cr.chat_id AS chatId,
-        cr.created_at AS createdAt
+        cr.created_at AS createdAt,
+        cr.chat_name AS name
         FROM chat cr
         JOIN user_chat uc ON cr.chat_id = uc.chat_id
         WHERE uc.user_id = #{userId}
@@ -31,5 +32,24 @@
         AND user_id = #{userId}
         AND is_deleted = 'N'
     </select>
+
+    <select id="searchChatRoomsByUserIdAndKeyword"
+            resultType="be15fintomatokatchupbe.chat.query.application.dto.response.ChatRoomResponse">
+        SELECT DISTINCT cr.chat_id AS chatId,
+        cr.chat_name AS name,
+        cr.created_at AS createdAt
+        FROM chat cr
+        JOIN user_chat uc ON cr.chat_id = uc.chat_id
+        JOIN user_chat uc2 ON cr.chat_id = uc2.chat_id
+        JOIN user u ON uc2.user_id = u.user_id
+        WHERE uc.user_id = #{userId}
+        AND uc.is_deleted = 'N'
+        AND (
+        cr.chat_name LIKE CONCAT('%', #{keyword}, '%')
+        OR u.name LIKE CONCAT('%', #{keyword}, '%')
+        )
+        ORDER BY cr.created_at DESC
+    </select>
+
 
 </mapper>

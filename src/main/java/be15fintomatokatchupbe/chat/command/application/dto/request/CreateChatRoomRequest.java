@@ -14,5 +14,6 @@ import java.util.List;
 public class CreateChatRoomRequest {
     private Long userId;
     private List<Long> userIds;
+    private String chatName;
 }
 
