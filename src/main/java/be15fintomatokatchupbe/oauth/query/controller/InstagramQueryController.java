@@ -1,19 +1,20 @@
 package be15fintomatokatchupbe.oauth.query.controller;
 
 import be15fintomatokatchupbe.common.dto.ApiResponse;
+import be15fintomatokatchupbe.oauth.query.dto.request.InstagramPermalinkRequest;
+import be15fintomatokatchupbe.oauth.query.dto.response.InstagramPostInsightResponse;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramStatsResponse;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramTokenResponse;
+import be15fintomatokatchupbe.oauth.query.service.InstagramPostQueryService;
 import be15fintomatokatchupbe.oauth.query.service.InstagramStatsQueryService;
 import be15fintomatokatchupbe.oauth.query.service.InstagramTokenService;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @Tag(name = "Instagram OAuth", description = "인스타그램 OAuth 인증 및 통계 API")
 @RestController
@@ -21,7 +22,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 public class InstagramQueryController {
-
+    private final InstagramPostQueryService instagramPostQueryService;
     private final InstagramStatsQueryService instagramStatsQueryService;
     private final InstagramTokenService instagramTokenService;
 
@@ -35,26 +36,23 @@ public class InstagramQueryController {
         return ResponseEntity.ok(ApiResponse.success(tokenResponse));
     }
 
-    @Operation(summary = "Authorization code로 access token 및 Instagram 계정 ID 발급", description = "사용자는 액세스 토큰을 발급 받아 통계 정보를 조회할 수 있다. ")
-    @PostMapping("/token")
-    public ResponseEntity<ApiResponse<InstagramTokenResponse>> exchangeCodeForToken(
-            @RequestBody Map<String, String> body
-    ) {
-        String code = body.get("code");
-        InstagramTokenResponse response = instagramTokenService.exchangeCodeForToken(code);
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
-
     @Operation(summary = "인스타그램 통계 조회", description = "사용자는 인플루언서 인스타그램의 통계 자료를 조회할 수 있다.")
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<InstagramStatsResponse>> fetchInstagramStats(
-            @RequestParam("token") String token,
             @RequestParam("igAccountId") String igAccountId
     ) {
-        InstagramStatsResponse response = instagramStatsQueryService.fetchStats(token, igAccountId);
+        InstagramStatsResponse response = instagramStatsQueryService.fetchStats(igAccountId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @GetMapping("/insight")
+    public ResponseEntity<ApiResponse<InstagramPostInsightResponse>> getPostInsight(
+            @RequestParam Long pipelineInfluencerId
+    ) {
+        InstagramPostInsightResponse response = instagramPostQueryService
+                .fetchPostInsightsByPipelineInfluencerId(pipelineInfluencerId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 
 
 }
