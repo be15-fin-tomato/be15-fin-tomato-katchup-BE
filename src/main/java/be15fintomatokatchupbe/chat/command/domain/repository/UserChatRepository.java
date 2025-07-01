@@ -17,6 +17,9 @@ public interface UserChatRepository extends JpaRepository<UserChat, Long> {
     Optional<UserChat> findByUserIdAndChatId(@Param("userId") Long userId,
                                              @Param("chatId") Long chatId);
 
+    @Query("SELECT uc.userId FROM UserChat uc WHERE uc.chatId = :chatId AND uc.isDeleted = 'N'")
+    List<Long> findUserIdsByChatId(@Param("chatId") Long chatId);
+
     @Query("""
     SELECT u.fcmToken,
            u.userId

@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.chat.command.application.service;
 
+import be15fintomatokatchupbe.chat.command.application.dto.request.ChatInviteRequest;
 import be15fintomatokatchupbe.chat.command.application.dto.request.CreateChatRoomRequest;
 import be15fintomatokatchupbe.chat.command.application.dto.response.CreateChatRoomResponse;
 import be15fintomatokatchupbe.chat.command.application.dto.response.ExitChatRoomResponse;
@@ -13,6 +14,7 @@ import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.user.query.mapper.UserQueryMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ChatCommandService {
 
     private final ChatRoomRepository chatRoomRepository;
@@ -90,5 +93,45 @@ public class ChatCommandService {
         userChatRepository.save(userChat);
 
         return new ExitChatRoomResponse("채팅방에서 나갔습니다.");
+    }
+    @Transactional
+    public void inviteChatMembers(Long chatRoomId, ChatInviteRequest request) {
+        Long inviterId = request.getUserId();
+        List<Long> invitedUserIds = request.getInvitedUserIds();
+
+        // 1. 채팅방 존재 여부 확인
+        Chat chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
+
+        // 2. 초대 대상 비어 있는지 확인
+        if (invitedUserIds == null || invitedUserIds.isEmpty()) {
+            throw new BusinessException(ChatErrorCode.INVALID_CHAT_ROOM_REQUEST);
+        }
+
+        // 3. 존재하는 유저 ID 확인
+        List<Long> foundUserIds = userQueryMapper.findUserIdsByIds(invitedUserIds);
+        if (foundUserIds.isEmpty()) {
+            throw new BusinessException(ChatErrorCode.USER_NOT_FOUND);
+        }
+
+        // 4. 이미 참여 중인 유저 확인
+        List<Long> alreadyMembers = userChatRepository.findUserIdsByChatId(chatRoomId);
+        List<Long> duplicated = foundUserIds.stream()
+                .filter(alreadyMembers::contains)
+                .toList();
+
+        if (!duplicated.isEmpty()) {
+            throw new BusinessException(ChatErrorCode.ALREADY_JOINED_CHAT);
+        }
+
+        // 5. 새로 초대
+        for (Long inviteeId : foundUserIds) {
+            UserChat userChat = UserChat.builder()
+                    .chatId(chatRoomId)
+                    .userId(inviteeId)
+                    .isDeleted(StatusType.N)
+                    .build();
+            userChatRepository.save(userChat);
+        }
     }
 }
