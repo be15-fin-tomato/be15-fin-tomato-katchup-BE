@@ -5,6 +5,7 @@ import be15fintomatokatchupbe.chat.command.domain.aggregate.entity.Message;
 import be15fintomatokatchupbe.chat.command.domain.repository.MessageRepository;
 import be15fintomatokatchupbe.chat.exception.ChatErrorCode;
 import be15fintomatokatchupbe.chat.query.application.mapper.ChatRoomQueryMapper;
+import be15fintomatokatchupbe.chat.query.application.mapper.UserChatMapper;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.chat.command.domain.repository.UserChatRepository;
 import be15fintomatokatchupbe.notification.command.application.service.FcmService;
@@ -32,6 +33,7 @@ public class ChatSocketController {
     private final UserChatRepository userChatRepository;
     private final FcmService fcmService;
     private final NotificationRepository notificationRepository;
+    private final UserChatMapper userChatMapper;
 
 
     @Transactional
@@ -68,11 +70,11 @@ public class ChatSocketController {
 
     /* fireBase 웹푸시 알림 요청 */
     private void notifyOtherParticipants(Long chatId, Long senderId, String message) {
-        List<ChatResponseDTO> targets  = userChatRepository.findFcmTokensByChatId(chatId, senderId);
+        List<ChatResponseDTO> targets  = userChatMapper.findFcmTokensByChatId(chatId, senderId);
 
         for (ChatResponseDTO dto : targets ) {
-            Long receiverId = dto.userId();
-            String token = dto.fcmToken();
+            Long receiverId = dto.getUserId();
+            String token = dto.getFcmToken();
 
             if (token != null && !token.isBlank()) {
                 fcmService.sendMessage(token, "새 채팅", message);

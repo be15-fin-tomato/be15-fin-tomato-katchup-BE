@@ -1,22 +1,13 @@
 package be15fintomatokatchupbe.chat.command.application.dto.response;
 
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
-@Getter @Setter
-@Builder
+@Getter
+@AllArgsConstructor
 public class ChatResponseDTO {
+    String fcmToken;
+    Long userId;
 
-    private String fcmToken;
-
-    private Long userId;
-
-    public Long userId() {
-        return userId;
-    }
-
-    public String fcmToken() {
-        return fcmToken;
-    }
 }
