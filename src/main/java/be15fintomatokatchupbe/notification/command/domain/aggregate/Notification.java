@@ -2,6 +2,8 @@ package be15fintomatokatchupbe.notification.command.domain.aggregate;
 
 import be15fintomatokatchupbe.common.domain.StatusType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -37,9 +39,13 @@ public class Notification {
 
     private String notificationContent;
 
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
     private StatusType isRead = StatusType.N;
 
     private Timestamp getTime;
 
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
     private StatusType isDeleted = StatusType.N;
 }
