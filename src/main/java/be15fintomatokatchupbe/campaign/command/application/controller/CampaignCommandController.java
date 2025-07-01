@@ -24,7 +24,6 @@ public class CampaignCommandController {
     private final CampaignCommandService campaignCommandService;
     private final ProposalCommandService proposalCommandService;
     private final ContractCommandService contractCommandService;
-    private final ListupCommandService listupCommandService;
     private final QuotationCommandService quotationCommandService;
     private final RevenueCommandService revenueCommandService;
 
@@ -115,4 +114,40 @@ public class CampaignCommandController {
         campaignCommandService.deleteCampaign(campaignId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+    @PutMapping("/quotation")
+    public ResponseEntity<ApiResponse<Void>> updateQuotation(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestBody UpdateQuotationRequest request
+    ){
+        Long userId = user.getUserId();
+
+        quotationCommandService.updateQuotation(userId, request);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PutMapping("/contract")
+    public ResponseEntity<ApiResponse<Void>> updateContract(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestPart("request") UpdateContractRequest request,
+            @RequestPart(required = false) List<MultipartFile> files
+    ){
+        Long userId = user.getUserId();
+        contractCommandService.updateContract(userId, request, files);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PutMapping("/revenue")
+    public ResponseEntity<ApiResponse<Void>> updateRevenue(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestPart("request") UpdateRevenueRequest request,
+            @RequestPart(required = false) List<MultipartFile> files
+    ){
+        Long userId = user.getUserId();
+        revenueCommandService.updateRevenue(userId, request, files);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
 }

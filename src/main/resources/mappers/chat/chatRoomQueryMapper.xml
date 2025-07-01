@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.chat.query.application.mapper.ChatRoomQueryMapper">
+    <select id="findChatRoomsByUserId"
+            resultType="be15fintomatokatchupbe.chat.query.application.dto.response.ChatRoomResponse">
+        SELECT cr.chat_id AS chatId,
+        cr.created_at AS createdAt
+        FROM chat cr
+        JOIN user_chat uc ON cr.chat_id = uc.chat_id
+        WHERE uc.user_id = #{userId}
+        AND uc.is_deleted = 'N'
+        ORDER BY cr.created_at DESC
+    </select>
+
+    <select id="findParticipantsByChatId" resultType="be15fintomatokatchupbe.chat.query.application.dto.response.ChatParticipantDto">
+        SELECT u.user_id AS userId,
+        u.name AS name
+        FROM user_chat uc
+        JOIN user u ON uc.user_id = u.user_id
+        WHERE uc.chat_id = #{chatId}
+        AND uc.is_deleted = 'N'
+    </select>
+
+    <select id="existsByChatIdAndUserId" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM user_chat
+        WHERE chat_id = #{chatId}
+        AND user_id = #{userId}
+        AND is_deleted = 'N'
+    </select>
+
+</mapper>

@@ -37,4 +37,8 @@ public class Idea {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private StatusType isDeleted = StatusType.N;
+
+    public void softDelete() {
+        this.isDeleted = StatusType.Y;
+    }
 }

@@ -1,7 +1,9 @@
 package be15fintomatokatchupbe.campaign.command.application.service;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateContractRequest;
+import be15fintomatokatchupbe.campaign.command.application.dto.request.UpdateContractRequest;
 import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelperService;
+import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStatusConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.*;
 import be15fintomatokatchupbe.campaign.command.domain.repository.*;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -46,6 +49,16 @@ public class ContractCommandService {
 
     @Transactional
     public void createContract(Long userId, CreateContractRequest request, List<MultipartFile> files) {
+        Pipeline existPipeline = pipelineRepository.findApprovePipeline(
+                request.getCampaignId(),
+                PipelineStepConstants.CONTRACT,
+                PipelineStatusConstants.APPROVED
+        );
+
+        if(existPipeline != null){
+            throw new BusinessException(CampaignErrorCode.APPROVED_CONTRACT_ALREADY_EXISTS);
+        }
+
         ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
         Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
         PipelineStep pipelineStep = pipelineStepRepository.findById(PipelineStepConstants.CONTRACT)
@@ -100,5 +113,69 @@ public class ContractCommandService {
         pipeInfClientManagerService.saveClientManager(clientManager, pipeline);
         pipeInfClientManagerService.saveInfluencer(request.getInfluencerId(), pipeline);
         pipeUserService.saveUserList(request.getUserId(), pipeline);
+    }
+
+    @Transactional
+    public void updateContract(Long userId, UpdateContractRequest request, List<MultipartFile> files){
+        /* 요청이 승인일 경우 승인 된게 있는지 체크 해주기 */
+        if(Objects.equals(request.getPipelineStatusId(), PipelineStatusConstants.APPROVED)){
+            Pipeline existPipeline = pipelineRepository.findApprovePipeline(
+                    request.getCampaignId(),
+                    PipelineStepConstants.CONTRACT,
+                    PipelineStatusConstants.APPROVED
+            );
+
+            if(existPipeline != null){
+                throw new BusinessException(CampaignErrorCode.APPROVED_REVENUE_ALREADY_EXISTS);
+            }
+        }
+
+        ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
+        Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
+        PipelineStatus pipelineStatus = pipelineStatusRepository.findById(request.getPipelineStatusId())
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STATUS_NOT_FOUND));
+        User writer = userHelperService.findValidUser(userId);
+
+        Pipeline foundPipeline = campaignHelperService.findValidPipeline(request.getPipelineId());
+
+        /* 연관 테이블 지워주기 */
+        campaignHelperService.deleteRelationTable(foundPipeline);
+
+        /* 파일 테이블 지워주기 */
+        fileService.deleteByPipeline(foundPipeline);
+
+        /* 테이블 값 입력하기 */
+        foundPipeline.updateContract(
+                pipelineStatus,
+                writer,
+                request.getName(),
+                request.getRequestAt(),
+                request.getStartedAt(),
+                request.getEndedAt(),
+                request.getPresentedAt(),
+                campaign,
+                request.getContent(),
+                request.getNotes(),
+                request.getExpectedRevenue(),
+                request.getExpectedProfit(),
+                request.getAvailableQuantity()
+        );
+
+        /* 파일 저장하기 */
+        /* 파일 저장*/
+        if(files != null && !files.isEmpty()){
+            // 1. 파일 S3에 올리고 돌려 받기
+            List<File> fileList = fileService.uploadFile(files);
+            fileList.forEach(file -> file.setPipeline(foundPipeline));
+
+            // 2. 파일 DB에 저장하기
+            fileService.saveFile(fileList);
+        }
+
+        /* 연관 테이블 입력 해주기 */
+        pipeInfClientManagerService.saveClientManager(clientManager, foundPipeline);
+        pipeInfClientManagerService.saveInfluencer(request.getInfluencerId(), foundPipeline);
+        pipeUserService.saveUserList(request.getUserId(), foundPipeline);
+
     }
 }
