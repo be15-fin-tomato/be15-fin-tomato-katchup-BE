@@ -18,4 +18,17 @@
         ORDER BY i.created_at, i.idea_id
     </select>
 
+    <select id="getIdeaById" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.IdeaDTO">
+        SELECT    i.idea_id
+                , i.pipeline_id
+                , i.user_id
+                , u.name
+                , i.content
+                , i.created_at
+        FROM idea i
+        JOIN user u ON i.user_id = u.user_id
+        WHERE i.is_deleted = 'N'
+        AND i.user_id = #{userId}
+        AND i.idea_id = #{ideaId}
+    </select>
 </mapper>
