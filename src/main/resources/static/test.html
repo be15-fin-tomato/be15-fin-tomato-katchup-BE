@@ -28,7 +28,7 @@
 
     function log(message, isError = false) {
         const logElement = document.getElementById("log");
-        const formatted = isError ? `\n❗ ${message}\n` : `\n${message}\n`;
+        const formatted = isError ? `\n ${message}\n` : `\n${message}\n`;
         logElement.textContent += formatted;
     }
 
@@ -39,7 +39,7 @@
     function connect() {
         const token = getToken();
         if (!token) {
-            log("❗ JWT 토큰을 입력해주세요.", true);
+            log("WT 토큰을 입력해주세요.", true);
             return;
         }
 
@@ -50,22 +50,22 @@
         stompClient.connect(
             { Authorization: 'Bearer ' + token },
             frame => {
-                log("✅ 연결 성공: " + frame);
+                log("연결 성공: " + frame);
                 const chatId = document.getElementById("chatIdInput").value || 1;
                 stompClient.subscribe('/topic/room.' + chatId, message => {
                     const body = JSON.parse(message.body);
-                    log("📩 받은 메시지: " + JSON.stringify(body));
+                    log("받은 메시지: " + JSON.stringify(body));
                 });
             },
             error => {
-                log("❗ 연결 실패: " + error, true);
+                log("연결 실패: " + error, true);
             }
         );
     }
 
     function sendMessage() {
         if (!stompClient || !stompClient.connected) {
-            log("❗ 먼저 연결을 해주세요.", true);
+            log("먼저 연결을 해주세요.", true);
             return;
         }
 
@@ -77,7 +77,7 @@
             message: messageText
         }));
 
-        log(`📤 메시지 전송 요청 → chatId: ${chatId}, message: ${messageText}`);
+        log(`메시지 전송 요청 → chatId: ${chatId}, message: ${messageText}`);
     }
 </script>
 </body>
