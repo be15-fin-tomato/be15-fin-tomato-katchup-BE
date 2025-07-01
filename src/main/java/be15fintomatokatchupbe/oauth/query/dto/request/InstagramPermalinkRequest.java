@@ -4,7 +4,6 @@ import lombok.Getter;
 
 @Getter
 public class InstagramPermalinkRequest {
-    private String accessToken;
     private String igUserId;
     private String permalink;
 }

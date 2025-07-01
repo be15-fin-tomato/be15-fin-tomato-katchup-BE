@@ -39,19 +39,20 @@ public class InstagramQueryController {
     @Operation(summary = "인스타그램 통계 조회", description = "사용자는 인플루언서 인스타그램의 통계 자료를 조회할 수 있다.")
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<InstagramStatsResponse>> fetchInstagramStats(
-            @RequestParam("token") String token,
             @RequestParam("igAccountId") String igAccountId
     ) {
-        InstagramStatsResponse response = instagramStatsQueryService.fetchStats(token, igAccountId);
+        InstagramStatsResponse response = instagramStatsQueryService.fetchStats(igAccountId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    @PostMapping("/post")
-    public ResponseEntity<ApiResponse<InstagramPostInsightResponse>> getPostInsightsByPermalink(
-            @RequestBody InstagramPermalinkRequest request
+    @GetMapping("/insight")
+    public ResponseEntity<ApiResponse<InstagramPostInsightResponse>> getPostInsight(
+            @RequestParam Long pipelineInfluencerId
     ) {
-        InstagramPostInsightResponse response = instagramPostQueryService.fetchPostInsightsByPermalink(request);
+        InstagramPostInsightResponse response = instagramPostQueryService
+                .fetchPostInsightsByPipelineInfluencerId(pipelineInfluencerId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
 
 }

@@ -1,9 +1,12 @@
 package be15fintomatokatchupbe.oauth.query.service;
 
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.influencer.command.domain.repository.InstagramRepository;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
 import be15fintomatokatchupbe.oauth.query.dto.request.InstagramPermalinkRequest;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramPostInsightResponse;
+import be15fintomatokatchupbe.relation.domain.PipelineInfluencerClientManager;
+import be15fintomatokatchupbe.relation.repository.PipeInfClientManagerRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,14 +23,31 @@ import java.util.regex.Pattern;
 public class InstagramPostQueryService {
 
     private final WebClient webClient;
+    private final InstagramRedisService instagramRedisService;
+    private final PipeInfClientManagerRepository picmRepository;
+    private final InstagramRepository instagramRepository;
 
     @Value("${facebook.base-url}")
     private String baseUrl;
 
-    public InstagramPostInsightResponse fetchPostInsightsByPermalink(InstagramPermalinkRequest request) {
-        String accessToken = request.getAccessToken();
-        String igUserId = request.getIgUserId();
-        String permalink = request.getPermalink();
+    public InstagramPostInsightResponse fetchPostInsightsByPipelineInfluencerId(Long pipelineInfluencerId) {
+        PipelineInfluencerClientManager picm = picmRepository.findById(pipelineInfluencerId)
+                .orElseThrow(() -> new BusinessException(OAuthErrorCode.MEDIA_NOT_FOUND));
+
+        String permalink = picm.getInstagramLink();
+        Long influencerId = picm.getInfluencer().getId();
+
+        // 인스타그램 계정 ID 조회
+        String igUserId = instagramRepository.findById(influencerId)
+                .map(i -> i.getAccountId())
+                .orElseThrow(() -> new BusinessException(OAuthErrorCode.MEDIA_NOT_FOUND));
+
+
+        String accessToken = instagramRedisService.getAccessToken(igUserId);
+        if (accessToken == null) {
+            log.warn("[InstagramPostQueryService] Redis에 토큰 없음. igUserId={}", igUserId);
+            throw new BusinessException(OAuthErrorCode.TOKEN_NOT_FOUND);
+        }
 
         String shortcode = extractShortcode(permalink);
         if (shortcode == null) {
