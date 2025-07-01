@@ -15,11 +15,14 @@ import be15fintomatokatchupbe.notification.command.domain.repository.Notificatio
 import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class IdeaCommandService {
@@ -51,6 +54,8 @@ public class IdeaCommandService {
 
         List<User> allUsers = userRepository.findAll();
 
+        LocalDateTime now = LocalDateTime.now();
+
         for (User target : allUsers) {
             if (!target.getUserId().equals(user.getUserId())) {
 
@@ -65,6 +70,7 @@ public class IdeaCommandService {
                         .userId(target.getUserId())
                         .notificationTypeId(3L)
                         .notificationContent(body)
+                        .getTime(now)
                         .build();
 
                 notificationRepository.save(notification);

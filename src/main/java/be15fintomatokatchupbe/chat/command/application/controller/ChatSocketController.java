@@ -16,7 +16,9 @@ import be15fintomatokatchupbe.notification.command.domain.aggregate.Notification
 import be15fintomatokatchupbe.notification.command.domain.repository.NotificationRepository;
 import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
+import io.lettuce.core.ScriptOutputType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -28,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class ChatSocketController {
@@ -81,7 +84,10 @@ public class ChatSocketController {
     private void notifyOtherParticipants(Long chatId, Long senderId, String message, String userName) {
         List<ChatResponseDTO> targets  = userChatMapper.findFcmTokensByChatId(chatId, senderId);
 
+        LocalDateTime now = LocalDateTime.now();
+
         for (ChatResponseDTO dto : targets ) {
+            log.info("여기왔다.");
             Long receiverId = dto.getUserId();
             String token = dto.getFcmToken();
 
@@ -98,6 +104,7 @@ public class ChatSocketController {
                     .userId(receiverId)
                     .notificationTypeId(5L)
                     .notificationContent(messages)
+                    .getTime(now)
                     .build();
 
             notificationRepository.save(notification);
