@@ -99,22 +99,18 @@ public class ChatCommandService {
         Long inviterId = request.getUserId();
         List<Long> invitedUserIds = request.getInvitedUserIds();
 
-        // 1. 채팅방 존재 여부 확인
         Chat chatRoom = chatRoomRepository.findById(chatRoomId)
                 .orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
 
-        // 2. 초대 대상 비어 있는지 확인
         if (invitedUserIds == null || invitedUserIds.isEmpty()) {
             throw new BusinessException(ChatErrorCode.INVALID_CHAT_ROOM_REQUEST);
         }
 
-        // 3. 존재하는 유저 ID 확인
         List<Long> foundUserIds = userQueryMapper.findUserIdsByIds(invitedUserIds);
         if (foundUserIds.isEmpty()) {
             throw new BusinessException(ChatErrorCode.USER_NOT_FOUND);
         }
 
-        // 4. 이미 참여 중인 유저 확인
         List<Long> alreadyMembers = userChatRepository.findUserIdsByChatId(chatRoomId);
         List<Long> duplicated = foundUserIds.stream()
                 .filter(alreadyMembers::contains)
@@ -124,7 +120,6 @@ public class ChatCommandService {
             throw new BusinessException(ChatErrorCode.ALREADY_JOINED_CHAT);
         }
 
-        // 5. 새로 초대
         for (Long inviteeId : foundUserIds) {
             UserChat userChat = UserChat.builder()
                     .chatId(chatRoomId)
