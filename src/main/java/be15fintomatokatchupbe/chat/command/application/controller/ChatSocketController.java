@@ -12,6 +12,7 @@ import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.notification.command.application.service.FcmService;
 import be15fintomatokatchupbe.notification.command.domain.aggregate.Notification;
 import be15fintomatokatchupbe.notification.command.domain.repository.NotificationRepository;
+import be15fintomatokatchupbe.notification.command.domain.repository.SseEmitterRepository;
 import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,9 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +43,7 @@ public class ChatSocketController {
     private final NotificationRepository notificationRepository;
     private final UserChatMapper userChatMapper;
     private final UserRepository userRepository;
+    private final SseEmitterRepository sseEmitterRepository;
 
 
     @Transactional
@@ -101,7 +105,16 @@ public class ChatSocketController {
                     .build();
 
             notificationRepository.save(notification);
+
+            sseEmitterRepository.get(receiverId).ifPresent(emitter -> {
+                try {
+                    emitter.send(SseEmitter.event()
+                            .name("new-notification")
+                            .data(messages));
+                } catch (IOException e) {
+                    sseEmitterRepository.delete(receiverId);
+                }
+            });
         }
     }
-
 }
