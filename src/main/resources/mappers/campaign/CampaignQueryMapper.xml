@@ -555,13 +555,13 @@
         FROM pipeline p
         WHERE p.campaign_id = c.campaign_id
         AND p.is_deleted = 'N'
-        ) AS startedAt,
+        ) AS startedAtRaw,
         (
         SELECT MAX(p.presented_at)
         FROM pipeline p
         WHERE p.campaign_id = c.campaign_id
         AND p.is_deleted = 'N'
-        ) AS endedAt
+        ) AS endedAtRaw
 
         FROM campaign c
         LEFT JOIN client_company cc ON c.client_company_id = cc.client_company_id
