@@ -14,6 +14,8 @@ import be15fintomatokatchupbe.notification.command.domain.aggregate.Notification
 import be15fintomatokatchupbe.notification.command.domain.repository.NotificationRepository;
 import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.Header;
@@ -27,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Tag(name = "채팅")
 @Slf4j
 @Controller
 @RequiredArgsConstructor
@@ -42,6 +45,7 @@ public class ChatSocketController {
     private final UserRepository userRepository;
 
 
+    @Operation(summary = "채팅 보내기", description = "사용자는 채팅방에서 다른 사용자에게 메시지를 보낼 수 있다.")
     @Transactional
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(Message message,

@@ -23,6 +23,7 @@ import java.util.List;
 public class FileController {
     private final FileService fileService;
 
+    @Operation(summary = "파일 업로드", description = "사용자는 파일을 업로드 할 수 있다.")
     @PostMapping("/upload")
     public ResponseEntity<ApiResponse<List<File>>> uploadFiles(@RequestPart List<MultipartFile> files) throws Exception {
         List<File> uploaded = fileService.uploadFile(files); // S3 업로드
@@ -30,7 +31,7 @@ public class FileController {
         return ResponseEntity.ok(ApiResponse.success(uploaded));
     }
 
-    @Operation(summary = "파일 다운로드", description = "사용자는 파일을 다운로드 할 수 있다.")
+    @Operation(summary = "파일 다운로드", description = "사용자는 파일을 업로드된 파일을 다운로드 할 수 있다.")
     @GetMapping("/download")
     public ResponseEntity<byte[]> streamFile(@RequestParam String key) {
         FileDownloadResult result = fileService.downloadFile(key);

@@ -9,11 +9,14 @@ import be15fintomatokatchupbe.influencer.command.application.dto.response.Influe
 import be15fintomatokatchupbe.influencer.command.application.dto.response.InfluencerRegisterResponse;
 import be15fintomatokatchupbe.influencer.command.application.service.InfluencerCommandService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name ="인플루언서 관리")
 @RestController
 @RequestMapping("/influencer")
 @RequiredArgsConstructor
@@ -22,6 +25,7 @@ public class InfluencerCommandController {
     private final InfluencerCommandService influencerCommandService;
 
     // 인플루언서 등록
+    @Operation(summary = "인플루언서 등록", description = "사용자는 소속 인플루언서를 등록할 수 있다.")
     @PostMapping("/regist")
     public ResponseEntity<ApiResponse<InfluencerRegisterResponse>> registerInfluencer(
             @RequestBody InfluencerRegisterRequestDTO requestDTO,
@@ -33,6 +37,7 @@ public class InfluencerCommandController {
     }
 
     // 인플루언서 수정
+    @Operation(summary = "인플루언서 수정", description = "사용자는 등록된 소속 인플루언서의 정보를 수정할 수 있다.")
     @PatchMapping("/{influencerId}")
     public ResponseEntity<ApiResponse<InfluencerEditResponse>> editInfluencer(
             @PathVariable Long influencerId,
@@ -44,6 +49,7 @@ public class InfluencerCommandController {
     }
 
     // 인플루언서 삭제
+    @Operation(summary = "인플루언서 등록", description = "사용자는 등록된 소속 인플루언서를 삭제할 수 있다.")
     @DeleteMapping("/delete/{influencerId}")
     public ResponseEntity<ApiResponse<InfluencerDeleteResponse>> deleteInfluencer(
             @PathVariable Long influencerId,
