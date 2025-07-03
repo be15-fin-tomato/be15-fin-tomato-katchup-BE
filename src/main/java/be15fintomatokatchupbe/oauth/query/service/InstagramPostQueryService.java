@@ -134,17 +134,12 @@ public class InstagramPostQueryService {
     }
 
     private String buildMetrics(String mediaType) {
-        switch (mediaType.toUpperCase()) {
-            case "VIDEO":
-                return "views,reach,likes,comments,shares,saved";
-            case "IMAGE":
-            case "CAROUSEL_ALBUM":
-                return "saved,follows,likes,comments,reach";
-            case "REEL":
-                return "views,likes,comments,shares,saved";
-            default:
-                return "likes,comments";
-        }
+        return switch (mediaType.toUpperCase()) {
+            case "VIDEO" -> "views,reach,likes,comments,shares,saved";
+            case "IMAGE", "CAROUSEL_ALBUM" -> "saved,follows,likes,comments,reach";
+            case "REEL" -> "views,likes,comments,shares,saved";
+            default -> "likes,comments";
+        };
     }
 
     private JsonNode fetchInsights(String mediaId, String accessToken, String metrics) {
