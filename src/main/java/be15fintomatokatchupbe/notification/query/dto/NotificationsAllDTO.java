@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
 public class NotificationsAllDTO {
 
     private Long notificationId;
-    private Long userId;
-    private Long notificationTypeId;
     private String notificationContent;
     private StatusType isRead;
     private LocalDateTime getTime;
