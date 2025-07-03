@@ -176,6 +176,18 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @DeleteMapping("listup/{pipelineId}")
+    public ResponseEntity<ApiResponse<Void>> deleteListup(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @PathVariable Long pipelineId
+    ){
+        Long userId = user.getUserId();
+
+        listupCommandService.deleteListup(pipelineId);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
     @DeleteMapping("/proposal/{pipelineId}")
     public ResponseEntity<ApiResponse<Void>> deleteProposal(
             @AuthenticationPrincipal CustomUserDetail user,

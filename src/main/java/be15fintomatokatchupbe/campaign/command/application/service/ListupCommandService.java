@@ -82,4 +82,13 @@ public class ListupCommandService {
 
         pipeInfClientManagerService.saveInfluencer(request.getInfluencerId(), foundPipeline);
     }
+
+    @Transactional
+    public void deleteListup(Long pipelineId) {
+        Pipeline foundPipeline = campaignHelperService.findValidPipeline(pipelineId);
+
+        foundPipeline.softDelete();
+
+        campaignHelperService.deleteRelationTable(foundPipeline);
+    }
 }
