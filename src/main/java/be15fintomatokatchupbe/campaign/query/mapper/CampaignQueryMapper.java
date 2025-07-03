@@ -74,4 +74,9 @@ public interface CampaignQueryMapper {
 
     Long selectTotalExpectedRevenue(Long campaignId);
 
+    List<CampaignListResponse> searchCampaignList(
+            @Param("limit") int limit,
+            @Param("offset") int offset
+    );
+
 }
