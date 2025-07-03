@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.chat.query.application.dto.response.UserSimpleDto;
 import be15fintomatokatchupbe.user.query.dto.response.UserAccountQueryResponse;
 import be15fintomatokatchupbe.user.query.dto.response.UserInfluencerListDTO;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Set;
@@ -18,4 +19,6 @@ public interface UserQueryMapper {
     List<UserInfluencerListDTO> getMyInfluencer(Long userId);
 
     List<UserSimpleDto> findUserNamesByIds(Set<Long> senderIds);
+
+    List<Long> findUserIdsByIds(@Param("userIds") List<Long> userIds);
 }

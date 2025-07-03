@@ -151,4 +151,8 @@ public class Pipeline {
         this.content = content;
         this.notes = notes;
     }
+
+    public void softDelete(){
+        this.isDeleted = StatusType.Y;
+    }
 }

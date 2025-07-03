@@ -21,4 +21,7 @@ public class Chat {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "chat_name")
+    private String chatName;
 }
