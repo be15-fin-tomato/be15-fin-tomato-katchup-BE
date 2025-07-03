@@ -20,11 +20,11 @@ public class InstagramStatsSnapshotService {
     private final InstagramStatsSnapshotRepository snapshotRepository;
     private final ObjectMapper objectMapper;
 
-    public void saveSnapshot(Influencer influencer, InstagramStatsResponse stats) {
-
+    /* 스냅샷 생성 */
+    public InstagramStatsSnapshot createSnapshot(Influencer influencer, InstagramStatsResponse stats) {
         LocalDate today = LocalDate.now();
 
-        InstagramStatsSnapshot snapshot = InstagramStatsSnapshot.builder()
+        return InstagramStatsSnapshot.builder()
                 .influencer(influencer)
                 .snapshotDate(today)
                 .dailyAvgViews(stats.getDailyAverageViews())
@@ -40,8 +40,11 @@ public class InstagramStatsSnapshotService {
                 .topPostIds(toJson(getMediaIds(stats.getTopPosts())))
                 .topVideoIds(toJson(getMediaIds(stats.getTopVideos())))
                 .build();
+    }
 
-        snapshotRepository.save(snapshot);
+    /* 일괄 저장 */
+    public void saveAllSnapshots(List<InstagramStatsSnapshot> snapshotList) {
+        snapshotRepository.saveAll(snapshotList);
     }
 
     private String toJson(Object value) {
