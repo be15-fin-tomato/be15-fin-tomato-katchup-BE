@@ -11,7 +11,7 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 public class NotificationQueryService {
-
+/* 주석 */
     private final NotificationQueryMapper notificationQueryMapper;
 
     public NotificationsAllResponse getNotificationsAll(Long userId) {
