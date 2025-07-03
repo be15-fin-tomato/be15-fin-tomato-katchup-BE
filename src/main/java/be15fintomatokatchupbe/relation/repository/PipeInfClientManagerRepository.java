@@ -4,11 +4,11 @@ import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Pipeline;
 import be15fintomatokatchupbe.relation.domain.PipelineInfluencerClientManager;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
+import java.util.List;
 
 public interface PipeInfClientManagerRepository extends JpaRepository<PipelineInfluencerClientManager, Long> {
 
     void deleteAllByPipeline(Pipeline pipeline);
 
-    Optional<PipelineInfluencerClientManager> findByInstagramLink(String permalink);
+    List<PipelineInfluencerClientManager> findAllWithInfluencerByInstagramLinkIsNotNull();
 }
