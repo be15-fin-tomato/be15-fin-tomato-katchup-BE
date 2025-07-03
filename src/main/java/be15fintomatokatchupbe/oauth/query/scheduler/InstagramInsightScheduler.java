@@ -97,7 +97,7 @@ public class InstagramInsightScheduler {
 
         for (Instagram account : accounts) {
             try {
-                var stats = instagramAccountQueryService.fetchStats(account.getAccountId());
+                var stats = instagramAccountQueryService.fetchStats(account.getInfluencerId());
 
                 Influencer influencer = influencerRepository.findById(account.getInfluencerId())
                         .orElseThrow(() -> new BusinessException(InfluencerErrorCode.INFLUENCER_NOT_FOUND));
