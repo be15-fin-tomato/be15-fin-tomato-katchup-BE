@@ -151,6 +151,10 @@ public class Pipeline {
         this.content = content;
         this.notes = notes;
     }
+    public void updateListup(Campaign campaign, String name) {
+        this.campaign = campaign;
+        this.name = name;
+    }
 
     public void softDelete(){
         this.isDeleted = StatusType.Y;

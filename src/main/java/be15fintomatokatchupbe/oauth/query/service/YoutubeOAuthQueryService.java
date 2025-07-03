@@ -1,10 +1,17 @@
 package be15fintomatokatchupbe.oauth.query.service;
 
+import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.influencer.command.application.support.YoutubeHelperService;
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Youtube;
 import be15fintomatokatchupbe.infra.redis.YoutubeTokenRepository;
+import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeStatsResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.model.CommentThreadListResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -19,6 +26,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;

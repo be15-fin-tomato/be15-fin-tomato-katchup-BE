@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.campaign.command.application.dto.request.*;
 import be15fintomatokatchupbe.campaign.command.application.service.*;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
+import com.google.protobuf.Api;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +27,10 @@ public class CampaignCommandController {
     private final ContractCommandService contractCommandService;
     private final QuotationCommandService quotationCommandService;
     private final RevenueCommandService revenueCommandService;
+    private final ListupCommandService listupCommandService;
 
 
-    @PostMapping("/chance/create")
+    @PostMapping("/chance")
     public ResponseEntity<ApiResponse<Void>> createChance(
             @AuthenticationPrincipal CustomUserDetail user,
             @RequestBody CreateChanceRequest request
@@ -38,10 +40,21 @@ public class CampaignCommandController {
         campaignCommandService.createChance(userId, request);
 
         return ResponseEntity.ok(ApiResponse.success(null));
-
     }
 
-    @PostMapping("/proposal/create")
+    @PostMapping("/listup")
+    public ResponseEntity<ApiResponse<Void>> createListup(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestBody CreateListupRequest request
+    ){
+        Long userId = user.getUserId();
+
+        listupCommandService.createListup(userId, request);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PostMapping("/proposal")
     public ResponseEntity<ApiResponse<Void>> createProposal(
             @AuthenticationPrincipal CustomUserDetail user,
             @RequestBody CreateProposalRequest request
@@ -54,7 +67,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    @PostMapping("/quotation/create")
+    @PostMapping("/quotation")
     public ResponseEntity<ApiResponse<Void>> createQuotation(
             @AuthenticationPrincipal CustomUserDetail user,
             @RequestBody CreateQuotationRequest request
@@ -66,7 +79,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    @PostMapping("/contract/create")
+    @PostMapping("/contract")
     public ResponseEntity<ApiResponse<Void>> createContract(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @RequestPart("request") CreateContractRequest request,
@@ -79,7 +92,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    @PostMapping("/revenue/create")
+    @PostMapping("/revenue")
     public ResponseEntity<ApiResponse<Void>> createRevenue(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @RequestPart("request")CreateRevenueRequest request,
@@ -114,6 +127,19 @@ public class CampaignCommandController {
         campaignCommandService.deleteCampaign(campaignId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @PutMapping("/listup")
+    public ResponseEntity<ApiResponse<Void>> updateListup(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestBody UpdateListupRequest request
+    ){
+        Long userId = user.getUserId();
+
+        listupCommandService.updateListup(userId, request);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
     @PutMapping("/quotation")
     public ResponseEntity<ApiResponse<Void>> updateQuotation(
             @AuthenticationPrincipal CustomUserDetail user,
@@ -146,6 +172,18 @@ public class CampaignCommandController {
     ){
         Long userId = user.getUserId();
         revenueCommandService.updateRevenue(userId, request, files);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @DeleteMapping("listup/{pipelineId}")
+    public ResponseEntity<ApiResponse<Void>> deleteListup(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @PathVariable Long pipelineId
+    ){
+        Long userId = user.getUserId();
+
+        listupCommandService.deleteListup(pipelineId);
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }
