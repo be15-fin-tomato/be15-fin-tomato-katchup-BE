@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.notification.query.mapper.NotificationQueryMapper">
+    <select id="getNotificationsAll" resultType="be15fintomatokatchupbe.notification.query.dto.NotificationsAllDTO">
+        SELECT    notification_id
+                , user_id
+                , notification_type_id
+                , notification_content
+                , is_read
+                , get_time
+        FROM notification
+        WHERE user_id = #{userId}
+        AND is_deleted = 'N'
+    </select>
+
+</mapper>
