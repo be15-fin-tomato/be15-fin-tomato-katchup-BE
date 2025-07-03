@@ -3,6 +3,7 @@ package be15fintomatokatchupbe.oauth.query.service;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InstagramRedisService {
     private final RedisTemplate<String, Object> redisTemplate;
 
@@ -25,6 +27,7 @@ public class InstagramRedisService {
     public String getAccessToken(String igAccountId) {
         String key = "instagram:token:" + igAccountId;
         Object tokenObj = redisTemplate.opsForValue().get(key);
+        log.debug("[getAccessToken] key={}, exists={}", key, tokenObj != null);
         if (tokenObj == null) {
             throw new BusinessException(OAuthErrorCode.TOKEN_NOT_FOUND);
         }

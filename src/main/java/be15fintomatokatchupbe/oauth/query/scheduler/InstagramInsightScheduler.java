@@ -11,8 +11,8 @@ import be15fintomatokatchupbe.oauth.query.domain.InstagramStatsSnapshot;
 import be15fintomatokatchupbe.oauth.query.repository.InstagramPostInsightRepository;
 import be15fintomatokatchupbe.oauth.query.service.InstagramPostQueryService;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramPostInsightResponse;
-import be15fintomatokatchupbe.oauth.query.service.InstagramStatsQueryService;
-import be15fintomatokatchupbe.oauth.query.service.InstagramStatsSnapshotService;
+import be15fintomatokatchupbe.oauth.query.service.InstagramAccountQueryService;
+import be15fintomatokatchupbe.oauth.query.service.InstagramAccountSnapshotService;
 import be15fintomatokatchupbe.relation.domain.PipelineInfluencerClientManager;
 import be15fintomatokatchupbe.relation.repository.PipeInfClientManagerRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +32,8 @@ public class InstagramInsightScheduler {
 
     private final InfluencerRepository influencerRepository;
     private final InstagramRepository instagramRepository;
-    private final InstagramStatsSnapshotService instagramStatsSnapshotService;
-    private final InstagramStatsQueryService instagramStatsQueryService;
+    private final InstagramAccountSnapshotService instagramAccountSnapshotService;
+    private final InstagramAccountQueryService instagramAccountQueryService;
     private final InstagramPostQueryService instagramPostQueryService;
     private final PipeInfClientManagerRepository picmRepository;
     private final InstagramPostInsightRepository insightRepository;
@@ -97,12 +97,12 @@ public class InstagramInsightScheduler {
 
         for (Instagram account : accounts) {
             try {
-                var stats = instagramStatsQueryService.fetchStats(account.getAccountId());
+                var stats = instagramAccountQueryService.fetchStats(account.getAccountId());
 
                 Influencer influencer = influencerRepository.findById(account.getInfluencerId())
                         .orElseThrow(() -> new BusinessException(InfluencerErrorCode.INFLUENCER_NOT_FOUND));
 
-                InstagramStatsSnapshot snapshot = instagramStatsSnapshotService.createSnapshot(influencer, stats);
+                InstagramStatsSnapshot snapshot = instagramAccountSnapshotService.createSnapshot(influencer, stats);
                 snapshotList.add(snapshot);
 
                 log.info("✅ 스냅샷 수집 완료: influencerId={}, accountId={}", influencer.getId(), account.getAccountId());
@@ -113,7 +113,7 @@ public class InstagramInsightScheduler {
         }
 
         if (!snapshotList.isEmpty()) {
-            instagramStatsSnapshotService.saveAllSnapshots(snapshotList);
+            instagramAccountSnapshotService.saveAllSnapshots(snapshotList);
             log.info("✅ 전체 스냅샷 저장 완료: 총 {}건", snapshotList.size());
         } else {
             log.warn("⚠️ 저장할 스냅샷이 없습니다.");

@@ -6,15 +6,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 public class InstagramMediaStats {
-    private String mediaId;       // 인스타그램 미디어 ID
-    private String mediaType;     // IMAGE, VIDEO, REELS 등
-    private String mediaUrl;      // 미디어 썸네일 또는 콘텐츠 URL
-    private Integer impressions;  // 노출 수
+    private String mediaId;
+    private String mediaType;
+    private String mediaUrl;
+
+    private Integer impressions;  // 사용 안 해도 일단 유지
     private Integer reach;        // 도달 수
-    private Integer engagement;   // 참여 수 (좋아요 + 댓글 등)
+
+    private Integer viewCount;    // 조회수
+    private Integer likeCount;    // 좋아요
+    private Integer commentCount; // 댓글
+    private Integer saveCount;    // 저장
+    private Integer shareCount;   // 공유
+
+    private Integer engagement;
 }
 
