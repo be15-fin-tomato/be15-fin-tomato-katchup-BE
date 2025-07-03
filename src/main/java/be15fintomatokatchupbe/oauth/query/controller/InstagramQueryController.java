@@ -16,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Tag(name = "Instagram OAuth", description = "인스타그램 OAuth 인증 및 통계 API")
 @RestController
 @RequestMapping("/oauth2/instagram")
@@ -53,6 +55,4 @@ public class InstagramQueryController {
                 .fetchPostInsightsByPipelineInfluencerId(pipelineInfluencerId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
-
-
 }
