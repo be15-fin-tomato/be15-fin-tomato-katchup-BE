@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.campaign.query.mapper.PipelineStepMapper">
+
+    <select id="findPipelineStepsByCampaignId" resultType="be15fintomatokatchupbe.campaign.query.dto.response.PipelineStepStatusDto">
+        SELECT
+            ps.step_name AS stepType,
+            NULL AS startedAt
+        FROM pipeline_step ps
+        ORDER BY ps.level
+    </select>
+
+</mapper>

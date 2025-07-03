@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.calendar.command.mapper.TodayScheduleCommandMapper">
+    <select id="todaySchedule" resultType="be15fintomatokatchupbe.calendar.command.domain.aggregate.Schedule">
+        SELECT
+              schedule_id
+            , user_id
+            , content
+            , schedule_date
+            , start_time
+          FROM schedule
+        WHERE schedule_date = CURDATE()
+        ORDER BY user_id, start_time
+    </select>
+
+    <select id="todayPipeLine" resultType="be15fintomatokatchupbe.notification.command.application.dto.response.NotificationPipeLineResponse">
+        SELECT
+              p.pipeline_id
+            , pu.user_id
+            , p.name
+            , p.presented_at
+          FROM pipeline p
+          JOIN pipeline_user pu ON p.pipeline_id = pu.pipeline_id
+        WHERE p.presented_at = CURDATE()
+        ORDER BY pu.user_id
+    </select>
+</mapper>

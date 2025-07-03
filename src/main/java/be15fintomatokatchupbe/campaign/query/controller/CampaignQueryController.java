@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Tag(name="캠페인")
 @RestController
 @AllArgsConstructor
@@ -114,5 +116,16 @@ public class CampaignQueryController {
     ) {
         CampaignDetailWithTimelineResponse response = campaignQueryService.getCampaignDetailWithTimeline(campaignId);
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    // 캠페인 목록 조회
+    @GetMapping
+    @Operation(summary = "캠페인 목록 조회", description = "캠페인을 페이징 형태로 조회합니다.")
+    public ResponseEntity<ApiResponse<List<CampaignListResponse>>> getCampaignList(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        List<CampaignListResponse> result = campaignQueryService.getPagedCampaigns(page, size);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 }
