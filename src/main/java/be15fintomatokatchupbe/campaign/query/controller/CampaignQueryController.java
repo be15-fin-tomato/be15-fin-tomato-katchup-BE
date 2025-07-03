@@ -125,8 +125,7 @@ public class CampaignQueryController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
-        int offset = (page - 1) * size;
-        List<CampaignListResponse> campaignList = campaignQueryService.getCampaignList(size, offset);
-        return ResponseEntity.ok(ApiResponse.success(campaignList));
+        List<CampaignListResponse> result = campaignQueryService.getPagedCampaigns(page, size);
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 }
