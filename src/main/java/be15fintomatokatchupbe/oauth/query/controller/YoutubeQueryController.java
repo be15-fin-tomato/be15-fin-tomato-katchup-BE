@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Slf4j
 @RestController
 @RequestMapping("/oauth2")
@@ -68,7 +70,7 @@ public class YoutubeQueryController {
 
     // 3. 직접 Analytics API 호출 (Postman 테스트용)
     @GetMapping("/youtube/analytics")
-    public ResponseEntity<AnalyticsResponse> getAnalyticsDirect(
+    public ResponseEntity<ApiResponse<AnalyticsResponse>> getAnalyticsDirect(
             @RequestParam String accessToken,
             @RequestParam String channelId,
             @RequestParam String startDate,
@@ -80,18 +82,18 @@ public class YoutubeQueryController {
         AnalyticsResponse analytics = youtubeOAuthQueryService.getChannelAnalytics(
                 accessToken, channelId, startDate, endDate, metrics, dimensions, filters
         );
-        return ResponseEntity.ok(analytics);
+        return ResponseEntity.ok(ApiResponse.success(analytics));
     }
 
     // 4. 통합된 통계 정보 반환 (서비스 연동용)
     @GetMapping("/youtube/stats")
-    public ResponseEntity<YoutubeStatsResponse> getAggregatedStats(
+    public ResponseEntity<ApiResponse<YoutubeStatsResponse>> getAggregatedStats(
             @RequestParam String accessToken,
             @RequestParam String channelId,
             @RequestParam String startDate,
             @RequestParam String endDate
     ) {
         YoutubeStatsResponse stats = youtubeAnalyticsService.getYoutubeStats(accessToken, channelId, startDate, endDate);
-        return ResponseEntity.ok(stats);
+        return ResponseEntity.ok(ApiResponse.success(stats));
     }
 }
