@@ -6,6 +6,7 @@ import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
+import be15fintomatokatchupbe.campaign.query.mapper.PipelineStepMapper;
 import be15fintomatokatchupbe.common.dto.Pagination;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,12 +18,14 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 @Slf4j
 public class CampaignQueryService {
     private final CampaignQueryMapper campaignQueryMapper;
+    private final PipelineStepMapper pipelineStepMapper;
 
     public ProposalSearchResponse getProposalList(Long userId, PipelineSearchRequest request) {
         int offset = (request.getPage() - 1) * request.getSize();
@@ -422,4 +425,39 @@ public class CampaignQueryService {
 
 
     }
+
+    public List<CampaignListResponse> getPagedCampaigns(int page, int size) {
+        int offset = (page - 1) * size;
+
+        List<CampaignListResponse> campaigns = campaignQueryMapper.findPagedCampaigns(size, offset);
+        List<Long> campaignIds = campaigns.stream()
+                .map(CampaignListResponse::getCampaignId)
+                .distinct()
+                .toList();
+
+        if (!campaignIds.isEmpty()) {
+            List<PipelineStepStatusDto> steps = campaignQueryMapper.findPipelineStepsByCampaignIds(campaignIds);
+
+            Map<Long, List<PipelineStepDto>> stepMap = steps.stream()
+                    .collect(Collectors.groupingBy(
+                            PipelineStepStatusDto::getCampaignId,
+                            Collectors.mapping(
+                                    s -> new PipelineStepDto(s.getStepType(), s.getStartedAt()),
+                                    Collectors.toList()
+                            )
+                    ));
+
+            for (CampaignListResponse dto : campaigns) {
+                List<PipelineStepDto> stepList = stepMap.getOrDefault(dto.getCampaignId(), Collections.emptyList());
+                dto.setPipelineSteps(stepList);
+
+                // 사후관리는 제외 (총 6단계만 계산)
+                long completed = stepList.stream().filter(s -> s.getStartedAt() != null).count();
+                dto.setSuccessProbability((int) ((completed / 6.0) * 100));
+            }
+        }
+
+        return campaigns;
+    }
+
 }
