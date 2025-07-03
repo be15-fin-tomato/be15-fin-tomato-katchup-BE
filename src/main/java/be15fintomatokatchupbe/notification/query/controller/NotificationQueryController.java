@@ -28,4 +28,14 @@ public class NotificationQueryController {
         NotificationsAllResponse response = notificationQueryService.getNotificationsAll(userId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @GetMapping("/unread-count")
+    @Operation(summary = "읽지 않은 알림 수 조회", description = "사용자는 아직 읽지 않은 알림의 수를 조회할 수 있다.")
+    public ResponseEntity<ApiResponse<Long>> getUnreadNotificationCount(
+            @AuthenticationPrincipal CustomUserDetail customUserDetail
+    ) {
+        Long userId = customUserDetail.getUserId();
+        long count = notificationQueryService.countUnreadNotifications(userId);
+        return ResponseEntity.ok(ApiResponse.success(count));
+    }
 }
