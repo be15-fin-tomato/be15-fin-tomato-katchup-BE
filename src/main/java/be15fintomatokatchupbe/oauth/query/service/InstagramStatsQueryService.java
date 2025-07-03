@@ -55,20 +55,21 @@ public class InstagramStatsQueryService {
                     .limit(3)
                     .collect(Collectors.toList());
 
-            return new InstagramStatsResponse(
-                    dailyAvgViews,
-                    monthlyAvgViews,
-                    followerRatioMap.getOrDefault("FOLLOWER", 0.0),
-                    followerRatioMap.getOrDefault("NON_FOLLOWER", 0.0),
-                    ageDist,
-                    genderDist,
-                    growthRates.getOrDefault("daily", 0.0),
-                    growthRates.getOrDefault("weekly", 0.0),
-                    growthRates.getOrDefault("monthly", 0.0),
-                    topPosts,
-                    topVideos,
-                    totalFollowers
-            );
+            return InstagramStatsResponse.builder()
+                    .dailyAverageViews(dailyAvgViews)
+                    .monthlyAverageViews(monthlyAvgViews)
+                    .followerRatio(followerRatioMap.getOrDefault("FOLLOWER", 0.0))
+                    .nonFollowerRatio(followerRatioMap.getOrDefault("NON_FOLLOWER", 0.0))
+                    .followerAgeDistribution(ageDist)
+                    .followerGenderDistribution(genderDist)
+                    .dailyFollowerGrowthRate(growthRates.getOrDefault("daily", 0.0))
+                    .weeklyFollowerGrowthRate(growthRates.getOrDefault("weekly", 0.0))
+                    .monthlyFollowerGrowthRate(growthRates.getOrDefault("monthly", 0.0))
+                    .topPosts(topPosts)
+                    .topVideos(topVideos)
+                    .totalFollowers(totalFollowers)
+                    .build();
+
         } catch (Exception e) {
             log.error("[fetchStats] Failed to fetch Instagram stats", e);
             throw new BusinessException(OAuthErrorCode.INSTAGRAM_STATS_ERROR);
