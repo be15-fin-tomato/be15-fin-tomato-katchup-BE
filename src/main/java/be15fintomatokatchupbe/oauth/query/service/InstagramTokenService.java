@@ -1,9 +1,16 @@
 package be15fintomatokatchupbe.oauth.query.service;
 
+import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
+import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Instagram;
+import be15fintomatokatchupbe.influencer.command.domain.repository.InfluencerRepository;
 import be15fintomatokatchupbe.influencer.command.domain.repository.InstagramRepository;
+import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
+import be15fintomatokatchupbe.oauth.command.application.dto.InstagramAccountInfo;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramTokenResponse;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +27,7 @@ public class InstagramTokenService {
     private final ObjectMapper objectMapper;
     private final InstagramRedisService instagramRedisService;
     private final InstagramRepository instagramRepository;
+    private final InfluencerRepository influencerRepository;
 
     @Value("${facebook.client-id}")
     private String clientId;
@@ -32,7 +40,7 @@ public class InstagramTokenService {
 
     private static final int LONG_LIVED_TOKEN_EXPIRE_SECONDS = 60 * 60 * 24 * 60; // 5184000초
 
-    public InstagramTokenResponse exchangeCodeForToken(String code) {
+    public InstagramTokenResponse exchangeCodeForToken(String code, Long influencerId) {
         try {
             // 1. Short-lived token 발급
             String tokenUrl = String.format(
@@ -57,6 +65,20 @@ public class InstagramTokenService {
 
             // 5. Redis에 long-lived token 저장
             instagramRedisService.saveAccessToken(igAccountId, longLivedToken, LONG_LIVED_TOKEN_EXPIRE_SECONDS);
+
+            InstagramAccountInfo info = fetchAccountInfo(longLivedToken, igAccountId);
+
+            Influencer influencer = influencerRepository.findByIdAndIsDeleted(influencerId, StatusType.N)
+                    .orElseThrow(() -> new BusinessException(InfluencerErrorCode.INFLUENCER_NOT_FOUND));
+
+            Instagram instagram = Instagram.builder()
+                    .accountId(info.getAccountId())
+                    .name(info.getName())
+                    .follower(info.getFollower())
+                    .influencerId(influencer.getId())
+                    .build();
+
+            instagramRepository.save(instagram);
 
             return new InstagramTokenResponse(longLivedToken, igAccountId);
 
@@ -93,4 +115,22 @@ public class InstagramTokenService {
             throw new BusinessException(OAuthErrorCode.LONG_LIVED_TOKEN_REFRESH_FAILED);
         }
     }
+
+    private InstagramAccountInfo fetchAccountInfo(String token, String igAccountId) {
+        String url = String.format("https://graph.facebook.com/v23.0/%s?fields=id,username,followers_count&access_token=%s", igAccountId, token);
+        try {
+            String response = webClient.get().uri(url).retrieve().bodyToMono(String.class).block();
+            JsonNode node = objectMapper.readTree(response);
+
+            return new InstagramAccountInfo(
+                    node.path("id").asText(),
+                    node.path("username").asText(),
+                    node.path("followers_count").asLong()
+            );
+        } catch (Exception e) {
+            log.error("Instagram 계정 정보 조회 실패: {}", e.getMessage());
+            throw new BusinessException(OAuthErrorCode.INSTAGRAM_ACCOUNT_INFO_ERROR);
+        }
+    }
+
 }

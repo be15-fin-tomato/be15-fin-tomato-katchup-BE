@@ -17,7 +17,8 @@ public enum OAuthErrorCode implements ErrorCode {
     TOKEN_NOT_FOUND("50005", "토큰이 유효하지 않습니다.", HttpStatus.BAD_REQUEST),
     FAILED_TOKEN_EXCHANGE("50006", "액세스 토큰 교환에 실패했습니다.", HttpStatus.BAD_REQUEST),
     LONG_LIVED_TOKEN_EXCHANGE_FAILED("50007", "장기 액세스 토큰 연장에 실패했습니다.", HttpStatus.BAD_REQUEST),
-    LONG_LIVED_TOKEN_REFRESH_FAILED("50008", "장기 액세스 토큰 재발급에 실패했습니다.", HttpStatus.BAD_REQUEST),
+    LONG_LIVED_TOKEN_REFRESH_FAILED("50007", "장기 액세스 토큰 재발급에 실패했습니다.", HttpStatus.BAD_REQUEST),
+    INSTAGRAM_ACCOUNT_INFO_ERROR("50008", "인스타그램 계정 정보를 불러올 수 없습니다.", HttpStatus.BAD_REQUEST),
     YOUTUBE_COMMENT_FETCH_FAILED("50009", "유튜브 댓글 조회에 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
 
