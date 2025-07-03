@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -425,22 +426,35 @@ public class CampaignQueryService {
 
     }
 
-    // 캠페인 목록 조회
-    public List<CampaignListResponse> getCampaignList(int limit, int offset) {
-        List<CampaignListResponse> campaigns = campaignQueryMapper.searchCampaignList(limit, offset);
+    public List<CampaignListResponse> getPagedCampaigns(int page, int size) {
+        int offset = (page - 1) * size;
 
-        for (CampaignListResponse campaign : campaigns) {
-            List<PipelineStepStatusDto> steps = pipelineStepMapper.findPipelineStepsByCampaignId(campaign.getCampaignId());
-            campaign.setPipelineSteps(steps);
+        List<CampaignListResponse> campaigns = campaignQueryMapper.findPagedCampaigns(size, offset);
+        List<Long> campaignIds = campaigns.stream()
+                .map(CampaignListResponse::getCampaignId)
+                .distinct()
+                .toList();
 
-            // 성공확률 계산
-            long totalSteps = steps.size();
-            long completedSteps = steps.stream()
-                    .filter(step -> step.getStartedAt() != null)
-                    .count();
+        if (!campaignIds.isEmpty()) {
+            List<PipelineStepStatusDto> steps = campaignQueryMapper.findPipelineStepsByCampaignIds(campaignIds);
 
-            int successProbability = (totalSteps == 0) ? 0 : (int) Math.floor((double) completedSteps / totalSteps * 100);
-            campaign.setSuccessProbability(successProbability);
+            Map<Long, List<PipelineStepDto>> stepMap = steps.stream()
+                    .collect(Collectors.groupingBy(
+                            PipelineStepStatusDto::getCampaignId,
+                            Collectors.mapping(
+                                    s -> new PipelineStepDto(s.getStepType(), s.getStartedAt()),
+                                    Collectors.toList()
+                            )
+                    ));
+
+            for (CampaignListResponse dto : campaigns) {
+                List<PipelineStepDto> stepList = stepMap.getOrDefault(dto.getCampaignId(), Collections.emptyList());
+                dto.setPipelineSteps(stepList);
+
+                // 사후관리는 제외 (총 6단계만 계산)
+                long completed = stepList.stream().filter(s -> s.getStartedAt() != null).count();
+                dto.setSuccessProbability((int) ((completed / 6.0) * 100));
+            }
         }
 
         return campaigns;
