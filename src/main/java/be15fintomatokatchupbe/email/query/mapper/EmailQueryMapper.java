@@ -19,4 +19,6 @@ public interface EmailQueryMapper {
     CampaignSatisfactionResponseDTO getCampaignSatisfactionResponse();
 
     double getCampaignSatisfactionAverage();
+
+    double getInfluencerSatisfactionScore(Long influencerId);
 }

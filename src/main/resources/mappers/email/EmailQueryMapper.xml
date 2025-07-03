@@ -128,5 +128,15 @@
         WHERE is_reacted = 'Y';
     </select>
 
+    <select id="getInfluencerSatisfactionScore" resultType="double">
+        SELECT
+            IFNULL(ROUND(AVG(a.score), 1), 0.0)
+          FROM satisfaction a
+          JOIN pipeline b ON a.campaign_id = b.campaign_id
+          JOIN pipeline_influencer_client_manager c ON b.pipeline_id = c.pipeline_id
+        WHERE a.is_reacted = 'N'
+          AND influencer_id = #{ influencerId }
+    </select>
+
 
 </mapper>
