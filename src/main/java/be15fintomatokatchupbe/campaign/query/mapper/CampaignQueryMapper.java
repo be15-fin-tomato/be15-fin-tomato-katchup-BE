@@ -6,6 +6,7 @@ import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Mapper
@@ -57,4 +58,20 @@ public interface CampaignQueryMapper {
     RevenueFormDTO findRevenueDetail(Long pipelineId, Long pipelineStepId);
 
     List<InfluencerRevenueInfo> findPipelineRevenueInfluencer(Long pipelineId);
+
+    // 캠페인 상세
+    CampaignDetailDto selectCampaignDetail(@Param("campaignId") Long campaignId);
+
+    BigDecimal selectAverageExpectedProfitMargin(Long campaignId);
+
+    String selectCampaignNotes(Long campaignId);
+
+    List<Long> selectCampaignUserList(@Param("clientCompanyId") Long clientCompanyId);
+
+    List<Long> selectCampaignCategoryList(@Param("campaignId") Long campaignId);
+
+    List<PipelineTimelineDto> selectPipelineTimeline(@Param("campaignId") Long campaignId);
+
+    Long selectTotalExpectedRevenue(Long campaignId);
+
 }

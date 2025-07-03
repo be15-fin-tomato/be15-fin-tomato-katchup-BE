@@ -55,20 +55,21 @@ public class InstagramStatsQueryService {
                     .limit(3)
                     .collect(Collectors.toList());
 
-            return new InstagramStatsResponse(
-                    dailyAvgViews,
-                    monthlyAvgViews,
-                    followerRatioMap.getOrDefault("FOLLOWER", 0.0),
-                    followerRatioMap.getOrDefault("NON_FOLLOWER", 0.0),
-                    ageDist,
-                    genderDist,
-                    growthRates.getOrDefault("daily", 0.0),
-                    growthRates.getOrDefault("weekly", 0.0),
-                    growthRates.getOrDefault("monthly", 0.0),
-                    topPosts,
-                    topVideos,
-                    totalFollowers
-            );
+            return InstagramStatsResponse.builder()
+                    .dailyAverageViews(dailyAvgViews)
+                    .monthlyAverageViews(monthlyAvgViews)
+                    .followerRatio(followerRatioMap.getOrDefault("FOLLOWER", 0.0))
+                    .nonFollowerRatio(followerRatioMap.getOrDefault("NON_FOLLOWER", 0.0))
+                    .followerAgeDistribution(ageDist)
+                    .followerGenderDistribution(genderDist)
+                    .dailyFollowerGrowthRate(growthRates.getOrDefault("daily", 0.0))
+                    .weeklyFollowerGrowthRate(growthRates.getOrDefault("weekly", 0.0))
+                    .monthlyFollowerGrowthRate(growthRates.getOrDefault("monthly", 0.0))
+                    .topPosts(topPosts)
+                    .topVideos(topVideos)
+                    .totalFollowers(totalFollowers)
+                    .build();
+
         } catch (Exception e) {
             log.error("[fetchStats] Failed to fetch Instagram stats", e);
             throw new BusinessException(OAuthErrorCode.INSTAGRAM_STATS_ERROR);
@@ -88,7 +89,7 @@ public class InstagramStatsQueryService {
         JsonNode data = fetchJson(url);
         JsonNode valuesNode = Optional.ofNullable(data.path("data"))
                 .filter(JsonNode::isArray)
-                .filter(d -> d.size() > 0)
+                .filter(d -> !d.isEmpty())
                 .map(d -> d.get(0))
                 .map(n -> n.path("values"))
                 .orElse(null);
@@ -112,12 +113,12 @@ public class InstagramStatsQueryService {
 
         JsonNode valuesNode = Optional.ofNullable(fetchJson(url).path("data"))
                 .filter(JsonNode::isArray)
-                .filter(d -> d.size() > 0)
+                .filter(d -> !d.isEmpty())
                 .map(d -> d.get(0))
                 .map(n -> n.path("values"))
                 .orElse(null);
 
-        if (valuesNode == null || !valuesNode.isArray() || valuesNode.size() == 0) {
+        if (valuesNode == null || !valuesNode.isArray() || valuesNode.isEmpty()) {
             log.warn("No follower_count data for igId={}", igId);
             return 0;
         }
@@ -132,12 +133,12 @@ public class InstagramStatsQueryService {
         JsonNode results = fetchJson(url);
         JsonNode breakdowns = Optional.ofNullable(results.path("data"))
                 .filter(JsonNode::isArray)
-                .filter(d -> d.size() > 0)
+                .filter(d -> !d.isEmpty())
                 .map(d -> d.get(0))
                 .map(n -> n.path("total_value"))
                 .map(n -> n.path("breakdowns"))
                 .filter(JsonNode::isArray)
-                .filter(b -> b.size() > 0)
+                .filter(b -> !b.isEmpty())
                 .map(b -> b.get(0))
                 .map(n -> n.path("results"))
                 .orElse(null);
@@ -168,12 +169,12 @@ public class InstagramStatsQueryService {
         JsonNode data = fetchJson(url);
         JsonNode results = Optional.ofNullable(data.path("data"))
                 .filter(JsonNode::isArray)
-                .filter(d -> d.size() > 0)
+                .filter(d -> !d.isEmpty())
                 .map(d -> d.get(0))
                 .map(n -> n.path("total_value"))
                 .map(n -> n.path("breakdowns"))
                 .filter(JsonNode::isArray)
-                .filter(b -> b.size() > 0)
+                .filter(b -> !b.isEmpty())
                 .map(b -> b.get(0))
                 .map(n -> n.path("results"))
                 .orElse(null);
@@ -203,7 +204,7 @@ public class InstagramStatsQueryService {
 
         JsonNode valuesNode = Optional.ofNullable(fetchJson(url).path("data"))
                 .filter(JsonNode::isArray)
-                .filter(d -> d.size() > 0)
+                .filter(d -> !d.isEmpty())
                 .map(d -> d.get(0))
                 .map(n -> n.path("values"))
                 .orElse(null);

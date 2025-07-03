@@ -5,7 +5,6 @@ import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelpe
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Idea;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Pipeline;
 import be15fintomatokatchupbe.campaign.command.domain.repository.IdeaRepository;
-import be15fintomatokatchupbe.campaign.command.domain.repository.PipelineRepository;
 import be15fintomatokatchupbe.campaign.exception.CampaignErrorCode;
 import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
