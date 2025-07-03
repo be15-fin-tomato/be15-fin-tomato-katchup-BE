@@ -65,9 +65,6 @@ public class NotificationCommandService {
             if (!notification.getUserId().equals(userId)) {
                 throw new BusinessException(NotificationErrorCode.INVALID_USER);
             }
-        }
-
-        for (Notification notification : notifications) {
             notification.softdelete();
         }
         notificationRepository.saveAll(notifications);
