@@ -523,27 +523,27 @@
         cc.client_company_name AS clientCompanyName,
 
         (
-        SELECT cm.client_manager_id
-        FROM pipeline p
-        JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
-        JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
-        WHERE p.campaign_id = c.campaign_id
-        AND p.is_deleted = 'N'
-        AND cm.is_deleted = 'N'
-        ORDER BY p.presented_at ASC
-        LIMIT 1
+            SELECT cm.client_manager_id
+            FROM pipeline p
+            JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
+            JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
+            WHERE p.campaign_id = c.campaign_id
+                AND p.is_deleted = 'N'
+                AND cm.is_deleted = 'N'
+            ORDER BY p.presented_at ASC
+            LIMIT 1
         ) AS clientManagerId,
 
         (
-        SELECT cm.name
-        FROM pipeline p
-        JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
-        JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
-        WHERE p.campaign_id = c.campaign_id
-        AND p.is_deleted = 'N'
-        AND cm.is_deleted = 'N'
-        ORDER BY p.presented_at ASC
-        LIMIT 1
+            SELECT cm.name
+            FROM pipeline p
+            JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
+            JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
+            WHERE p.campaign_id = c.campaign_id
+                AND p.is_deleted = 'N'
+                AND cm.is_deleted = 'N'
+            ORDER BY p.presented_at ASC
+            LIMIT 1
         ) AS clientManagerName,
 
         c.awareness_path AS awarenessPath,
@@ -551,16 +551,16 @@
         c.product_price AS productPrice,
 
         (
-        SELECT MIN(p.presented_at)
-        FROM pipeline p
-        WHERE p.campaign_id = c.campaign_id
-        AND p.is_deleted = 'N'
+            SELECT MIN(p.presented_at)
+            FROM pipeline p
+            WHERE p.campaign_id = c.campaign_id
+                AND p.is_deleted = 'N'
         ) AS startedAtRaw,
         (
-        SELECT MAX(p.presented_at)
-        FROM pipeline p
-        WHERE p.campaign_id = c.campaign_id
-        AND p.is_deleted = 'N'
+            SELECT MAX(p.presented_at)
+            FROM pipeline p
+            WHERE p.campaign_id = c.campaign_id
+                AND p.is_deleted = 'N'
         ) AS endedAtRaw
 
         FROM campaign c
@@ -638,4 +638,5 @@
         AND p.is_deleted = 'N'
         ORDER BY p.presented_at ASC
     </select>
+
 </mapper>
