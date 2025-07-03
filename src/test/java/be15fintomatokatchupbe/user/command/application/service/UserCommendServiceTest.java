@@ -106,7 +106,7 @@ class UserCommendServiceTest {
     }
 
     @Test
-    void myProfileImage_insertNewFile() throws IOException {
+    void myProfileImage_insertNewFile() throws Exception {
         Long userId = 1L;
         User user = User.builder().userId(userId).fileId(null).build();
 
@@ -131,7 +131,7 @@ class UserCommendServiceTest {
     }
 
     @Test
-    void myProfileImage_updateExistingFile() throws IOException {
+    void myProfileImage_updateExistingFile() throws Exception {
         Long userId = 1L;
         Long fileId = 123L;
 

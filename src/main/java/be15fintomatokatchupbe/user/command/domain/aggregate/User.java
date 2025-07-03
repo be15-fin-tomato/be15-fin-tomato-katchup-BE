@@ -67,4 +67,8 @@ public class User {
         if (request.getBirth() != null) this.birth = request.getBirth();
         if (request.getGender() != null) this.gender = request.getGender();
     }
+
+    public void updateFile(Long fileId) {
+        this.fileId = fileId;
+    }
 }

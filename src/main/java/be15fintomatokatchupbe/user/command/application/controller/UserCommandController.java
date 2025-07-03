@@ -17,10 +17,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @Tag(name = "회원")
 @RestController
@@ -74,9 +76,9 @@ public class UserCommandController {
     @Operation(summary = "프로필 등록 및 수정",description = "사용자는 본인의 프로필을 등록하거나 수정할 수 있다.")
     @PostMapping("/change/profile")
     public ResponseEntity<ApiResponse<Void>> changeMyAccountProfile(
-            @RequestParam("file") MultipartFile file,
+            @RequestPart(required = false) MultipartFile file,
             @AuthenticationPrincipal CustomUserDetail userDetail
-    ) throws IOException {
+    ) throws Exception {
         Long userId = userDetail.getUserId();
 
         userCommendService.myProfileImage(userId, file);

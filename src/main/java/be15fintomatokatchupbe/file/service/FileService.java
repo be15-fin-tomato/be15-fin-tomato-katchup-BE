@@ -8,6 +8,8 @@ import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.file.dto.FileDownloadResult;
 import be15fintomatokatchupbe.file.exception.FileErrorCode;
 import be15fintomatokatchupbe.file.repository.FileRepository;
+import be15fintomatokatchupbe.user.command.application.repository.PicFileRepository;
+import be15fintomatokatchupbe.user.command.domain.aggregate.PicFile;
 import be15fintomatokatchupbe.utils.FileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,12 +29,13 @@ import java.util.*;
 @RequiredArgsConstructor
 public class FileService {
     private final FileRepository fileRepository;
+    private final PicFileRepository picFileRepository;
     private final ContractFileRepository contractFileRepository;
 
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucketName;
 
-    private static final String CLOUD_FRONT_DOMAIN = "https://d152i3f1t56z95.cloudfront.net/";
+    private static final String CLOUD_FRONT_DOMAIN = "https://d3bbrt92r1ojbh.cloudfront.net/";
 
     private final S3Client s3Client;
     private final FileUtil fileUtil;
@@ -194,5 +197,51 @@ public class FileService {
     public void deleteByPipeline(Pipeline pipeline){
         fileRepository.deleteAllByPipeline(pipeline);
     }
+
+    public PicFile uploadProfileImage(MultipartFile file, Long userId) throws Exception {
+        log.info("프로필 이미지 업로드 시작 (userId={})", userId);
+
+        if (!fileUtil.validateFile(file)) {
+            throw new BusinessException(FileErrorCode.FILE_FORMAT_ERROR);
+        }
+
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new BusinessException(FileErrorCode.FILE_TOO_BIG);
+        }
+
+        try {
+            String originalFilename = file.getOriginalFilename();
+            String extension = fileUtil.getExtension(originalFilename).toLowerCase();
+            String uuidFilename = UUID.randomUUID() + "." + extension;
+
+            String mimeType = fileUtil.detectMimeType(file);
+            String dir = SAVE_IMAGE_DIR + "/profile";
+            String fileKey = dir + "/" + uuidFilename;
+
+            Map<String, String> metadata = new HashMap<>();
+            metadata.put("mime-type", mimeType);
+
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileKey)
+                    .metadata(metadata)
+                    .build();
+
+            String newFileKey = CLOUD_FRONT_DOMAIN + fileKey;
+
+            s3Client.putObject(putObjectRequest,
+                    RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+
+            PicFile profile = new PicFile();
+            profile.setFileName(originalFilename);
+            profile.setFileRoute(newFileKey);
+
+            return picFileRepository.save(profile);
+
+        } catch (IOException e) {
+            throw new BusinessException(FileErrorCode.FILE_FORMAT_ERROR);
+        }
+    }
+
 
 }
