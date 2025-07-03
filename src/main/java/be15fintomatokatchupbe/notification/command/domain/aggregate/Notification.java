@@ -4,7 +4,6 @@ import be15fintomatokatchupbe.common.domain.StatusType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -45,4 +44,8 @@ public class Notification {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private StatusType isDeleted = StatusType.N;
+
+    public void softdelete(){
+        this.isDeleted = StatusType.Y;
+    }
 }
