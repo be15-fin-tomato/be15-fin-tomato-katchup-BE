@@ -6,14 +6,13 @@
 <mapper namespace="be15fintomatokatchupbe.notification.query.mapper.NotificationQueryMapper">
     <select id="getNotificationsAll" resultType="be15fintomatokatchupbe.notification.query.dto.NotificationsAllDTO">
         SELECT    notification_id
-                , user_id
-                , notification_type_id
                 , notification_content
                 , is_read
                 , get_time
         FROM notification
         WHERE user_id = #{userId}
         AND is_deleted = 'N'
+        ORDER BY get_time DESC
     </select>
 
 </mapper>
