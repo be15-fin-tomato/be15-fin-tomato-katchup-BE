@@ -8,15 +8,12 @@ import be15fintomatokatchupbe.chat.command.domain.repository.MessageRepository;
 import be15fintomatokatchupbe.chat.exception.ChatErrorCode;
 import be15fintomatokatchupbe.chat.query.application.mapper.ChatRoomQueryMapper;
 import be15fintomatokatchupbe.chat.query.application.mapper.UserChatMapper;
-import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
-import be15fintomatokatchupbe.chat.command.domain.repository.UserChatRepository;
 import be15fintomatokatchupbe.notification.command.application.service.FcmService;
 import be15fintomatokatchupbe.notification.command.domain.aggregate.Notification;
 import be15fintomatokatchupbe.notification.command.domain.repository.NotificationRepository;
 import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
-import io.lettuce.core.ScriptOutputType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.Header;
@@ -53,10 +50,6 @@ public class ChatSocketController {
         Long userId = (Long) sessionAttributes.get("userId");
         Long chatId = message.getChatId();
 
-        System.out.println(">>> userId: " + userId);
-        System.out.println(">>> 받은 chatId: " + chatId);
-        System.out.println(">>> 받은 message: " + message.getMessage());
-
         if (userId == null) {
             throw new BusinessException(ChatErrorCode.UNAUTHORIZED_CHAT_ACCESS);
         }
@@ -76,8 +69,9 @@ public class ChatSocketController {
         User user = userRepository.findByUserId(userId);
         String userName = user.getName();
 
-        notifyOtherParticipants(message.getChatId(), message.getSenderId(), message.getMessage(),userName);
-
+        // 메시지 or 첨부파일 미리보기
+        String preview = message.getFileUrl() != null ? "[파일 첨부]" : message.getMessage();
+        notifyOtherParticipants(message.getChatId(), message.getSenderId(), preview, userName);
     }
 
     /* fireBase 웹푸시 알림 요청 */
@@ -87,7 +81,6 @@ public class ChatSocketController {
         LocalDateTime now = LocalDateTime.now();
 
         for (ChatResponseDTO dto : targets ) {
-            log.info("여기왔다.");
             Long receiverId = dto.getUserId();
             String token = dto.getFcmToken();
 

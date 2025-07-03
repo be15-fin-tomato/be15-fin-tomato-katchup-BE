@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.chat.command.application.controller;
 
+import be15fintomatokatchupbe.chat.command.application.dto.request.ChatInviteRequest;
 import be15fintomatokatchupbe.chat.command.application.dto.request.CreateChatRoomRequest;
 import be15fintomatokatchupbe.chat.command.application.dto.request.ExitChatRoomRequest;
 import be15fintomatokatchupbe.chat.command.application.dto.response.CreateChatRoomResponse;
@@ -36,5 +37,16 @@ public class ChatCommandController {
         request.setUserId(user.getUserId());
         ExitChatRoomResponse response = chatCommandService.exitRoom(user.getUserId(), request.getChatId());
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PostMapping("/{chatRoomId}/invite")
+    public ResponseEntity<ApiResponse<Void>> inviteChat(
+            @PathVariable Long chatRoomId,
+            @RequestBody ChatInviteRequest request,
+            @AuthenticationPrincipal CustomUserDetail user
+    ) {
+        request.setUserId(user.getUserId());
+        chatCommandService.inviteChatMembers(chatRoomId, request);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 }
