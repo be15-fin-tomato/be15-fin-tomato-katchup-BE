@@ -3,6 +3,7 @@ package be15fintomatokatchupbe.campaign.query.dto.response;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -28,5 +29,6 @@ public class CampaignListResponse {
 
     private int successProbability;
 
-    private List<PipelineStepStatusDto> pipelineSteps;
+    private List<PipelineStepDto> pipelineSteps = new ArrayList<>();
+
 }
