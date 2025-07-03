@@ -25,7 +25,7 @@ public class InstagramPostInsight {
     @Column(name = "pipeline_influencer_id", nullable = false)
     private Long pipelineInfluencerId;
 
-    @Column(name = "media_id", nullable = false, length = 255)
+    @Column(name = "media_id", nullable = false)
     private String mediaId;
 
     @Column(nullable = false)
