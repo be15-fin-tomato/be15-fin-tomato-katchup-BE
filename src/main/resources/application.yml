@@ -81,3 +81,8 @@ google:
 naver:
   client-id: ${NAVER_CLIENT_KEY}
   client-secret: ${NAVER_CLIENT_SECRET}
+
+openai:
+  api-key: ${OPENAI_API_KEY}
+  model-id: ${OPENAI_MODEL_ID}
+
