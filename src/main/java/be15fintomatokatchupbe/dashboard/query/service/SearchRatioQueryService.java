@@ -57,4 +57,19 @@ public class SearchRatioQueryService {
 
         return new SearchRatioResponse(googleData, naverData);
     }
+    public String extractVideoIdByCampaignId(Long campaignId) {
+        Long pipelineId = searchRatioQueryMapper.findPipelineIdByCampaignId(campaignId);
+        if (pipelineId == null) {
+            throw new BusinessException(CampaignErrorCode.PIPELINE_STATUS_NOT_FOUND);
+        }
+
+        String youtubeLink = searchRatioQueryMapper.findYoutubeLinkByPipelineId(pipelineId);
+        String videoId = YoutubeService.extractVideoId(youtubeLink);
+        if (videoId == null) {
+            throw new BusinessException(CampaignErrorCode.INVALID_YOUTUBE_LINK);
+        }
+
+        return videoId;
+    }
+
 }
