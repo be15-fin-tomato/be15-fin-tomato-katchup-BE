@@ -21,4 +21,6 @@ public interface UserQueryMapper {
     List<UserSimpleDto> findUserNamesByIds(Set<Long> senderIds);
 
     List<Long> findUserIdsByIds(@Param("userIds") List<Long> userIds);
+
+    List<UserSimpleDto> getUserList(String keyword);
 }
