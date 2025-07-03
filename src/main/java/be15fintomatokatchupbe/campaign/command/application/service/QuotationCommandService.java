@@ -158,6 +158,10 @@ public class QuotationCommandService {
             throw new BusinessException(CampaignErrorCode.APPROVED_PIPELINE_CANNOT_BE_DELETED);
         }
 
+        if(!Objects.equals(foundPipeline.getPipelineStep().getPipelineStepId(), PipelineStepConstants.QUOTATION)){
+            throw new BusinessException(CampaignErrorCode.INVALID_ACCESS);
+        }
+
         // 2. 파이프라인 소프트 딜리트 하기
         foundPipeline.softDelete();
 
