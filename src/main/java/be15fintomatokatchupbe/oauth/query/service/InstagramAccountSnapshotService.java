@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.oauth.query.service;
 
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
 import be15fintomatokatchupbe.oauth.query.domain.InstagramStatsSnapshot;
+import be15fintomatokatchupbe.oauth.query.dto.FollowerTrend;
 import be15fintomatokatchupbe.oauth.query.dto.InstagramMediaStats;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramStatsResponse;
 import be15fintomatokatchupbe.oauth.query.repository.InstagramStatsSnapshotRepository;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class InstagramStatsSnapshotService {
+public class InstagramAccountSnapshotService {
 
     private final InstagramStatsSnapshotRepository snapshotRepository;
     private final ObjectMapper objectMapper;
@@ -58,6 +59,34 @@ public class InstagramStatsSnapshotService {
     private List<String> getMediaIds(List<InstagramMediaStats> mediaList) {
         return mediaList.stream()
                 .map(InstagramMediaStats::getMediaId)
+                .collect(Collectors.toList());
+    }
+
+    /* 팔로워 수 단일 저장 (중복 방지) */
+    public void saveFollowerCountSnapshot(Influencer influencer, int followerCount) {
+        LocalDate today = LocalDate.now();
+
+        boolean exists = snapshotRepository.existsByInfluencerAndSnapshotDate(influencer, today);
+        if (exists) return;
+
+        InstagramStatsSnapshot snapshot = InstagramStatsSnapshot.builder()
+                .influencer(influencer)
+                .snapshotDate(today)
+                .totalFollowers(followerCount)
+                .build();
+
+        snapshotRepository.save(snapshot);
+    }
+
+    /* 특정 기간의 팔로워 수 추이 조회 */
+    public List<FollowerTrend> getFollowerTrend(Long influencerId, LocalDate from, LocalDate to) {
+        List<InstagramStatsSnapshot> snapshots = snapshotRepository.findByInfluencerIdAndSnapshotDateBetweenOrderBySnapshotDate(
+                influencerId, from, to
+        );
+
+        return snapshots.stream()
+                .map(s ->
+                        new FollowerTrend(s.getSnapshotDate(), s.getTotalFollowers()))
                 .collect(Collectors.toList());
     }
 }
