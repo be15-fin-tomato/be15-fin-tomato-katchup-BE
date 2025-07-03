@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class NotificationCommandService {
@@ -51,8 +53,23 @@ public class NotificationCommandService {
         notification.softdelete();
     }
 
-//    public void deleteAllNotification(Long userId) {
-//        List<Notification> notifications = notificationRepository.findAllByUserIdAndIsDeleted(userId, StatusType.N);
-//
-//    }
+    @Transactional
+    public void deleteAllNotification(Long userId) {
+        List<Notification> notifications = notificationRepository.findAllByUserIdAndIsDeleted(userId, StatusType.N);
+
+        if (notifications.isEmpty()) {
+            return;
+        }
+
+        for (Notification notification : notifications) {
+            if (!notification.getUserId().equals(userId)) {
+                throw new BusinessException(NotificationErrorCode.INVALID_USER);
+            }
+        }
+
+        for (Notification notification : notifications) {
+            notification.softdelete();
+        }
+        notificationRepository.saveAll(notifications);
+    }
 }

@@ -7,5 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
-//    List<Notification> findAllByUserIdAndIsDeleted(Long userId, StatusType isDeleted);
+
+    List<Notification> findAllByUserIdAndIsDeleted(Long userId, StatusType isDeleted);
+
 }

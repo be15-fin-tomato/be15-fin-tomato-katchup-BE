@@ -38,13 +38,13 @@ public class NotificationCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-//    @DeleteMapping("/all")
-//    @Operation(summary = "알림 전체 삭제", description = "사용자는 본인의 알림을 모두 삭제할 수 있다.")
-//    public ResponseEntity<ApiResponse<Void>> deleteAllNotification(
-//            @AuthenticationPrincipal CustomUserDetail customUserDetail
-//    ){
-//        Long userId = customUserDetail.getUserId();
-//        notificationCommandService.deleteAllNotification(userId);
-//        return ResponseEntity.ok(ApiResponse.success(null));
-//    }
+    @DeleteMapping("/all")
+    @Operation(summary = "알림 전체 삭제", description = "사용자는 본인의 알림을 모두 삭제할 수 있다.")
+    public ResponseEntity<ApiResponse<Void>> deleteAllNotification(
+            @AuthenticationPrincipal CustomUserDetail customUserDetail
+    ){
+        Long userId = customUserDetail.getUserId();
+        notificationCommandService.deleteAllNotification(userId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }
