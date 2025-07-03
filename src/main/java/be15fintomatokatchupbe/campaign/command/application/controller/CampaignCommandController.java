@@ -26,6 +26,7 @@ public class CampaignCommandController {
     private final ContractCommandService contractCommandService;
     private final QuotationCommandService quotationCommandService;
     private final RevenueCommandService revenueCommandService;
+    private final ListupCommandService listupCommandService;
 
 
     @PostMapping("/chance/create")
@@ -38,7 +39,18 @@ public class CampaignCommandController {
         campaignCommandService.createChance(userId, request);
 
         return ResponseEntity.ok(ApiResponse.success(null));
+    }
 
+    @PostMapping("/listup/create")
+    public ResponseEntity<ApiResponse<Void>> createListup(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestBody CreateListupRequest request
+    ){
+        Long userId = user.getUserId();
+
+        listupCommandService.createListup(userId, request);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     @PostMapping("/proposal/create")
