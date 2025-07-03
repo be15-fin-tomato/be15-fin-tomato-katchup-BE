@@ -6,6 +6,7 @@ import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
+import be15fintomatokatchupbe.campaign.query.mapper.PipelineStepMapper;
 import be15fintomatokatchupbe.common.dto.Pagination;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ import java.util.*;
 @Slf4j
 public class CampaignQueryService {
     private final CampaignQueryMapper campaignQueryMapper;
+    private final PipelineStepMapper pipelineStepMapper;
 
     public ProposalSearchResponse getProposalList(Long userId, PipelineSearchRequest request) {
         int offset = (request.getPage() - 1) * request.getSize();
@@ -422,4 +424,26 @@ public class CampaignQueryService {
 
 
     }
+
+    // 캠페인 목록 조회
+    public List<CampaignListResponse> getCampaignList(int limit, int offset) {
+        List<CampaignListResponse> campaigns = campaignQueryMapper.searchCampaignList(limit, offset);
+
+        for (CampaignListResponse campaign : campaigns) {
+            List<PipelineStepStatusDto> steps = pipelineStepMapper.findPipelineStepsByCampaignId(campaign.getCampaignId());
+            campaign.setPipelineSteps(steps);
+
+            // 성공확률 계산
+            long totalSteps = steps.size();
+            long completedSteps = steps.stream()
+                    .filter(step -> step.getStartedAt() != null)
+                    .count();
+
+            int successProbability = (totalSteps == 0) ? 0 : (int) Math.floor((double) completedSteps / totalSteps * 100);
+            campaign.setSuccessProbability(successProbability);
+        }
+
+        return campaigns;
+    }
+
 }
