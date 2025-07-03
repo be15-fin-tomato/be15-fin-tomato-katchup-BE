@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Service
@@ -359,15 +360,35 @@ public class CampaignQueryService {
     }
 
     public CampaignDetailWithTimelineResponse getCampaignDetailWithTimeline(Long campaignId) {
-        // 캠페인 기본 정보 조회
-        CampaignDetailDto campaignDetail = campaignQueryMapper.selectCampaignDetail(campaignId);
-        if (campaignDetail == null) {
-            throw new IllegalArgumentException("존재하지 않는 캠페인입니다. id=" + campaignId);
+        // 1. 캠페인 기본 정보 조회
+        CampaignDetailDto detail = campaignQueryMapper.selectCampaignDetail(campaignId);
+        if (detail == null) {
+            return null;
         }
 
-        // 파이프라인 타임라인 조회
+        // 2. 캠페인 유저 리스트 조회
+        List<Long> userList = campaignQueryMapper.selectCampaignUserList(detail.getClientCompanyId());
+        detail.setUserList(userList);
+
+        // 3. 캠페인 카테고리 리스트 조회
+        List<Long> categoryList = campaignQueryMapper.selectCampaignCategoryList(campaignId);
+        detail.setCategoryList(categoryList);
+
+        Long totalExpectedRevenue = campaignQueryMapper.selectTotalExpectedRevenue(campaignId);
+        detail.setExpectedRevenue(totalExpectedRevenue);
+
+
+        BigDecimal avgProfitMargin = campaignQueryMapper.selectAverageExpectedProfitMargin(campaignId);
+        detail.setExpectedProfitMargin(avgProfitMargin);
+
+        String notes = campaignQueryMapper.selectCampaignNotes(campaignId);
+        detail.setNotes(notes);
+
+        // 4. 파이프라인 타임라인 조회
         List<PipelineTimelineDto> timeline = campaignQueryMapper.selectPipelineTimeline(campaignId);
 
-        return new CampaignDetailWithTimelineResponse(campaignDetail, timeline);
+        return new CampaignDetailWithTimelineResponse(detail, timeline);
+
+
     }
 }
