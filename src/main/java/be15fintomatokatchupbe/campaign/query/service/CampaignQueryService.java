@@ -11,6 +11,11 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -356,5 +361,65 @@ public class CampaignQueryService {
                 .referenceList(referenceDto)
                 .ideaList(ideaDto)
                 .build();
+    }
+
+    public CampaignDetailWithTimelineResponse getCampaignDetailWithTimeline(Long campaignId) {
+        // 1. 캠페인 기본 정보 조회
+        CampaignDetailDto detail = campaignQueryMapper.selectCampaignDetail(campaignId);
+        if (detail == null) {
+            return null;
+        }
+
+        // 날짜 포맷터 선언
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        // startedAt/endedAt Timestamp → yyyy-MM-dd String 포맷으로 변환
+        if (detail.getStartedAtRaw() != null) {
+            LocalDateTime startedAt = detail.getStartedAtRaw()
+                    .toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+            detail.setStartedAt(startedAt.format(formatter));
+        }
+        if (detail.getEndedAtRaw() != null) {
+            LocalDateTime endedAt = detail.getEndedAtRaw()
+                    .toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime();
+            detail.setEndedAt(endedAt.format(formatter));
+        }
+
+        // 2. 캠페인 유저 리스트 조회
+        List<Long> userList = campaignQueryMapper.selectCampaignUserList(detail.getClientCompanyId());
+        detail.setUserList(userList);
+
+        // 3. 캠페인 카테고리 리스트 조회
+        List<Long> categoryList = campaignQueryMapper.selectCampaignCategoryList(campaignId);
+        detail.setCategoryList(categoryList);
+
+        Long totalExpectedRevenue = campaignQueryMapper.selectTotalExpectedRevenue(campaignId);
+        detail.setExpectedRevenue(totalExpectedRevenue);
+
+
+        BigDecimal avgProfitMargin = campaignQueryMapper.selectAverageExpectedProfitMargin(campaignId);
+
+        if (avgProfitMargin != null) {
+            detail.setExpectedProfitMargin(
+                    avgProfitMargin.multiply(BigDecimal.valueOf(100))
+                            .setScale(0, RoundingMode.HALF_UP)
+            );
+        } else {
+            detail.setExpectedProfitMargin(BigDecimal.ZERO);
+        }
+
+        String notes = campaignQueryMapper.selectCampaignNotes(campaignId);
+        detail.setNotes(notes);
+
+        // 4. 파이프라인 타임라인 조회
+        List<PipelineTimelineDto> timeline = campaignQueryMapper.selectPipelineTimeline(campaignId);
+
+        return new CampaignDetailWithTimelineResponse(detail, timeline);
+
+
     }
 }

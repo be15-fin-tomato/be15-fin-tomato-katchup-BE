@@ -105,4 +105,14 @@ public class CampaignQueryController {
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    // 캠페인 상세 및 타임라인 조회
+    @GetMapping("/{campaignId}")
+    @Operation(summary = "캠페인 상세 및 타임라인 조회", description = "캠페인의 기본 정보와 타임라인 정보를 함께 조회합니다.")
+    public ResponseEntity<ApiResponse<CampaignDetailWithTimelineResponse>> getCampaignDetailWithTimeline(
+            @PathVariable("campaignId") Long campaignId
+    ) {
+        CampaignDetailWithTimelineResponse response = campaignQueryService.getCampaignDetailWithTimeline(campaignId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 }
