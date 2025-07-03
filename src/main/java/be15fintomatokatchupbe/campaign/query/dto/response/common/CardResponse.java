@@ -10,6 +10,7 @@ import java.util.List;
 public class CardResponse {
     private Long pipelineId;    // 파이프라인 ID
     private String name;    // 파이프라인 이름
+    private String campaignName;
     private String statusName;    // 파이프라인 상태
     private String clientCompanyName;   // 고객사 명
     private String clientManagerName;   // 광고 담당자명

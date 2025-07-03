@@ -8,8 +8,13 @@
         SELECT
         p.pipeline_id AS pipelineId,
         p.name AS name,
-        ps.status_name AS statusId,
+        c.campaign_id AS campaignId,
+        c.campaign_name AS campaignName,
+        ps.pipeline_status_id AS statusId,
+        ps.status_name AS statusName,
+        cc.client_company_id AS clientCompanyId,
         cc.client_company_name AS clientCompanyName,
+        cm.client_manager_id AS clientManagerId,
         cm.name AS clientManagerName,
         DATE_FORMAT(p.request_at, '%Y-%m-%d') AS requestAt,
         DATE_FORMAT(p.presented_at, '%Y-%m-%d') AS presentAt,
@@ -488,7 +493,8 @@
 
     <select id="findPipeIdea" resultType="be15fintomatokatchupbe.campaign.query.dto.response.IdeaInfo">
         SELECT
-              u.user_id AS userId
+              i.idea_id AS ideaId
+            , u.user_id AS userId
             , u.name AS userName
             , i.created_at AS createdAt
             , i.content AS content
