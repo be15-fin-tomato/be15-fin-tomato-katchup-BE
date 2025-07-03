@@ -1,6 +1,9 @@
 package be15fintomatokatchupbe.oauth.query.service;
 
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Instagram;
+import be15fintomatokatchupbe.influencer.command.domain.repository.InstagramRepository;
+import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
 import be15fintomatokatchupbe.oauth.query.dto.InstagramMediaStats;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramStatsResponse;
@@ -25,13 +28,19 @@ public class InstagramAccountQueryService {
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
     private final InstagramRedisService instagramRedisService;
+    private final InstagramRepository instagramRepository;
 
     @Value("${facebook.base-url}")
     private String baseUrl;
 
-    public InstagramStatsResponse fetchStats(String igId) {
+    public InstagramStatsResponse fetchStats(Long influencerId) {
+        Instagram instagram = instagramRepository.findByInfluencerId(influencerId)
+                .orElseThrow(() -> new BusinessException(OAuthErrorCode.MEDIA_NOT_FOUND));
+
+        String igId = instagram.getAccountId();
         String token = instagramRedisService.getAccessToken(igId);
         if (token == null) {
+
             log.warn("[fetchStats] Redis에 토큰 없음. igId={}", igId);
             throw new BusinessException(OAuthErrorCode.TOKEN_NOT_FOUND);
         }

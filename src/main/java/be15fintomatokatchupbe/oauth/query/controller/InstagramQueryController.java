@@ -45,9 +45,9 @@ InstagramQueryController {
     @Operation(summary = "인스타그램 계정 통계 조회", description = "사용자는 인플루언서의 인스타그램 계정 통계 자료를 조회할 수 있다.")
     @GetMapping("/stats")
     public ResponseEntity<ApiResponse<InstagramStatsResponse>> fetchInstagramStats(
-            @RequestParam("igAccountId") String igAccountId
+            @RequestParam Long influencerId
     ) {
-        InstagramStatsResponse response = instagramAccountQueryService.fetchStats(igAccountId);
+        InstagramStatsResponse response = instagramAccountQueryService.fetchStats(influencerId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
