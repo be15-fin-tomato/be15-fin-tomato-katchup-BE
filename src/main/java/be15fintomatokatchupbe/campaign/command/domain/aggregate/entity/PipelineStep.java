@@ -13,9 +13,9 @@ public class PipelineStep {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer pipelineStepId;
+    private Long pipelineStepId;
 
-    private Integer level;
+    private Long level;
 
     private String stepName;
 }

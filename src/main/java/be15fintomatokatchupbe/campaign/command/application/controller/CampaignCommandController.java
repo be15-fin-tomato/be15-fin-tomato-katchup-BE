@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.campaign.command.application.dto.request.*;
 import be15fintomatokatchupbe.campaign.command.application.service.*;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
+import com.google.protobuf.Api;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -126,6 +127,19 @@ public class CampaignCommandController {
         campaignCommandService.deleteCampaign(campaignId);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @PutMapping("/listup")
+    public ResponseEntity<ApiResponse<Void>> updateListup(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestBody UpdateListupRequest request
+    ){
+        Long userId = user.getUserId();
+
+        listupCommandService.updateListup(userId, request);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
     @PutMapping("/quotation")
     public ResponseEntity<ApiResponse<Void>> updateQuotation(
             @AuthenticationPrincipal CustomUserDetail user,
