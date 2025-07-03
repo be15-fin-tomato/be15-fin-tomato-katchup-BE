@@ -52,7 +52,7 @@ public class UserQueryController {
     }
 
     @GetMapping("/search")
-    @Operation(summary = "유저 목록 검색", description = "사용자는 유저 목록을 조회할 수 있다.")
+    @Operation(summary = "유저 목록 검색", description = "사용자는 유저 목록을 조회할 수 있습니다.")
     public ResponseEntity<ApiResponse<UserListResponse>> findUserList(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @RequestParam(required = false) String keyword
