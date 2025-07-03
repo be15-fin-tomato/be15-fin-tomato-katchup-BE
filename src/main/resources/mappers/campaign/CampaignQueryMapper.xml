@@ -639,60 +639,47 @@
         ORDER BY p.presented_at ASC
     </select>
 
-    <!-- 캠페인 목록 조회 -->
-    <select id="searchCampaignList" resultType="be15fintomatokatchupbe.campaign.query.dto.response.CampaignListResponse">
+    <!-- 캠페인 목록 조회 (기본 정보만) -->
+    <select id="findPagedCampaigns" resultType="be15fintomatokatchupbe.campaign.query.dto.response.CampaignListResponse">
         SELECT
         c.campaign_id AS campaignId,
         c.campaign_name AS campaignName,
         cs.campaign_status_id AS campaignStatusId,
         cs.status_name AS campaignStatusName,
-
         cc.client_company_name AS clientCompanyName,
         cm.name AS clientManagerName,
         cm.position AS clientManagerPosition,
-
-        p.expected_revenue AS expectedRevenue,
         c.product_name AS productName,
-
+        p.expected_revenue AS expectedRevenue,
         DATE_FORMAT(p.started_at, '%Y-%m-%d') AS startedAt,
         DATE_FORMAT(p.ended_at, '%Y-%m-%d') AS endedAt,
-
-        pu_user.name AS pipelineUserName,
-        pu_user.position AS pipelineUserPosition
-
+        u.name AS pipelineUserName,
+        u.position AS pipelineUserPosition
         FROM campaign c
         JOIN campaign_status cs ON c.campaign_status_id = cs.campaign_status_id
         JOIN client_company cc ON c.client_company_id = cc.client_company_id
-
-        JOIN (
-        SELECT client_company_id, name, position
-        FROM client_manager
-        WHERE is_deleted = 'N'
-        GROUP BY client_company_id
-        ) cm ON cm.client_company_id = c.client_company_id
-
+        JOIN client_manager cm ON cm.client_company_id = cc.client_company_id AND cm.is_deleted = 'N'
         JOIN pipeline p ON p.campaign_id = c.campaign_id
-
-        JOIN (
-        SELECT pu.pipeline_id, u.name, u.position
-        FROM pipeline_user pu
-        JOIN user u ON pu.user_id = u.user_id
-        GROUP BY pu.pipeline_id
-        ) pu_user ON pu_user.pipeline_id = p.pipeline_id
-
+        JOIN pipeline_user pu ON pu.pipeline_id = p.pipeline_id
+        JOIN user u ON pu.user_id = u.user_id AND u.is_deleted = 'N'
+        GROUP BY c.campaign_id
         ORDER BY p.started_at DESC
         LIMIT #{limit}
         OFFSET #{offset}
     </select>
 
+    <!-- pipelineSteps 가져오기 -->
+    <select id="findPipelineStepsByCampaignIds" resultType="be15fintomatokatchupbe.campaign.query.dto.response.PipelineStepStatusDto">
+        SELECT
+        p.campaign_id,
+        ps.step_name AS stepType,
+        DATE_FORMAT(p.started_at, '%Y-%m-%d') AS startedAt
+        FROM pipeline p
+        JOIN pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
+        WHERE p.campaign_id IN
+        <foreach item="id" collection="campaignIds" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 
-<!--    &lt;!&ndash; 캠페인 ID로 파이프라인 스텝 조회 &ndash;&gt;-->
-<!--    <select id="findPipelineStepsByCampaignId"-->
-<!--            resultType="be15fintomatokatchupbe.campaign.query.dto.response.PipelineStepStatusDto">-->
-<!--        SELECT-->
-<!--        ps.step_name AS stepType,-->
-<!--        NULL AS startedAt-->
-<!--        FROM pipeline_step ps-->
-<!--        ORDER BY ps.level-->
-<!--    </select>-->
 </mapper>
