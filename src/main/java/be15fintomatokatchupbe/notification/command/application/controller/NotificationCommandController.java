@@ -7,10 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/notification")
@@ -18,6 +15,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class NotificationCommandController {
 
     private final NotificationCommandService notificationCommandService;
+
+    @PatchMapping("/read/{notificationId}")
+    @Operation(summary = "알림 읽음 처리", description = "사용자는 수신한 알림을 읽음 상태로 처리할 수 있다.")
+    public ResponseEntity<ApiResponse<Void>> markAsReadNotification(
+            @AuthenticationPrincipal CustomUserDetail customUserDetail,
+            @PathVariable Long notificationId
+    ){
+        Long userId = customUserDetail.getUserId();
+        notificationCommandService.markAsReadNotification(userId, notificationId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 
     @DeleteMapping("/{notificationId}")
     @Operation(summary = "알림 삭제", description = "사용자는 본인의 알림을 삭제할 수 있다.")

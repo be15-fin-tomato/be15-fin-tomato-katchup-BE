@@ -45,7 +45,11 @@ public class Notification {
     @Builder.Default
     private StatusType isDeleted = StatusType.N;
 
-    public void softdelete(){
+    public void markAsRead() {
+        this.isRead = StatusType.Y;
+    }
+
+    public void softdelete() {
         this.isDeleted = StatusType.Y;
     }
 }

@@ -7,6 +7,7 @@ import be15fintomatokatchupbe.notification.command.domain.repository.Notificatio
 import be15fintomatokatchupbe.notification.exception.NotificationErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -14,11 +15,27 @@ public class NotificationCommandService {
 
     private final NotificationRepository notificationRepository;
 
-//    public void deleteAllNotification(Long userId) {
-//        List<Notification> notifications = notificationRepository.findAllByUserIdAndIsDeleted(userId, StatusType.N);
-//
-//    }
+    @Transactional
+    public void markAsReadNotification(Long userId, Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new BusinessException(NotificationErrorCode.NOT_FOUND_NOTIFICATION));
 
+        if (!notification.getUserId().equals(userId)) {
+            throw new BusinessException(NotificationErrorCode.INVALID_USER);
+        }
+
+        if (notification.getIsRead() == StatusType.Y) {
+            throw new BusinessException(NotificationErrorCode.READ_NOTIFICATION);
+        }
+
+        if (notification.getIsDeleted() == StatusType.Y) {
+            throw new BusinessException(NotificationErrorCode.DELETED_NOTIFICATION);
+        }
+
+        notification.markAsRead();
+    }
+
+    @Transactional
     public void deleteNotification(Long userId, Long notificationId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new BusinessException(NotificationErrorCode.NOT_FOUND_NOTIFICATION));
@@ -32,7 +49,10 @@ public class NotificationCommandService {
         }
         
         notification.softdelete();
-        notificationRepository.save(notification);
-
     }
+
+//    public void deleteAllNotification(Long userId) {
+//        List<Notification> notifications = notificationRepository.findAllByUserIdAndIsDeleted(userId, StatusType.N);
+//
+//    }
 }
