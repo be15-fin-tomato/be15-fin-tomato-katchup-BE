@@ -10,7 +10,7 @@ public interface SearchRatioQueryMapper {
     @Select("SELECT product_name FROM campaign WHERE campaign_id = #{campaignId}")
     String findProductNameByCampaignId(Long campaignId);
 
-    @Select("SELECT pipeline_id FROM pipeline WHERE campaign_id = #{campaignId} and pipeline_step_id = 6")
+    @Select("SELECT pipeline_id FROM pipeline WHERE campaign_id = #{campaignId} and pipeline_step_id = 7")
     Long findPipelineIdByCampaignId(Long campaignId);
 
     @Select("SELECT youtube_link FROM pipeline_influencer_client_manager WHERE pipeline_id = #{pipelineId} LIMIT 1")
