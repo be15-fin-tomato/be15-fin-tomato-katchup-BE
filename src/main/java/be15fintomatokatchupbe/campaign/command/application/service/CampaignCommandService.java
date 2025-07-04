@@ -6,10 +6,15 @@ import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.Pipelin
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.*;
 import be15fintomatokatchupbe.campaign.command.domain.repository.*;
 import be15fintomatokatchupbe.campaign.exception.CampaignErrorCode;
+import be15fintomatokatchupbe.campaign.query.mapper.CampaignCommandMapper;
 import be15fintomatokatchupbe.client.command.application.support.ClientHelperService;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientCompany;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManager;
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.contract.command.domain.entity.Contract;
+import be15fintomatokatchupbe.contract.command.domain.repository.ContractRepository;
+import be15fintomatokatchupbe.email.command.domain.aggregate.Satisfaction;
+import be15fintomatokatchupbe.email.command.domain.repository.SatisfactionRepository;
 import be15fintomatokatchupbe.file.service.FileService;
 import be15fintomatokatchupbe.relation.service.HashInfCampService;
 import be15fintomatokatchupbe.relation.service.PipeInfClientManagerService;
@@ -20,6 +25,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 
 @AllArgsConstructor
@@ -38,6 +45,10 @@ public class CampaignCommandService {
     private final CampaignStatusRepository campaignStatusRepository;
     private final PipelineRepository pipelineRepository;
     private final PipelineStepRepository pipelineStepRepository;
+    private final SatisfactionRepository satisfactionRepository;
+    private final ContractRepository contractRepository;
+
+    private final CampaignCommandMapper campaignCommandMapper;
 
     @Transactional
     public void createChance(Long userId, CreateChanceRequest request) {
@@ -128,6 +139,27 @@ public class CampaignCommandService {
 
         // 태그 업데이트
         hashInfCampService.updateCampaignTags(campaign, request.getCategoryList());
+
+        /* 캠페인 ID가 5가 됐으면 */
+        if(campaign.getCampaignStatus().getCampaignStatusId() == 5L){
+            /*만족도 테이블에 값 삽입*/
+            Satisfaction satisfaction = Satisfaction.builder()
+                    .campaignId(request.getCampaignId())
+                    .clientManagerId(request.getClientManagerId())
+                    .build();
+            satisfactionRepository.save(satisfaction);
+
+            List<Long> influencerId = campaignCommandMapper.getInfluencerId(request.getCampaignId());
+            for (Long influencer : influencerId) {
+                /* 계약서 테이블 값 삽입 */
+                Contract contract = Contract.builder()
+                        .campaignId(request.getCampaignId())
+                        .influencerId(influencer)
+                        .build();
+                contractRepository.save(contract);
+
+            }
+        }
 
     }
 
