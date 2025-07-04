@@ -16,4 +16,8 @@ public class YoutubeHelperService {
         return youtubeRepository.findByChannelId(channelId)
                 .orElseThrow(() -> new BusinessException(InfluencerErrorCode.YOUTUBE_ACCOUNT_NOT_FOUND));
     }
+
+    public void save(Youtube youtube) {
+        youtubeRepository.save(youtube);
+    }
 }
