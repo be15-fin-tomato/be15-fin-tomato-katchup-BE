@@ -1,11 +1,14 @@
 package be15fintomatokatchupbe.client.query.controller;
 
+import be15fintomatokatchupbe.client.query.dto.ClientManagerListResponse;
 import be15fintomatokatchupbe.client.query.dto.ClientManagerSimpleResponse;
 import be15fintomatokatchupbe.client.query.service.ClientManagerQueryService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
+import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,5 +27,17 @@ public class ClientManagerQueryController {
     ) {
         List<ClientManagerSimpleResponse> result = clientManagerQueryService.getManagersByClientCompanyId(clientCompanyId);
         return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    @GetMapping("/manager/search")
+    @Operation(summary = "고객 목록 검색", description = "사용자는 유저 목록을 조회할 수 있습니다.")
+    public ResponseEntity<ApiResponse<ClientManagerListResponse>> findClientManagerList(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long clientCompanyId
+    ){
+        ClientManagerListResponse response = clientManagerQueryService.getClientManagerList(keyword, clientCompanyId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

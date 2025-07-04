@@ -1,6 +1,8 @@
 package be15fintomatokatchupbe.user.command.application.service;
 
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.file.exception.FileErrorCode;
+import be15fintomatokatchupbe.file.service.FileService;
 import be15fintomatokatchupbe.user.command.application.dto.request.ChangeMyAccountRequest;
 import be15fintomatokatchupbe.user.command.application.dto.request.ChangePasswordRequest;
 import be15fintomatokatchupbe.user.command.application.dto.request.SignupRequest;
@@ -19,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -29,6 +32,7 @@ public class UserCommendService {
     private final UserRepository userRepository;
     private final PicFileRepository picFileRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FileService fileService;
 
     public void signup(@Valid SignupRequest request) {
 
@@ -83,39 +87,26 @@ public class UserCommendService {
 
     /* 이미지 등록 및 수정 */
     @Transactional
-    public void myProfileImage(Long userId, MultipartFile file) throws IOException {
-
+    public void myProfileImage(Long userId, MultipartFile file) throws Exception {
         User user = userRepository.findByUserId(userId);
-        if(user == null) {
+        if (user == null) {
             throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
         }
 
-        String originalFilename = file.getOriginalFilename();
-        String fileName = UUID.randomUUID() + "_" + originalFilename;
-        String fileRoute = "C:/upload/user/" + userId + "/";
-        String filePath = fileRoute + fileName;
+        PicFile picFile = fileService.uploadProfileImage(file, userId);
 
-        File dir = new File(fileRoute);
-        if(!dir.exists()) dir.mkdirs();
-        file.transferTo(new File(filePath));
-
-        /* 유저 테이블에 fileId가 null 이면 -> pic_file 테이블에 새로운 이미지 삽입*/
-        if(user.getFileId() == null) {
-            PicFile pic = new PicFile();
-            pic.setFileName(fileName);
-            pic.setFileRoute(fileRoute);
-
-            picFileRepository.save(pic);
-
-            user.setFileId(pic.getFileId());
+        if (user.getFileId() == null) {
+            user.setFileId(picFile.getFileId());
             userRepository.save(user);
         } else {
-            /* null이 아니면 pic_file 테이블에서 해당 file_id 에있는 이미지를 원하는 이미지로 변경 */
-            PicFile profile = picFileRepository.findById(user.getFileId())
-                    .orElseThrow( () -> new BusinessException(UserErrorCode.IMAGE_NOT_FOUND));
+            PicFile existing = picFileRepository.findById(user.getFileId())
+                    .orElseThrow(() -> new BusinessException(UserErrorCode.IMAGE_NOT_FOUND));
+            existing.profileImage(picFile.getFileName(), picFile.getFileRoute());
+            picFileRepository.save(existing);
+            Long fileId = picFile.getFileId();
 
-            profile.profileImage(fileName, fileRoute);
-            picFileRepository.save(profile);
+            user.updateFile(fileId);
+
         }
     }
 }

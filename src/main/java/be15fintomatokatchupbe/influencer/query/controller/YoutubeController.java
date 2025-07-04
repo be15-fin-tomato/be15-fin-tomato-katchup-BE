@@ -22,14 +22,14 @@ public class YoutubeController {
     private final SearchRatioQueryService searchRatioQueryService;
     private final YoutubeService youtubeService;
 
-    @Operation(summary = "유튜브 댓글 요약 ", description = "사용자는 등록된 유튜브 영상의 댓글 목록을 조회할 수 있다.")
+    @Operation(summary = "유튜브 댓글 요약", description = "캠페인에 등록된 유튜브 영상의 댓글을 AI 모델을 통해 요약하여 제공합니다.")
     @GetMapping("/commentssummary/{campaignId}")
-    public ResponseEntity<ApiResponse<List<String>>> getCommentsByCampaignId(
+    public ResponseEntity<ApiResponse<String>> summarizeCommentsByCampaignId(
             @PathVariable Long campaignId
     ) {
         String videoId = searchRatioQueryService.extractVideoIdByCampaignId(campaignId);
-        List<String> comments = youtubeService.getCommentsByVideoId(videoId);
-        return ResponseEntity.ok(ApiResponse.success(comments));
+        String summary = youtubeService.summarizeCommentsByVideoId(videoId);
+        return ResponseEntity.ok(ApiResponse.success(summary));
     }
 
 }

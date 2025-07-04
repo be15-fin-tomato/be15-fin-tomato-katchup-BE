@@ -56,6 +56,17 @@
             #{id}
         </foreach>
     </select>
+    <select id="getUserList" resultType="be15fintomatokatchupbe.user.query.dto.response.UserSearchDto">
+        SELECT
+            user_id AS id,
+            name AS name
+        FROM user
+        <where>
+            <if test="keyword != null and keyword != ''">
+                name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
 
     <select id="getSimpleMyAccount" resultType="be15fintomatokatchupbe.user.query.dto.response.UserHeaderAccountResponse">
         SELECT

@@ -11,13 +11,16 @@ import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.notification.command.application.service.FcmService;
 import be15fintomatokatchupbe.notification.command.domain.aggregate.Notification;
 import be15fintomatokatchupbe.notification.command.domain.repository.NotificationRepository;
+import be15fintomatokatchupbe.notification.command.domain.repository.SseEmitterRepository;
 import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -30,6 +33,7 @@ public class IdeaCommandService {
     private final UserRepository userRepository;
     private final FcmService fcmService;
     private final NotificationRepository notificationRepository;
+    private final SseEmitterRepository sseEmitterRepository;
 
     @Transactional
     public void createIdea(User user, IdeaRequest request) {
@@ -73,6 +77,17 @@ public class IdeaCommandService {
                         .build();
 
                 notificationRepository.save(notification);
+
+                sseEmitterRepository.get(target.getUserId()).ifPresent(emitter -> {
+                    try {
+                        emitter.send(SseEmitter.event()
+                                .name("new-notification")
+                                .data(body));
+                    } catch (IOException e) {
+                        sseEmitterRepository.delete(target.getUserId());
+                    }
+                });
+
             }
         }
     }

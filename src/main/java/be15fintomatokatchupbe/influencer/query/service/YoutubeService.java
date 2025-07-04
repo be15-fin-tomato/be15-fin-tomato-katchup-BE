@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.influencer.query.service;
 
+import be15fintomatokatchupbe.dashboard.query.external.OpenAiClient;
 import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -28,6 +29,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class YoutubeService {
+    private final OpenAiClient openAiClient;
+
 
     @Value("${youtube.api.key}")
     private String youtubeApiKey;
@@ -207,6 +210,20 @@ public class YoutubeService {
             throw new BusinessException(InfluencerErrorCode.FAILED_TO_FETCH_YOUTUBE_DATA);
         } catch (Exception e) {
             log.error("알 수 없는 예외 발생 (videoId: {})", videoId, e);
+            throw new BusinessException(InfluencerErrorCode.FAILED_TO_FETCH_YOUTUBE_DATA);
+        }
+    }
+    public String summarizeCommentsByVideoId(String videoId) {
+        List<String> comments = getCommentsByVideoId(videoId);
+
+        if (comments.isEmpty()) {
+            return "해당 영상에는 댓글이 없어 요약할 수 없습니다.";
+        }
+
+        try {
+            return openAiClient.summarizeComments(comments);
+        } catch (Exception e) {
+            log.error("댓글 요약 실패", e);
             throw new BusinessException(InfluencerErrorCode.FAILED_TO_FETCH_YOUTUBE_DATA);
         }
     }

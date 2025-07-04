@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.chat.query.application.dto.response.UserSimpleDto;
 import be15fintomatokatchupbe.user.query.dto.response.UserAccountQueryResponse;
 import be15fintomatokatchupbe.user.query.dto.response.UserHeaderAccountResponse;
 import be15fintomatokatchupbe.user.query.dto.response.UserInfluencerListDTO;
+import be15fintomatokatchupbe.user.query.dto.response.UserSearchDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -24,4 +25,6 @@ public interface UserQueryMapper {
     List<Long> findUserIdsByIds(@Param("userIds") List<Long> userIds);
 
     UserHeaderAccountResponse getSimpleMyAccount(Long userId);
+
+    List<UserSearchDto> getUserList(String keyword);
 }
