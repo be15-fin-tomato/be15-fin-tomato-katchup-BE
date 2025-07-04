@@ -8,6 +8,6 @@ import lombok.Setter;
 @Setter
 @Builder
 public class CampaignSimpleDto {
-    public Long campaignId;
-    public String campaignName;
+    public Long id;
+    public String name;
 }

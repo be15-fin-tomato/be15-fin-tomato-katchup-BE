@@ -53,10 +53,10 @@
             #{id}
         </foreach>
     </select>
-    <select id="getUserList" resultType="be15fintomatokatchupbe.chat.query.application.dto.response.UserSimpleDto">
+    <select id="getUserList" resultType="be15fintomatokatchupbe.user.query.dto.response.UserSearchDto">
         SELECT
-            user_id AS userId,
-            name AS userName
+            user_id AS id,
+            name AS name
         FROM user
         <where>
             <if test="keyword != null and keyword != ''">

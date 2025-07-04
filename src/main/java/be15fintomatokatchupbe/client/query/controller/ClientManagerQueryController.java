@@ -34,7 +34,7 @@ public class ClientManagerQueryController {
     public ResponseEntity<ApiResponse<ClientManagerListResponse>> findClientManagerList(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @RequestParam(required = false) String keyword,
-            @RequestParam Long clientCompanyId
+            @RequestParam(required = false) Long clientCompanyId
     ){
         ClientManagerListResponse response = clientManagerQueryService.getClientManagerList(keyword, clientCompanyId);
 
