@@ -1,29 +1,21 @@
 package be15fintomatokatchupbe.user.query.dto.response;
 
-
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.Date;
-
 @Getter
 @Builder
-public class UserAccountQueryResponse {
+public class UserHeaderAccountResponse {
 
     private Long userId;
 
-    private String loginId;
+    private String name;
 
-    private String phone;
-
-    private String email;
+    private String position;
 
     private Long fileId;
 
     private String fileName;
 
     private String fileRoute;
-
-    private Date date;
-
 }

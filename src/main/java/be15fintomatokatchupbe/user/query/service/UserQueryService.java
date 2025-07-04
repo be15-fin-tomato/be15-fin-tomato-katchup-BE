@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.user.query.service;
 
 import be15fintomatokatchupbe.user.query.dto.response.UserAccountQueryResponse;
+import be15fintomatokatchupbe.user.query.dto.response.UserHeaderAccountResponse;
 import be15fintomatokatchupbe.user.query.dto.response.UserInfluencerListDTO;
 import be15fintomatokatchupbe.user.query.dto.response.UserInfluencerListResponse;
 import be15fintomatokatchupbe.user.query.mapper.UserQueryMapper;
@@ -27,5 +28,9 @@ public class UserQueryService {
         return UserInfluencerListResponse.builder()
                 .userInfluencerList(response)
                 .build();
+    }
+
+    public UserHeaderAccountResponse getSimpleMyAccount(Long userId) {
+        return userQueryMapper.getSimpleMyAccount(userId);
     }
 }

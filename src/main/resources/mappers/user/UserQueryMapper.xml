@@ -11,6 +11,7 @@
             , a.email
             , a.file_id
             , b.file_name
+            , b.file_route
             , a.birth
           FROM user a
           LEFT JOIN pic_file b ON (a.file_id = b.file_id)
@@ -52,5 +53,18 @@
         <foreach item="id" collection="userIds" open="(" separator="," close=")">
             #{id}
         </foreach>
+    </select>
+
+    <select id="getSimpleMyAccount" resultType="be15fintomatokatchupbe.user.query.dto.response.UserHeaderAccountResponse">
+        SELECT
+              a.user_id
+            , a.name
+            , a.position
+            , a.file_id
+            , b.file_name
+            , b.file_route
+          FROM user a
+          LEFT JOIN pic_file b ON a.file_id = b.file_id
+        WHERE user_id = #{ userId }
     </select>
 </mapper>
