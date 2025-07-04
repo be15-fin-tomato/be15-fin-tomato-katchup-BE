@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.oauth.query.service;
 
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.dashboard.query.external.OpenAiClient;
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Instagram;
 import be15fintomatokatchupbe.influencer.command.domain.repository.InstagramRepository;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
@@ -29,6 +30,8 @@ public class InstagramPostQueryService {
     private final InstagramRedisService instagramRedisService;
     private final PipeInfClientManagerRepository picmRepository;
     private final InstagramRepository instagramRepository;
+    private final OpenAiClient openAiClient;
+
 
     @Value("${facebook.base-url}")
     private String baseUrl;
@@ -177,4 +180,50 @@ public class InstagramPostQueryService {
         return comments;
     }
 
+    public String summarizeInstagramCommentsByPipelineInfluencerId(Long pipelineInfluencerId) {
+        PipelineInfluencerClientManager picm = picmRepository.findById(pipelineInfluencerId)
+                .orElseThrow(() -> new BusinessException(OAuthErrorCode.MEDIA_NOT_FOUND));
+
+        String permalink = picm.getInstagramLink();
+        Long influencerId = picm.getInfluencer().getId();
+
+        String igUserId = instagramRepository.findById(influencerId)
+                .map(Instagram::getAccountId)
+                .orElseThrow(() -> new BusinessException(OAuthErrorCode.MEDIA_NOT_FOUND));
+
+        String accessToken = instagramRedisService.getAccessToken(igUserId);
+        if (accessToken == null) {
+            log.warn("[InstagramPostQueryService] Redis에 토큰 없음. igUserId={}", igUserId);
+            throw new BusinessException(OAuthErrorCode.TOKEN_NOT_FOUND);
+        }
+
+        String shortcode = extractShortcode(permalink);
+        if (shortcode == null) {
+            log.warn("[InstagramPostQueryService] Invalid permalink: {}", permalink);
+            throw new BusinessException(OAuthErrorCode.MEDIA_NOT_FOUND);
+        }
+
+        String mediaId = findMatchingMediaId(igUserId, accessToken, shortcode);
+        if (mediaId == null) {
+            log.warn("[InstagramPostQueryService] No media found for shortcode: {}", shortcode);
+            throw new BusinessException(OAuthErrorCode.MEDIA_NOT_FOUND);
+        }
+
+        List<CommentInfo> commentList = fetchCommentsByMediaId(mediaId, accessToken);
+        List<String> commentTexts = commentList.stream()
+                .map(CommentInfo::getText)
+                .toList();
+
+        return openAiClient.summarizeComments(commentTexts);
+    }
+
+//    // ✅ 테스트용 강제 토큰 저장 메서드
+//    public void forceSaveToken(Long influencerId, String token) {
+//        String igUserId = instagramRepository.findById(influencerId)
+//                .map(Instagram::getAccountId)
+//                .orElseThrow(() -> new BusinessException(OAuthErrorCode.MEDIA_NOT_FOUND));
+//
+//        instagramRedisService.saveAccessToken(igUserId, token, 60 * 60 * 24 * 60); // 60일 저장
+//        log.info("✅ [forceSaveToken] 토큰 저장 완료: igUserId={}, token={}", igUserId, token);
+//    }
 }

@@ -72,5 +72,19 @@ InstagramQueryController {
         return ResponseEntity.ok(ApiResponse.success(trendList));
     }
 
+    @Operation(summary = "인스타그램 댓글 요약", description = "사용자는 해당 게시물의 요약된 댓글을 조회할 수 있다.")
+    @GetMapping("/summary")
+    public ResponseEntity<ApiResponse<String>> getInstagramCommentSummary(
+            @RequestParam Long pipelineInfluencerId
+    ) {
+        String summary = instagramPostQueryService.summarizeInstagramCommentsByPipelineInfluencerId(pipelineInfluencerId);
+        return ResponseEntity.ok(ApiResponse.success(summary));
+    }
+
+//    @PostMapping("/force-save-token")
+//    public ResponseEntity<String> saveToken(@RequestParam Long influencerId, @RequestParam String token) {
+//        instagramPostQueryService.forceSaveToken(influencerId, token);
+//        return ResponseEntity.ok("토큰 저장 완료");
+//    }
 
 }
