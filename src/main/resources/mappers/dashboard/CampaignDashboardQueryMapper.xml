@@ -37,7 +37,7 @@
           LEFT JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
         WHERE c.campaign_id = #{campaignId}
         AND picm.influencer_id = #{influencerId}
-        AND p.pipeline_step_id = 6
+        AND p.pipeline_step_id = 7
         LIMIT 1
     </select>
 </mapper>
