@@ -509,6 +509,7 @@
             i.pipeline_id = #{pipelineId}
         AND
             i.is_deleted = 'N'
+        ORDER BY i.created_at desc, i.idea_id desc
     </select>
 
     <select id="findPipeFile" resultType="be15fintomatokatchupbe.campaign.query.dto.response.FileInfo">

@@ -13,7 +13,7 @@ public class IdeaDTO {
 
     private Long ideaId;
     private Long userId;
-    private String name;
+    private String userName;
     private String content;
     private LocalDateTime createdAt;
 
