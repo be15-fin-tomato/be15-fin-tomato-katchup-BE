@@ -5,6 +5,7 @@ import be15fintomatokatchupbe.influencer.command.application.support.YoutubeHelp
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Youtube;
 import be15fintomatokatchupbe.infra.redis.YoutubeTokenRepository;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
+import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeChannelInfoResponse;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeStatsResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
@@ -52,6 +53,7 @@ public class YoutubeOAuthQueryService {
     @Value("${youtube.redirect-uri}")
     private String redirectUri;
 
+    // 유튜브 인증 URL 생성
     public String buildAuthorizationUrl() {
         return UriComponentsBuilder.fromHttpUrl("https://accounts.google.com/o/oauth2/v2/auth")
                 .queryParam("client_id", clientId)
@@ -66,6 +68,7 @@ public class YoutubeOAuthQueryService {
                 .toUriString();
     }
 
+    // code → accessToken + refreshToken 교환
     public GoogleTokenResponse getToken(String code) {
         try {
             return postForm("https://oauth2.googleapis.com/token", buildForm(code), GoogleTokenResponse.class);
@@ -75,9 +78,58 @@ public class YoutubeOAuthQueryService {
         }
     }
 
-    public ChannelIdResponse getMyChannelId(String accessToken) {
-        String url = "https://www.googleapis.com/youtube/v3/channels?part=id&mine=true";
-        return getWithAuth(url, accessToken, ChannelIdResponse.class);
+    // 최초 연동: 채널 정보 조회 후 DB 저장
+    public void registerYoutubeAccount(Long influencerId, String accessToken, String refreshToken) {
+        // 1. 채널 정보 조회
+        String url = "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true";
+        YoutubeChannelInfoResponse youtubeChannelInfo = getWithAuth(url, accessToken, YoutubeChannelInfoResponse.class);
+
+        if (youtubeChannelInfo.items() == null || youtubeChannelInfo.items().isEmpty()) {
+            throw new BusinessException(OAuthErrorCode.YOUTUBE_CHANNEL_NOT_FOUND);
+        }
+
+        YoutubeChannelInfoResponse.Item item = youtubeChannelInfo.items().get(0);
+
+        // 2. 정보 추출
+        String channelId = item.id();
+        String title = item.snippet().title();
+        String thumbnail = item.snippet().thumbnails().defaultThumbnail().url();
+        Long subscriberCount = item.statistics().subscriberCount();
+
+        // 3. 유튜브 엔티티 저장
+        Youtube youtube = Youtube.builder()
+                .influencerId(influencerId)
+                .channelId(channelId)
+                .title(title)
+                .thumbnail(thumbnail)
+                .refreshToken(refreshToken)
+                .subscriber(subscriberCount)
+                .build();
+
+        youtubeHelperService.save(youtube);
+        log.info("✅ 유튜브 계정 연동 완료 - influencerId={}, channelId={}", influencerId, channelId);
+    }
+
+    public void registerYoutubeByOAuth(String code, Long influencerId) {
+        GoogleTokenResponse tokenResponse = getToken(code);
+        saveRefreshTokenByAccess(tokenResponse);
+        registerYoutubeAccount(influencerId, tokenResponse.getAccessToken(), tokenResponse.getRefreshToken());
+    }
+
+    private void saveRefreshTokenByAccess(GoogleTokenResponse tokenResponse) {
+        String accessToken = tokenResponse.getAccessToken();
+        YoutubeChannelInfoResponse youtubeChannelInfo = getWithAuth(
+                "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true",
+                accessToken,
+                YoutubeChannelInfoResponse.class
+        );
+        if (youtubeChannelInfo.items() == null || youtubeChannelInfo.items().isEmpty()) {
+            throw new BusinessException(OAuthErrorCode.YOUTUBE_CHANNEL_NOT_FOUND);
+        }
+        String channelId = youtubeChannelInfo.items().get(0).id();
+        Duration duration = Duration.ofSeconds(tokenResponse.getExpiresIn());
+        youtubeTokenRepository.save(channelId, tokenResponse.getRefreshToken());
+        youtubeTokenRepository.saveAccessToken(channelId, tokenResponse.getAccessToken(), duration);
     }
 
     public ChannelIdResponse getMyChannelIdPost(String accessToken) {
@@ -242,47 +294,25 @@ public class YoutubeOAuthQueryService {
                 .block();
     }
 
-    private <T> T getWithAuth(String url, String channelId, Class<T> responseType) {
-        // 1. Redis에서 accessToken 먼저 가져오기
-        String accessToken = youtubeTokenRepository.findAccessToken(channelId);
-        log.info("?????{}", accessToken);
-        log.info("!!!!!{}", channelId);
-
-        if (accessToken == null) {
-            log.info("🚫 Redis에 accessToken 없음, refresh로 갱신 시도");
-            accessToken = refreshAndGetAccessToken(channelId);
-        }
-
-        try {
-            return requestWithToken(url, accessToken, responseType);
-        } catch (WebClientResponseException e) {
-            if (e.getStatusCode().value() == 401) {
-                log.warn("🔁 AccessToken 만료됨. RefreshToken으로 재발급 시도");
-                accessToken = refreshAndGetAccessToken(channelId);
-                return requestWithToken(url, accessToken, responseType); // 재시도
-            } else {
-                throw e;
-            }
-        }
+    private <T> T getWithAuth(String url, String accessToken, Class<T> responseType) {
+        String token = accessToken.startsWith("Bearer ") ? accessToken : "Bearer " + accessToken;
+        return webClient.get()
+                .uri(url)
+                .header(HttpHeaders.AUTHORIZATION, token)
+                .retrieve()
+                .bodyToMono(responseType)
+                .block();
     }
 
-    private String refreshAndGetAccessToken(String channelId) {
-        // Redis에서 refreshToken 먼저 조회
+    public String refreshAndGetAccessToken(String channelId) {
         String refreshToken = youtubeTokenRepository.find(channelId);
-
-        // Redis에 없으면 DB에서 조회
         if (refreshToken == null) {
             Youtube youtube = youtubeHelperService.findYoutube(channelId);
             refreshToken = youtube.getRefreshToken();
         }
-
-        // refresh로 access 재발급
         GoogleTokenResponse newToken = refreshAccessToken(refreshToken);
         Duration duration = Duration.ofSeconds(newToken.getExpiresIn());
-
-        // Redis 갱신
         youtubeTokenRepository.saveAccessToken(channelId, newToken.getAccessToken(), duration);
-
         return newToken.getAccessToken();
     }
 
@@ -322,10 +352,10 @@ public class YoutubeOAuthQueryService {
         form.add("client_secret", clientSecret);
         form.add("refresh_token", refreshToken);
         form.add("grant_type", "refresh_token");
-
         return postForm("https://oauth2.googleapis.com/token", form, GoogleTokenResponse.class);
     }
 
+    //	access/refreshToken Redis에 저장
     public void saveRefreshToken(String channelId , GoogleTokenResponse tokenResponse){
         String accessToken = tokenResponse.accessToken;
         String refreshToken = tokenResponse.refreshToken;
