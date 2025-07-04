@@ -9,5 +9,5 @@ import java.util.List;
 @Getter
 @Builder
 public class UserListResponse {
-    public List<UserSimpleDto> userList;
+    public List<UserSearchDto> userList;
 }

@@ -19,9 +19,9 @@
     </select>
     <select id="getClientManagerList" resultType="be15fintomatokatchupbe.client.query.dto.ClientManagerSearchDto">
         SELECT
-              client_manager_id
-            , name
-            , email
+              client_manager_id AS id
+            , name AS name
+            , email AS email
         FROM
             client_manager
         <where>

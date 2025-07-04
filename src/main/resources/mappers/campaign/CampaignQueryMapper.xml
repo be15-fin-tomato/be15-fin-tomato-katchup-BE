@@ -691,8 +691,8 @@
 
     <select id="findCampaignList" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.CampaignSimpleDto">
         SELECT
-              campaign_id AS campaignId
-            , campaign_name AS campaignName
+              campaign_id AS id
+            , campaign_name AS name
         FROM
             campaign
         <where>

@@ -229,8 +229,8 @@
     <!-- 고객사 키워드 검색 -->
     <select id="searchClientCompanyList" resultType="be15fintomatokatchupbe.client.query.dto.ClientCompanySimpleDto">
         SELECT
-              client_company_id AS clientCompanyId
-            , client_company_name AS clientCompanyName
+              client_company_id AS id
+            , client_company_name AS name
         FROM
              client_company
         <where>
