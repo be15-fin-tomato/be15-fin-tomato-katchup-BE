@@ -53,4 +53,15 @@
             #{id}
         </foreach>
     </select>
+    <select id="getUserList" resultType="be15fintomatokatchupbe.chat.query.application.dto.response.UserSimpleDto">
+        SELECT
+            user_id AS userId,
+            name AS userName
+        FROM user
+        <where>
+            <if test="keyword != null and keyword != ''">
+                name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
 </mapper>

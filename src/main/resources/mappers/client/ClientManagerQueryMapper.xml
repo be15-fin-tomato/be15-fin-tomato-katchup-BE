@@ -17,6 +17,20 @@
             AND email LIKE CONCAT('%', #{email}, '%')
         </if>
     </select>
+    <select id="getClientManagerList" resultType="be15fintomatokatchupbe.client.query.dto.ClientManagerSearchDto">
+        SELECT
+              client_manager_id
+            , name
+            , email
+        FROM
+            client_manager
+        <where>
+            client_company_id = #{clientCompanyId}
+            <if test="keyword != null and keyword != ''">
+                AND name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
 
 
 </mapper>

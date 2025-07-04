@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CampaignQueryService {
     private final CampaignQueryMapper campaignQueryMapper;
-    private final PipelineStepMapper pipelineStepMapper;
 
     public ProposalSearchResponse getProposalList(Long userId, PipelineSearchRequest request) {
         int offset = (request.getPage() - 1) * request.getSize();
@@ -427,6 +426,14 @@ public class CampaignQueryService {
         return new CampaignDetailWithTimelineResponse(detail, timeline);
 
 
+    }
+
+    public CampaignSearchResponse findCampaignList(String keyword) {
+        List<CampaignSimpleDto> campaignList = campaignQueryMapper.findCampaignList(keyword);
+
+        return CampaignSearchResponse.builder()
+                .campaignList(campaignList)
+                .build();
     }
 
     public List<CampaignListResponse> getPagedCampaigns(int page, int size) {

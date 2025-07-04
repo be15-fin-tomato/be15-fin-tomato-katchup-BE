@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.user.query.controller;
 
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
+import be15fintomatokatchupbe.user.query.dto.response.UserListResponse;
 import be15fintomatokatchupbe.user.query.dto.response.UserAccountQueryResponse;
 import be15fintomatokatchupbe.user.query.dto.response.UserInfluencerListResponse;
 import be15fintomatokatchupbe.user.query.service.UserQueryService;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "마이페이지")
@@ -45,6 +47,17 @@ public class UserQueryController {
         Long userId = userDetail.getUserId();
 
         UserInfluencerListResponse response = userQueryService.getMyInfluencer(userId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/search")
+    @Operation(summary = "유저 목록 검색", description = "사용자는 유저 목록을 조회할 수 있습니다.")
+    public ResponseEntity<ApiResponse<UserListResponse>> findUserList(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @RequestParam(required = false) String keyword
+    ){
+        UserListResponse response = userQueryService.getUserList(keyword);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

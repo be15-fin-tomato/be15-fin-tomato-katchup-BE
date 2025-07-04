@@ -1,15 +1,14 @@
 package be15fintomatokatchupbe.client.query.controller;
 
-import be15fintomatokatchupbe.client.query.dto.ClientCompanyDetailResponse;
-import be15fintomatokatchupbe.client.query.dto.ClientCompanyListPagedResponse;
-import be15fintomatokatchupbe.client.query.dto.ClientCompanySearchCondition;
-import be15fintomatokatchupbe.client.query.dto.ClientCompanyUserResponse;
+import be15fintomatokatchupbe.client.query.dto.*;
 import be15fintomatokatchupbe.client.query.service.ClientCompanyQueryService;
 import be15fintomatokatchupbe.client.query.service.ClientManagerQueryService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
+import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -49,5 +48,17 @@ public class ClientCompanyQueryController {
             ) {
         ClientCompanyListPagedResponse response = clientCompanyQueryService.getClientCompanyList(page, size, condition);
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/search")
+    @Operation(summary = "고객사 검색")
+    public ResponseEntity<ApiResponse<ClientCompanySearchResponse>> findClientCompanyList(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestParam(required = false) String keyword
+            ){
+        ClientCompanySearchResponse response = clientCompanyQueryService.findClientCompanyList(keyword);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+
     }
 }

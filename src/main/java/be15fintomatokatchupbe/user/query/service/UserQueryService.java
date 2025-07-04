@@ -1,8 +1,10 @@
 package be15fintomatokatchupbe.user.query.service;
 
+import be15fintomatokatchupbe.chat.query.application.dto.response.UserSimpleDto;
 import be15fintomatokatchupbe.user.query.dto.response.UserAccountQueryResponse;
 import be15fintomatokatchupbe.user.query.dto.response.UserInfluencerListDTO;
 import be15fintomatokatchupbe.user.query.dto.response.UserInfluencerListResponse;
+import be15fintomatokatchupbe.user.query.dto.response.UserListResponse;
 import be15fintomatokatchupbe.user.query.mapper.UserQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,14 @@ public class UserQueryService {
         List<UserInfluencerListDTO> response = userQueryMapper.getMyInfluencer(userId);
         return UserInfluencerListResponse.builder()
                 .userInfluencerList(response)
+                .build();
+    }
+
+    public UserListResponse getUserList(String keyword) {
+        List<UserSimpleDto> userList = userQueryMapper.getUserList(keyword);
+
+        return UserListResponse.builder()
+                .userList(userList)
                 .build();
     }
 }
