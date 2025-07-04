@@ -7,6 +7,7 @@ import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Instagr
 import be15fintomatokatchupbe.influencer.command.domain.repository.InfluencerRepository;
 import be15fintomatokatchupbe.influencer.command.domain.repository.InstagramRepository;
 import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
+import be15fintomatokatchupbe.infra.redis.InstagramTokenRepository;
 import be15fintomatokatchupbe.oauth.command.application.dto.InstagramAccountInfo;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramTokenResponse;
@@ -25,7 +26,7 @@ public class InstagramTokenService {
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
-    private final InstagramRedisService instagramRedisService;
+    private final InstagramTokenRepository instagramTokenRepository;
     private final InstagramRepository instagramRepository;
     private final InfluencerRepository influencerRepository;
 
@@ -64,7 +65,7 @@ public class InstagramTokenService {
             String igAccountId = objectMapper.readTree(igBody).path("instagram_business_account").path("id").asText();
 
             // 5. Redis에 long-lived token 저장
-            instagramRedisService.saveAccessToken(igAccountId, longLivedToken, LONG_LIVED_TOKEN_EXPIRE_SECONDS);
+            instagramTokenRepository.saveAccessToken(igAccountId, longLivedToken, LONG_LIVED_TOKEN_EXPIRE_SECONDS);
 
             InstagramAccountInfo info = fetchAccountInfo(longLivedToken, igAccountId);
 
@@ -132,5 +133,4 @@ public class InstagramTokenService {
             throw new BusinessException(OAuthErrorCode.INSTAGRAM_ACCOUNT_INFO_ERROR);
         }
     }
-
 }

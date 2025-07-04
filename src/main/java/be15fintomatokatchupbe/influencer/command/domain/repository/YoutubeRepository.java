@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -18,4 +19,6 @@ public interface YoutubeRepository extends JpaRepository<Youtube, Long> {
     void deleteByInfluencerId(Long influencerId);
 
     Optional<Youtube> findByChannelId(String channelId);
+
+    Optional<Youtube> findYoutubeByInfluencerId(Long influencerId);
 }

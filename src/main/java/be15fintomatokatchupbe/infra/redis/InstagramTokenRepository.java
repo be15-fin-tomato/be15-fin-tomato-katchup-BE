@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.oauth.query.service;
+package be15fintomatokatchupbe.infra.redis;
 
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class InstagramRedisService {
+public class InstagramTokenRepository {
     private final RedisTemplate<String, Object> redisTemplate;
 
     private static final String TOKEN_PREFIX = "instagram:token:";
@@ -32,6 +32,14 @@ public class InstagramRedisService {
             throw new BusinessException(OAuthErrorCode.TOKEN_NOT_FOUND);
         }
         return tokenObj.toString();
+    }
+
+    public void delete(String userId) {
+        redisTemplate.delete(TOKEN_PREFIX + userId);
+    }
+
+    public void deleteAccessToken(String userId) {
+        redisTemplate.delete(TOKEN_PREFIX + userId);
     }
 
 }
