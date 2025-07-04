@@ -638,4 +638,18 @@
         AND p.is_deleted = 'N'
         ORDER BY p.presented_at ASC
     </select>
+
+    <select id="findCampaignList" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.CampaignSimpleDto">
+        SELECT
+              campaign_id AS campaignId
+            , campaign_name AS campaignName
+        FROM
+            campaign
+        <where>
+            <if test="keyword != null and keyword != ''">
+                campaign_name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+
+    </select>
 </mapper>

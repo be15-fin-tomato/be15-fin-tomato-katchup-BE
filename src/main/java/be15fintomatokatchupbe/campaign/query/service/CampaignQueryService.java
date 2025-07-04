@@ -422,4 +422,12 @@ public class CampaignQueryService {
 
 
     }
+
+    public CampaignSearchResponse findCampaignList(String keyword) {
+        List<CampaignSimpleDto> campaignList = campaignQueryMapper.findCampaignList(keyword.trim());
+
+        return CampaignSearchResponse.builder()
+                .campaignList(campaignList)
+                .build();
+    }
 }

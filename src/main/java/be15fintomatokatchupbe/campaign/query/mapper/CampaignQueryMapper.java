@@ -74,4 +74,5 @@ public interface CampaignQueryMapper {
 
     Long selectTotalExpectedRevenue(Long campaignId);
 
+    List<CampaignSimpleDto> findCampaignList(String keyword);
 }
