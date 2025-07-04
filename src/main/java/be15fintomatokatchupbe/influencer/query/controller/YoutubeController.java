@@ -23,11 +23,11 @@ public class YoutubeController {
     private final YoutubeService youtubeService;
 
     @Operation(summary = "유튜브 댓글 요약", description = "캠페인에 등록된 유튜브 영상의 댓글을 AI 모델을 통해 요약하여 제공합니다.")
-    @GetMapping("/commentssummary/{campaignId}")
+    @GetMapping("/commentssummary/{pipelineInfluencerId}")
     public ResponseEntity<ApiResponse<String>> summarizeCommentsByCampaignId(
-            @PathVariable Long campaignId
+            @PathVariable Long pipelineInfluencerId
     ) {
-        String videoId = searchRatioQueryService.extractVideoIdByCampaignId(campaignId);
+        String videoId = searchRatioQueryService.extractVideoIdByPipelineInfluencerId(pipelineInfluencerId);
         String summary = youtubeService.summarizeCommentsByVideoId(videoId);
         return ResponseEntity.ok(ApiResponse.success(summary));
     }

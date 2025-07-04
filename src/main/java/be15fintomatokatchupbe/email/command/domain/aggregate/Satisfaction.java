@@ -26,9 +26,11 @@ public class Satisfaction {
     private Integer score;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private StatusType emailStatus = StatusType.N;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
     private StatusType isReacted = StatusType.N;
 
     private String notes;

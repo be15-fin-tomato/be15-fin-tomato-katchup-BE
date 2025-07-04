@@ -11,7 +11,10 @@
             , a.email
             , a.file_id
             , b.file_name
+            , b.file_route
+            , a.name
             , a.birth
+            , a.gender
           FROM user a
           LEFT JOIN pic_file b ON (a.file_id = b.file_id)
             WHERE a.user_id = #{ userId }
@@ -63,5 +66,18 @@
                 name LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
+    </select>
+
+    <select id="getSimpleMyAccount" resultType="be15fintomatokatchupbe.user.query.dto.response.UserHeaderAccountResponse">
+        SELECT
+              a.user_id
+            , a.name
+            , a.position
+            , a.file_id
+            , b.file_name
+            , b.file_route
+          FROM user a
+          LEFT JOIN pic_file b ON a.file_id = b.file_id
+        WHERE user_id = #{ userId }
     </select>
 </mapper>
