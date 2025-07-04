@@ -18,4 +18,5 @@ public interface InstagramRepository extends JpaRepository<Instagram, Long> {
     void deleteByInfluencerId(Long influencerId);
 
     Optional<Instagram> findByInfluencerId(Long influencerId);
+
 }
