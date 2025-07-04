@@ -16,10 +16,10 @@ public class SearchRatioQueryController {
 
     private final SearchRatioQueryService searchRatioQueryService;
 
-    @Operation(summary = "캠페인별 검색비율 조회", description = "사용자는 캠페인별로 상품읲 검색비율을 조회할 수 있다.")
-    @GetMapping("/search-ratio/{campaignId}")
-    public ResponseEntity<SearchRatioResponse> getSearchRatioByCampaignId(@PathVariable Long campaignId) {
-        SearchRatioResponse response = searchRatioQueryService.getSearchRatioByCampaignId(campaignId);
+    @Operation(summary = "인플루언서별 검색비율 조회", description = "사용자는 pipelineInfluencerId를 기준으로 상품의 검색비율을 조회할 수 있다.")
+    @GetMapping("/search-ratio/pipeline-influencer/{pipelineInfluencerId}")
+    public ResponseEntity<SearchRatioResponse> getSearchRatioByPipelineInfluencerId(@PathVariable Long pipelineInfluencerId) {
+        SearchRatioResponse response = searchRatioQueryService.getSearchRatioByPipelineInfluencerId(pipelineInfluencerId);
         return ResponseEntity.ok(response);
     }
 }
