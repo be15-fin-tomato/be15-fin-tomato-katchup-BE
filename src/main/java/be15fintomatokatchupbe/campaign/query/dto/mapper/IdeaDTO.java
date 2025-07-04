@@ -12,9 +12,8 @@ import java.time.LocalDateTime;
 public class IdeaDTO {
 
     private Long ideaId;
-    private Long pipelineId;
     private Long userId;
-    private String name;
+    private String userName;
     private String content;
     private LocalDateTime createdAt;
 
