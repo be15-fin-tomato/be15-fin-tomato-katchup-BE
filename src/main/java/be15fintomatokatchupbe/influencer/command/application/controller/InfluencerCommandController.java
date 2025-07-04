@@ -49,7 +49,7 @@ public class InfluencerCommandController {
     }
 
     // 인플루언서 삭제
-    @Operation(summary = "인플루언서 등록", description = "사용자는 등록된 소속 인플루언서를 삭제할 수 있다.")
+    @Operation(summary = "인플루언서 삭제", description = "사용자는 등록된 소속 인플루언서를 삭제할 수 있다.")
     @DeleteMapping("/delete/{influencerId}")
     public ResponseEntity<ApiResponse<InfluencerDeleteResponse>> deleteInfluencer(
             @PathVariable Long influencerId,
