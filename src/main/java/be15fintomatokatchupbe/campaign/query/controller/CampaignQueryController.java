@@ -128,4 +128,15 @@ public class CampaignQueryController {
         List<CampaignListResponse> result = campaignQueryService.getPagedCampaigns(page, size);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
+
+    @GetMapping("/search")
+    @Operation(summary = "캠페인 검색", description = "캠페인을 키워드로 검색합니다.")
+    public ResponseEntity<ApiResponse<CampaignSearchResponse>> findCampaignList(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @RequestParam(required = false) String keyword
+    ){
+        CampaignSearchResponse response = campaignQueryService.findCampaignList(keyword);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 }

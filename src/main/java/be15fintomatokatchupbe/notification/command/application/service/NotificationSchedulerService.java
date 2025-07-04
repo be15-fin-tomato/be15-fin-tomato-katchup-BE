@@ -5,13 +5,16 @@ import be15fintomatokatchupbe.calendar.command.mapper.TodayScheduleCommandMapper
 import be15fintomatokatchupbe.notification.command.application.dto.response.NotificationPipeLineResponse;
 import be15fintomatokatchupbe.notification.command.domain.aggregate.Notification;
 import be15fintomatokatchupbe.notification.command.domain.repository.NotificationRepository;
+import be15fintomatokatchupbe.notification.command.domain.repository.SseEmitterRepository;
 import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -25,6 +28,7 @@ public class NotificationSchedulerService {
     private final FcmService fcmService;
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
+    private final SseEmitterRepository sseEmitterRepository;
 
     private List<Schedule> getTodaySchedules() {
         return todayMapper.todaySchedule();
@@ -48,6 +52,16 @@ public class NotificationSchedulerService {
                     .build();
 
             notificationRepository.save(notification);
+
+            sseEmitterRepository.get(userId).ifPresent(emitter -> {
+                try {
+                    emitter.send(SseEmitter.event()
+                            .name("new-notification")
+                            .data(notificationContent));
+                } catch (IOException e) {
+                    sseEmitterRepository.delete(userId);
+                }
+            });
         }
     }
 
@@ -66,6 +80,16 @@ public class NotificationSchedulerService {
             if (token != null && !token.isBlank()) {
                 fcmService.sendMessage(token, "오늘의 일정", content);
             }
+
+            sseEmitterRepository.get(userId).ifPresent(emitter -> {
+                try {
+                    emitter.send(SseEmitter.event()
+                            .name("new-notification")
+                            .data(content));
+                } catch (IOException e) {
+                    sseEmitterRepository.delete(userId);
+                }
+            });
         }
     }
 
@@ -84,6 +108,16 @@ public class NotificationSchedulerService {
                     .build();
 
             notificationRepository.save(notification);
+
+            sseEmitterRepository.get(userId).ifPresent(emitter -> {
+                try {
+                    emitter.send(SseEmitter.event()
+                            .name("new-notification")
+                            .data(notificationContent));
+                } catch (IOException e) {
+                    sseEmitterRepository.delete(userId);
+                }
+            });
         }
     }
 
@@ -99,6 +133,16 @@ public class NotificationSchedulerService {
             if (token != null && !token.isBlank()) {
                 fcmService.sendMessage(token, "오늘의 일정", content);
             }
+
+            sseEmitterRepository.get(userId).ifPresent(emitter -> {
+                try {
+                    emitter.send(SseEmitter.event()
+                            .name("new-notification")
+                            .data(content));
+                } catch (IOException e) {
+                    sseEmitterRepository.delete(userId);
+                }
+            });
         }
     }
 }
