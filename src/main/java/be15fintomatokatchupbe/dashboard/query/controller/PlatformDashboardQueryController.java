@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Tag(name = "대시보드")
+@Tag(name = "대시보드 캠페인 조회")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/dashboard")

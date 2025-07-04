@@ -141,6 +141,10 @@ public class RevenueCommandService {
 
         Pipeline foundPipeline = campaignHelperService.findValidPipeline(request.getPipelineId());
 
+        if(!Objects.equals(foundPipeline.getPipelineStep().getPipelineStepId(), PipelineStepConstants.REVENUE)){
+            throw new BusinessException(CampaignErrorCode.INVALID_ACCESS);
+        }
+
         /* 연관 테이블 지워주기 */
         campaignHelperService.deleteRelationTable(foundPipeline);
 
@@ -183,6 +187,10 @@ public class RevenueCommandService {
 
         if(foundPipeline.getPipelineStatus().getPipelineStatusId().equals(PipelineStatusConstants.APPROVED)){
             throw new BusinessException(CampaignErrorCode.APPROVED_PIPELINE_CANNOT_BE_DELETED);
+        }
+
+        if(!Objects.equals(foundPipeline.getPipelineStep().getPipelineStepId(), PipelineStepConstants.REVENUE)){
+            throw new BusinessException(CampaignErrorCode.INVALID_ACCESS);
         }
 
         // 2. 파이프라인 소프트 딜리트 하기

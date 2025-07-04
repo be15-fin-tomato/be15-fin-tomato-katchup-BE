@@ -1,7 +1,13 @@
 package be15fintomatokatchupbe.influencer.query.service;
 
+import be15fintomatokatchupbe.dashboard.query.external.OpenAiClient;
 import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.services.youtube.YouTube;
+import com.google.api.services.youtube.YouTubeRequestInitializer;
+import com.google.api.services.youtube.model.CommentThreadListResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,15 +16,21 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class YoutubeService {
+    private final OpenAiClient openAiClient;
+
 
     @Value("${youtube.api.key}")
     private String youtubeApiKey;
@@ -168,6 +180,54 @@ public class YoutubeService {
         }
         return null;
     }
+    public List<String> getCommentsByVideoId(String videoId) {
+        try {
+            log.info("Fetching YouTube comments for videoId: {}", videoId);
+
+            YouTube youtubeService = new YouTube.Builder(
+                    GoogleNetHttpTransport.newTrustedTransport(),
+                    JacksonFactory.getDefaultInstance(),
+                    null
+            ).setApplicationName("youtube-comments-fetcher")
+                    .setYouTubeRequestInitializer(new YouTubeRequestInitializer(youtubeApiKey))
+                    .build();
+
+            YouTube.CommentThreads.List request = youtubeService.commentThreads()
+                    .list("snippet")
+                    .setVideoId(videoId)
+                    .setTextFormat("plainText")
+                    .setOrder("relevance")
+                    .setMaxResults(50L);
+
+            CommentThreadListResponse response = request.execute();
+
+            return response.getItems().stream()
+                    .map(thread -> thread.getSnippet().getTopLevelComment().getSnippet().getTextDisplay())
+                    .collect(Collectors.toList());
+
+        } catch (IOException | GeneralSecurityException e) {
+            log.error("댓글 조회 실패 (videoId: {})", videoId, e);
+            throw new BusinessException(InfluencerErrorCode.FAILED_TO_FETCH_YOUTUBE_DATA);
+        } catch (Exception e) {
+            log.error("알 수 없는 예외 발생 (videoId: {})", videoId, e);
+            throw new BusinessException(InfluencerErrorCode.FAILED_TO_FETCH_YOUTUBE_DATA);
+        }
+    }
+    public String summarizeCommentsByVideoId(String videoId) {
+        List<String> comments = getCommentsByVideoId(videoId);
+
+        if (comments.isEmpty()) {
+            return "해당 영상에는 댓글이 없어 요약할 수 없습니다.";
+        }
+
+        try {
+            return openAiClient.summarizeComments(comments);
+        } catch (Exception e) {
+            log.error("댓글 요약 실패", e);
+            throw new BusinessException(InfluencerErrorCode.FAILED_TO_FETCH_YOUTUBE_DATA);
+        }
+    }
+
 
     public record YoutubeChannelInfo(String channelName, String thumbnailUrl, Long subscriberCount) {}
 }

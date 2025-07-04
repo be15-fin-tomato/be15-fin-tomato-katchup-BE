@@ -4,7 +4,6 @@ import be15fintomatokatchupbe.campaign.command.application.dto.request.*;
 import be15fintomatokatchupbe.campaign.command.application.service.*;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
-import com.google.protobuf.Api;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +29,7 @@ public class CampaignCommandController {
     private final ListupCommandService listupCommandService;
 
 
-    @PostMapping("/chance/create")
+    @PostMapping("/chance")
     public ResponseEntity<ApiResponse<Void>> createChance(
             @AuthenticationPrincipal CustomUserDetail user,
             @RequestBody CreateChanceRequest request
@@ -42,7 +41,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    @PostMapping("/listup/create")
+    @PostMapping("/listup")
     public ResponseEntity<ApiResponse<Void>> createListup(
             @AuthenticationPrincipal CustomUserDetail user,
             @RequestBody CreateListupRequest request
@@ -54,7 +53,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    @PostMapping("/proposal/create")
+    @PostMapping("/proposal")
     public ResponseEntity<ApiResponse<Void>> createProposal(
             @AuthenticationPrincipal CustomUserDetail user,
             @RequestBody CreateProposalRequest request
@@ -67,7 +66,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    @PostMapping("/quotation/create")
+    @PostMapping("/quotation")
     public ResponseEntity<ApiResponse<Void>> createQuotation(
             @AuthenticationPrincipal CustomUserDetail user,
             @RequestBody CreateQuotationRequest request
@@ -79,7 +78,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    @PostMapping("/contract/create")
+    @PostMapping("/contract")
     public ResponseEntity<ApiResponse<Void>> createContract(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @RequestPart("request") CreateContractRequest request,
@@ -92,7 +91,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    @PostMapping("/revenue/create")
+    @PostMapping("/revenue")
     public ResponseEntity<ApiResponse<Void>> createRevenue(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @RequestPart("request")CreateRevenueRequest request,

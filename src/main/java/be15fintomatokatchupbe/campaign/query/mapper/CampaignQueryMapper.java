@@ -74,5 +74,9 @@ public interface CampaignQueryMapper {
 
     Long selectTotalExpectedRevenue(Long campaignId);
 
+    List<CampaignListResponse> findPagedCampaigns(@Param("limit") int limit, @Param("offset") int offset);
+
+    List<PipelineStepStatusDto> findPipelineStepsByCampaignIds(@Param("campaignIds") List<Long> campaignIds);
+
     List<CampaignSimpleDto> findCampaignList(String keyword);
 }

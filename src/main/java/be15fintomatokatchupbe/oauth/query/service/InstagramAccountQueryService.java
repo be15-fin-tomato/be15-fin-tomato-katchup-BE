@@ -1,6 +1,9 @@
 package be15fintomatokatchupbe.oauth.query.service;
 
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Instagram;
+import be15fintomatokatchupbe.influencer.command.domain.repository.InstagramRepository;
+import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
 import be15fintomatokatchupbe.oauth.query.dto.InstagramMediaStats;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramStatsResponse;
@@ -20,18 +23,24 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class InstagramStatsQueryService {
+public class InstagramAccountQueryService {
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
     private final InstagramRedisService instagramRedisService;
+    private final InstagramRepository instagramRepository;
 
     @Value("${facebook.base-url}")
     private String baseUrl;
 
-    public InstagramStatsResponse fetchStats(String igId) {
+    public InstagramStatsResponse fetchStats(Long influencerId) {
+        Instagram instagram = instagramRepository.findByInfluencerId(influencerId)
+                .orElseThrow(() -> new BusinessException(OAuthErrorCode.MEDIA_NOT_FOUND));
+
+        String igId = instagram.getAccountId();
         String token = instagramRedisService.getAccessToken(igId);
         if (token == null) {
+
             log.warn("[fetchStats] Redis에 토큰 없음. igId={}", igId);
             throw new BusinessException(OAuthErrorCode.TOKEN_NOT_FOUND);
         }
@@ -55,6 +64,11 @@ public class InstagramStatsQueryService {
                     .limit(3)
                     .collect(Collectors.toList());
 
+            Double avgViews = calculateAverage(mediaStats, m -> Optional.ofNullable(m.getViewCount()).orElse(0));
+            Double avgLikes = calculateAverage(mediaStats, m -> Optional.ofNullable(m.getLikeCount()).orElse(0));
+            Double avgComments = calculateAverage(mediaStats, m -> Optional.ofNullable(m.getCommentCount()).orElse(0));
+            int totalPosts = mediaStats.size();
+
             return InstagramStatsResponse.builder()
                     .dailyAverageViews(dailyAvgViews)
                     .monthlyAverageViews(monthlyAvgViews)
@@ -68,6 +82,11 @@ public class InstagramStatsQueryService {
                     .topPosts(topPosts)
                     .topVideos(topVideos)
                     .totalFollowers(totalFollowers)
+                    .allMediaStats(mediaStats)
+                    .averageViews(avgViews)
+                    .averageLikes(avgLikes)
+                    .averageComments(avgComments)
+                    .totalPosts(totalPosts)
                     .build();
 
         } catch (Exception e) {
@@ -108,22 +127,18 @@ public class InstagramStatsQueryService {
     }
 
     private int fetchFollowerCount(String token, String igId) {
-        String url = String.format("%s/%s/?fields=followers_count&access_token=%s",
+        String url = String.format("%s/%s?fields=followers_count&access_token=%s",
                 baseUrl, igId, token);
 
-        JsonNode valuesNode = Optional.ofNullable(fetchJson(url).path("data"))
-                .filter(JsonNode::isArray)
-                .filter(d -> !d.isEmpty())
-                .map(d -> d.get(0))
-                .map(n -> n.path("values"))
-                .orElse(null);
+        JsonNode root = fetchJson(url);
+        JsonNode countNode = root.path("followers_count");
 
-        if (valuesNode == null || !valuesNode.isArray() || valuesNode.isEmpty()) {
-            log.warn("No follower_count data for igId={}", igId);
+        if (countNode.isMissingNode() || !countNode.isInt()) {
+            log.warn("No valid followers_count found for igId={}", igId);
             return 0;
         }
 
-        return valuesNode.get(valuesNode.size() - 1).path("value").asInt();
+        return countNode.asInt();
     }
 
     private Map<String, Double> fetchFollowTypeRatio(String token, String igId) {
@@ -163,38 +178,43 @@ public class InstagramStatsQueryService {
     }
 
     private Map<String, Double> fetchDemographics(String token, String igId, String breakdown) {
-        String url = String.format("%s/%s/insights?metric=follower_demographics&period=lifetime&timeframe=this_month&metric_type=total_value&breakdown=%s&access_token=%s",
-                baseUrl, igId, breakdown, token);
+        String url = String.format(
+                "%s/%s/insights?metric=follower_demographics&period=lifetime&metric_type=total_value&breakdown=%s&access_token=%s",
+                baseUrl, igId, breakdown, token
+        );
 
         JsonNode data = fetchJson(url);
-        JsonNode results = Optional.ofNullable(data.path("data"))
+
+        JsonNode valueNode = Optional.ofNullable(data.path("data"))
                 .filter(JsonNode::isArray)
                 .filter(d -> !d.isEmpty())
                 .map(d -> d.get(0))
-                .map(n -> n.path("total_value"))
-                .map(n -> n.path("breakdowns"))
+                .map(n -> n.path("values"))
                 .filter(JsonNode::isArray)
-                .filter(b -> !b.isEmpty())
-                .map(b -> b.get(0))
-                .map(n -> n.path("results"))
+                .filter(v -> !v.isEmpty())
+                .map(v -> v.get(0).path("value"))
                 .orElse(null);
 
-        if (results == null || !results.isArray()) {
-            log.warn("No demographic data for breakdown={}, igId={}", breakdown, igId);
+        if (valueNode == null || !valueNode.isObject()) {
+            log.warn("No follower demographic data returned for breakdown={}, igId={}", breakdown, igId);
             return Map.of();
         }
 
         Map<String, Double> result = new LinkedHashMap<>();
         int total = 0;
-        for (JsonNode r : results) {
-            String key = r.path("dimension_values").get(0).asText();
-            int value = r.path("value").asInt();
-            result.put(key, (double) value);
-            total += value;
+
+        for (Iterator<Map.Entry<String, JsonNode>> it = valueNode.fields(); it.hasNext();) {
+            Map.Entry<String, JsonNode> entry = it.next();
+            int count = entry.getValue().asInt();
+            result.put(entry.getKey(), (double) count);
+            total += count;
         }
+
         for (String key : result.keySet()) {
-            result.put(key, Math.round((result.get(key) / total) * 10000.0) / 100.0);
+            double percentage = Math.round((result.get(key) / total) * 10000.0) / 100.0;
+            result.put(key, percentage);
         }
+
         return result;
     }
 
@@ -263,18 +283,35 @@ public class InstagramStatsQueryService {
                 }
             }
 
-            results.add(new InstagramMediaStats(id, type, mediaUrl,
-                    0,  // removed impressions metric
-                    metrics.getOrDefault("reach", 0),
-                    metrics.getOrDefault("likes", 0) +
-                            metrics.getOrDefault("comments", 0) +
-                            metrics.getOrDefault("saved", 0) +
-                            metrics.getOrDefault("shares", 0)));
+            results.add(InstagramMediaStats.builder()
+                    .mediaId(id)
+                    .mediaType(type)
+                    .mediaUrl(mediaUrl)
+                    .impressions(0)
+                    .reach(metrics.getOrDefault("reach", 0))
+                    .viewCount(metrics.getOrDefault("reach", 0)) // 또는 impressions, views 등 실제 의미에 맞게
+                    .likeCount(metrics.getOrDefault("likes", 0))
+                    .commentCount(metrics.getOrDefault("comments", 0))
+                    .saveCount(metrics.getOrDefault("saved", 0))
+                    .shareCount(metrics.getOrDefault("shares", 0))
+                    .engagement(metrics.getOrDefault("likes", 0)
+                            + metrics.getOrDefault("comments", 0)
+                            + metrics.getOrDefault("saved", 0)
+                            + metrics.getOrDefault("shares", 0))
+                    .build());
+
         }
 
         return results.stream()
                 .sorted(Comparator.comparingInt(InstagramMediaStats::getEngagement).reversed())
                 .collect(Collectors.toList());
+    }
+
+    private Double calculateAverage(List<InstagramMediaStats> mediaList, java.util.function.ToDoubleFunction<InstagramMediaStats> mapper) {
+        return mediaList.stream()
+                .mapToDouble(mapper)
+                .average()
+                .orElse(0.0);
     }
 
     private JsonNode fetchJson(String url) {

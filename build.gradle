@@ -72,6 +72,9 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     // 유튜브 API키
     implementation 'com.google.apis:google-api-services-youtube:v3-rev222-1.25.0'
+    implementation 'com.google.api-client:google-api-client:1.34.1'
+    implementation 'com.google.http-client:google-http-client:1.42.3'
+    implementation 'com.google.http-client:google-http-client-jackson2:1.42.3'
 
     // Mongo
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
@@ -79,6 +82,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     // JSON 직렬화
     implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    //openAI
+    implementation 'com.theokanning.openai-gpt3-java:service:0.18.2'
+
 }
 
 tasks.named('test') {

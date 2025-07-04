@@ -1,9 +1,10 @@
 package be15fintomatokatchupbe.oauth.query.service;
 
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Instagram;
 import be15fintomatokatchupbe.influencer.command.domain.repository.InstagramRepository;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
-import be15fintomatokatchupbe.oauth.query.dto.request.InstagramPermalinkRequest;
+import be15fintomatokatchupbe.oauth.query.dto.CommentInfo;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramPostInsightResponse;
 import be15fintomatokatchupbe.relation.domain.PipelineInfluencerClientManager;
 import be15fintomatokatchupbe.relation.repository.PipeInfClientManagerRepository;
@@ -14,6 +15,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,11 +40,9 @@ public class InstagramPostQueryService {
         String permalink = picm.getInstagramLink();
         Long influencerId = picm.getInfluencer().getId();
 
-        // 인스타그램 계정 ID 조회
         String igUserId = instagramRepository.findById(influencerId)
-                .map(i -> i.getAccountId())
+                .map(Instagram::getAccountId)
                 .orElseThrow(() -> new BusinessException(OAuthErrorCode.MEDIA_NOT_FOUND));
-
 
         String accessToken = instagramRedisService.getAccessToken(igUserId);
         if (accessToken == null) {
@@ -70,30 +71,26 @@ public class InstagramPostQueryService {
         String metrics = buildMetrics(mediaType);
         JsonNode insights = fetchInsights(mediaId, accessToken, metrics);
 
-        return parseInsightResponse(insights, permalink);
+        List<CommentInfo> commentContent = fetchCommentsByMediaId(mediaId, accessToken);
+        return parseInsightResponse(insights, permalink, commentContent);
     }
 
-    private InstagramPostInsightResponse parseInsightResponse(JsonNode insights, String permalink) {
+    private InstagramPostInsightResponse parseInsightResponse(JsonNode insights, String permalink, List<CommentInfo> commentContent) {
         InstagramPostInsightResponse.InstagramPostInsightResponseBuilder builder = InstagramPostInsightResponse.builder()
-                .permalink(permalink);
+                .permalink(permalink)
+                .commentContent(commentContent);
 
         for (JsonNode metric : insights.path("data")) {
             String name = metric.path("name").asText();
             int value = metric.path("values").get(0).path("value").asInt(0);
 
             switch (name) {
-                case "views":
-                    builder.views(value); break;
-                case "reach":
-                    builder.reach(value); break;
-                case "likes":
-                    builder.likes(value); break;
-                case "comments":
-                    builder.comments(value); break;
-                case "shares":
-                    builder.shares(value); break;
-                case "saved":
-                    builder.saved(value); break;
+                case "views": builder.views(value); break;
+                case "reach": builder.reach(value); break;
+                case "likes": builder.likes(value); break;
+                case "comments": builder.comments(value); break;
+                case "shares": builder.shares(value); break;
+                case "saved": builder.saved(value); break;
             }
         }
 
@@ -137,17 +134,12 @@ public class InstagramPostQueryService {
     }
 
     private String buildMetrics(String mediaType) {
-        switch (mediaType.toUpperCase()) {
-            case "VIDEO":
-                return "views,reach,likes,comments,shares,saved";
-            case "IMAGE":
-            case "CAROUSEL_ALBUM":
-                return "saved,follows,likes,comments,reach";
-            case "REEL":
-                return "views,likes,comments,shares,saved";
-            default:
-                return "likes,comments";
-        }
+        return switch (mediaType.toUpperCase()) {
+            case "VIDEO" -> "views,reach,likes,comments,shares,saved";
+            case "IMAGE", "CAROUSEL_ALBUM" -> "saved,follows,likes,comments,reach";
+            case "REEL" -> "views,likes,comments,shares,saved";
+            default -> "likes,comments";
+        };
     }
 
     private JsonNode fetchInsights(String mediaId, String accessToken, String metrics) {
@@ -159,4 +151,30 @@ public class InstagramPostQueryService {
             throw new BusinessException(OAuthErrorCode.MEDIA_NOT_FOUND);
         }
     }
+
+    public List<CommentInfo> fetchCommentsByMediaId(String mediaId, String accessToken) {
+        String url = String.format("%s/%s/comments?fields=id,text,like_count&access_token=%s", baseUrl, mediaId, accessToken);
+        JsonNode response = webClient.get().uri(url).retrieve().bodyToMono(JsonNode.class).block();
+
+        if (response == null || !response.has("data")) {
+            log.warn("[InstagramPostQueryService] No comments found for mediaId={}", mediaId);
+            return List.of();
+        }
+
+        List<CommentInfo> comments = new ArrayList<>();
+        for (JsonNode comment : response.get("data")) {
+            String text = comment.path("text").asText("");
+            int likeCount = comment.path("like_count").asInt(0);
+
+            if (!text.isEmpty()) {
+                comments.add(new CommentInfo(text, likeCount));
+            }
+        }
+
+        // 좋아요 내림차순 정렬
+        comments.sort((a, b) -> Integer.compare(b.getLikeCount(), a.getLikeCount()));
+
+        return comments;
+    }
+
 }
