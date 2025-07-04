@@ -55,7 +55,8 @@ public class IdeaCommandService {
         String title = "파이프라인 내 새로운 의견 등록";
         String body = user.getName() + "님이 새로운 의견을 등록했습니다.";
 
-        List<User> allUsers = userRepository.findAll();
+        List<User> allUsers = userRepository.findAllByIsDeleted(StatusType.N);
+
 
         LocalDateTime now = LocalDateTime.now();
 
