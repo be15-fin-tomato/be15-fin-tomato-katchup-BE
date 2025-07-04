@@ -11,5 +11,5 @@ import java.util.List;
 public interface ClientManagerQueryMapper {
     List<ClientManagerResponse> findManagersByCondition(@Param("name") String name, @Param("email") String email);
 
-    List<ClientManagerSearchDto> getClientManagerList(String keyword);
+    List<ClientManagerSearchDto> getClientManagerList(String keyword, Long clientCompanyId);
 }

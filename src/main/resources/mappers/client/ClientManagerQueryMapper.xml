@@ -25,8 +25,9 @@
         FROM
             client_manager
         <where>
+            client_company_id = #{clientCompanyId}
             <if test="keyword != null and keyword != ''">
-                name LIKE CONCAT('%', #{keyword}, '%')
+                AND name LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
     </select>

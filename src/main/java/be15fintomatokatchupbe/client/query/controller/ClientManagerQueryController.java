@@ -34,9 +34,10 @@ public class ClientManagerQueryController {
     @Operation(summary = "고객 목록 검색", description = "사용자는 유저 목록을 조회할 수 있습니다.")
     public ResponseEntity<ApiResponse<ClientManagerListResponse>> findClientManagerList(
             @AuthenticationPrincipal CustomUserDetail userDetail,
-            @RequestParam(required = false) String keyword
+            @RequestParam(required = false) String keyword,
+            @RequestParam Long clientCompanyId
     ){
-        ClientManagerListResponse response = clientManagerQueryService.getClientManagerList(keyword);
+        ClientManagerListResponse response = clientManagerQueryService.getClientManagerList(keyword, clientCompanyId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

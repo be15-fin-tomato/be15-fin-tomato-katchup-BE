@@ -23,8 +23,8 @@ public class ClientManagerQueryService {
         return clientCompanyQueryMapper.findManagersByClientCompanyId(clientCompanyId);
     }
 
-    public ClientManagerListResponse getClientManagerList(String keyword) {
-        List<ClientManagerSearchDto> clientManagerList = clientManagerQueryMapper.getClientManagerList(keyword);
+    public ClientManagerListResponse getClientManagerList(String keyword, Long clientCompanyId) {
+        List<ClientManagerSearchDto> clientManagerList = clientManagerQueryMapper.getClientManagerList(keyword, clientCompanyId);
 
         return ClientManagerListResponse.builder()
                 .clientManagerList(clientManagerList)
