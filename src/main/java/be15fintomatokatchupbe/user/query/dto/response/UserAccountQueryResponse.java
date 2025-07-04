@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.user.query.dto.response;
 
 
+import be15fintomatokatchupbe.common.domain.GenderType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,18 +13,22 @@ public class UserAccountQueryResponse {
 
     private Long userId;
 
-    private String loginId;
+    private String loginId; //  사원코드
 
-    private String phone;
+    private String phone; // 전화번호
 
-    private String email;
+    private String email; // 이메일
 
     private Long fileId;
 
     private String fileName;
 
-    private String fileRoute;
+    private String fileRoute; // 프로필 사진
 
-    private Date date;
+    private String name; // 이름
+
+    private Date date; //  생년월일
+
+    private GenderType gender; // 성별
 
 }

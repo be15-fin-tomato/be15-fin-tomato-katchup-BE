@@ -12,7 +12,9 @@
             , a.file_id
             , b.file_name
             , b.file_route
+            , a.name
             , a.birth
+            , a.gender
           FROM user a
           LEFT JOIN pic_file b ON (a.file_id = b.file_id)
             WHERE a.user_id = #{ userId }
