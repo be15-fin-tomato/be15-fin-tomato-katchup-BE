@@ -38,7 +38,7 @@ public class IdeaCommandController {
 
     // 파이프라인 의견 삭제 기능
     @Operation(summary = "파이프라인 의견 삭제", description = "사용자는 파이프라인에 작성된 의견을 삭제할 수 있다.(soft delete)")
-    @DeleteMapping("{ideaId}")
+    @DeleteMapping("/{ideaId}")
     public ResponseEntity<ApiResponse<Void>> deleteIdea(
             @AuthenticationPrincipal CustomUserDetail customUserDetail,
             @PathVariable Long ideaId

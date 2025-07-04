@@ -44,10 +44,10 @@ public class AuthQueryService {
         /* 로그인 성공 */
 
         /* 3. access token 발급 */
-        String accessToken = jwtTokenProvider.createAccessToken(foundUser.getUserId(), foundUser.getLoginId());
+        String accessToken = jwtTokenProvider.createAccessToken(foundUser.getUserId(), foundUser.getName(), foundUser.getLoginId());
 
         // 4. refresh 토큰 발급
-        String refreshToken = jwtTokenProvider.createRefreshToken(foundUser.getUserId(), foundUser.getLoginId());
+        String refreshToken = jwtTokenProvider.createRefreshToken(foundUser.getUserId(), foundUser.getName(), foundUser.getLoginId());
 
 
         /* 5. redis에 토큰 저장 */
@@ -67,6 +67,8 @@ public class AuthQueryService {
 
         Long requestUserId = jwtTokenProvider.getUserIdFromJWT(refreshToken);
         String requestLoginId = jwtTokenProvider.getLoginIdFromJWT(refreshToken);
+        String requestUserName = jwtTokenProvider.getUserNameFromJWT(refreshToken);
+        log.info("재발행 유저 이름 {}", requestUserName);
 
 
         log.info("재발행 요청 유저 ID : " + requestUserId);
@@ -80,8 +82,8 @@ public class AuthQueryService {
             throw new BusinessException(GlobalErrorCode.REFRESH_TOKEN_EXPIRED);
         }
 
-        String newAccessToken = jwtTokenProvider.createAccessToken(requestUserId, requestLoginId);
-        String newRefreshToken = jwtTokenProvider.createRefreshToken(requestUserId, requestLoginId);
+        String newAccessToken = jwtTokenProvider.createAccessToken(requestUserId,requestUserName, requestLoginId);
+        String newRefreshToken = jwtTokenProvider.createRefreshToken(requestUserId,requestUserName, requestLoginId);
 
         refreshTokenRepository.save(requestUserId, newRefreshToken);
 

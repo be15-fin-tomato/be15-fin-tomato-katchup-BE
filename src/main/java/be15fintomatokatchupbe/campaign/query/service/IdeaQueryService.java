@@ -14,8 +14,8 @@ public class IdeaQueryService {
 
     private final IdeaQueryMapper ideaQueryMapper;
 
-    public IdeaResponse getIdeaListAll(Long userId) {
-        List<IdeaDTO> ideaAllDTO = ideaQueryMapper.getIdeaListsAll(userId);
+    public IdeaResponse getIdeaListAll(Long userId, Long pipelineId) {
+        List<IdeaDTO> ideaAllDTO = ideaQueryMapper.getIdeaListsAll(userId, pipelineId);
         return IdeaResponse.builder()
                 .response(ideaAllDTO)
                 .build();
