@@ -5,6 +5,8 @@ import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.influencer.query.dto.request.InfluencerListRequestDTO;
 import be15fintomatokatchupbe.influencer.query.dto.response.InfluencerCardResponse;
 import be15fintomatokatchupbe.influencer.query.dto.response.InfluencerListResponse;
+import be15fintomatokatchupbe.influencer.query.dto.response.InfluencerSearchDto;
+import be15fintomatokatchupbe.influencer.query.dto.response.InfluencerSearchResponse;
 import be15fintomatokatchupbe.influencer.query.mapper.InfluencerMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +52,15 @@ public class InfluencerQueryService {
                         .totalPage(totalPage)
                         .size(size)
                         .build())
+                .build();
+    }
+
+    public InfluencerSearchResponse findInfluencerList(String keyword) {
+
+        List<InfluencerSearchDto> influencerList = influencerMapper.findInfluencerList(keyword);
+
+        return  InfluencerSearchResponse.builder()
+                .influencerList(influencerList)
                 .build();
     }
 }

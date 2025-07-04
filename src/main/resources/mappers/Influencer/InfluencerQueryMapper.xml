@@ -69,4 +69,17 @@
         WHERE i.is_deleted = 'N'
     </select>
 
+    <select id="findInfluencerList" resultType="be15fintomatokatchupbe.influencer.query.dto.response.InfluencerSearchDto">
+        SELECT
+              influencer_id AS id
+            , name as name
+        FROM
+            influencer
+        <where>
+            <if test="keyword != null and keyword != ''">
+                name LIKE CONCAT('%',#{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
 </mapper>
