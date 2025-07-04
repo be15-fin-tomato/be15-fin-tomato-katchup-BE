@@ -67,4 +67,16 @@ public class EmailQueryController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    /* 인플루언서 만족도 조사 평균 점수 조회 */
+    @GetMapping("/average/{influencerId}")
+    @Operation(summary = "인플루언서 만족도 조사 평균 점수 조회 ", description = "해당 인플루언서에 평균 만족도 점수를 조회할 수 있다.")
+    public ResponseEntity<ApiResponse<Double>> getInfluencerSatisfactionScore(
+            @PathVariable Long influencerId
+    ) {
+        double avg = emailQueryService.getInfluencerSatisfactionScore(influencerId);
+
+        return ResponseEntity.ok(ApiResponse.success(avg));
+    }
+
+
 }

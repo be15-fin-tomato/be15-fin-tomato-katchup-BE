@@ -143,4 +143,7 @@ public class EmailQueryService {
         }
     }
 
+    public double getInfluencerSatisfactionScore(Long influencerId) {
+        return emailQueryMapper.getInfluencerSatisfactionScore(influencerId);
+    }
 }
