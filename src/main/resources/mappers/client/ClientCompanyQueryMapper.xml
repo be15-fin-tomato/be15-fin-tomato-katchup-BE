@@ -226,4 +226,17 @@
         </if>
     </select>
 
+    <!-- 고객사 키워드 검색 -->
+    <select id="searchClientCompanyList" resultType="be15fintomatokatchupbe.client.query.dto.ClientCompanySimpleDto">
+        SELECT
+              client_company_id AS clientCompanyId
+            , client_company_name AS clientCompanyName
+        FROM
+             client_company
+        <where>
+            <if test="keyword != null and keyword != ''">
+                client_company_name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
 </mapper>

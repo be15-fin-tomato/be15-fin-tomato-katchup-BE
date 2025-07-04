@@ -424,7 +424,7 @@ public class CampaignQueryService {
     }
 
     public CampaignSearchResponse findCampaignList(String keyword) {
-        List<CampaignSimpleDto> campaignList = campaignQueryMapper.findCampaignList(keyword.trim());
+        List<CampaignSimpleDto> campaignList = campaignQueryMapper.findCampaignList(keyword);
 
         return CampaignSearchResponse.builder()
                 .campaignList(campaignList)

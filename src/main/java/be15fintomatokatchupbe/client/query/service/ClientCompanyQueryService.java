@@ -38,4 +38,12 @@ public class ClientCompanyQueryService {
 
         return new ClientCompanyListPagedResponse(content, pagination);
     }
+
+    public ClientCompanySearchResponse findClientCompanyList(String keyword) {
+        List<ClientCompanySimpleDto> clientCompanyList = clientCompanyQueryMapper.searchClientCompanyList(keyword);
+
+        return ClientCompanySearchResponse.builder()
+                .clientCompanyList(clientCompanyList)
+                .build();
+    }
 }

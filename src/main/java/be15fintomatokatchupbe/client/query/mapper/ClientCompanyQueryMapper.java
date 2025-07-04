@@ -24,4 +24,6 @@ public interface ClientCompanyQueryMapper {
             @Param("limit") int limit
         );
     int countClientCompaniesByCondition(@Param("condition") ClientCompanySearchCondition condition);
+
+    List<ClientCompanySimpleDto> searchClientCompanyList(String trim);
 }
