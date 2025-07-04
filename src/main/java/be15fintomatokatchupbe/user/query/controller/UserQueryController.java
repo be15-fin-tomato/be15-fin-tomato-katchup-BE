@@ -63,7 +63,7 @@ public class UserQueryController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-//    /* 헤더에서 내 정보 조회 */
+    /* 헤더에서 내 정보 조회 */
     @GetMapping("/simple/me")
     @Operation(summary = "헤더에서 내 정보 조회",description = "사용자는 헤더에서 본인의 정보를 조회할 수 있다.")
     public  ResponseEntity<ApiResponse<UserHeaderAccountResponse>> getSimpleMyAccount(
