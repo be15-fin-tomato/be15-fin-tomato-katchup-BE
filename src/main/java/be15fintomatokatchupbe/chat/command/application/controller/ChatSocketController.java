@@ -106,6 +106,7 @@ public class ChatSocketController {
                     .notificationTypeId(5L)
                     .notificationContent(messages)
                     .getTime(now)
+                    .targetId(chatId)
                     .build();
 
             notificationRepository.save(notification);

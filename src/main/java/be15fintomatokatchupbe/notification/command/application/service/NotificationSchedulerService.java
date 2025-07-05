@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.notification.command.application.service;
 
 import be15fintomatokatchupbe.calendar.command.domain.aggregate.Schedule;
 import be15fintomatokatchupbe.calendar.command.mapper.TodayScheduleCommandMapper;
+import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.notification.command.application.dto.response.NotificationPipeLineResponse;
 import be15fintomatokatchupbe.notification.command.domain.aggregate.Notification;
 import be15fintomatokatchupbe.notification.command.domain.repository.NotificationRepository;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -54,10 +56,17 @@ public class NotificationSchedulerService {
             notificationRepository.save(notification);
 
             sseEmitterRepository.get(userId).ifPresent(emitter -> {
+                long unreadCount = notificationRepository.countByUserIdAndIsReadAndIsDeleted(
+                        userId, StatusType.N, StatusType.N
+                );
                 try {
                     emitter.send(SseEmitter.event()
                             .name("new-notification")
-                            .data(notificationContent));
+                            .data(Map.of(
+                                    "message", notificationContent,
+                                    "unreadCount", unreadCount
+                            ))
+                    );
                 } catch (IOException e) {
                     sseEmitterRepository.delete(userId);
                 }
@@ -82,10 +91,17 @@ public class NotificationSchedulerService {
             }
 
             sseEmitterRepository.get(userId).ifPresent(emitter -> {
+                long unreadCount = notificationRepository.countByUserIdAndIsReadAndIsDeleted(
+                        userId, StatusType.N, StatusType.N
+                );
                 try {
                     emitter.send(SseEmitter.event()
                             .name("new-notification")
-                            .data(content));
+                            .data(Map.of(
+                                    "message", content,
+                                    "unreadCount", unreadCount
+                            ))
+                    );
                 } catch (IOException e) {
                     sseEmitterRepository.delete(userId);
                 }
@@ -102,18 +118,26 @@ public class NotificationSchedulerService {
 
             Notification notification = Notification.builder()
                     .userId(userId)
-                    .notificationTypeId(4L)
+                    .notificationTypeId(2L)
                     .getTime(LocalDateTime.now())
                     .notificationContent(notificationContent)
+                    .targetId(pipeline.getPipeLineId())
                     .build();
 
             notificationRepository.save(notification);
 
             sseEmitterRepository.get(userId).ifPresent(emitter -> {
+                long unreadCount = notificationRepository.countByUserIdAndIsReadAndIsDeleted(
+                        userId, StatusType.N, StatusType.N
+                );
                 try {
                     emitter.send(SseEmitter.event()
                             .name("new-notification")
-                            .data(notificationContent));
+                            .data(Map.of(
+                                    "message", notificationContent,
+                                    "unreadCount", unreadCount
+                            ))
+                    );
                 } catch (IOException e) {
                     sseEmitterRepository.delete(userId);
                 }
@@ -135,10 +159,17 @@ public class NotificationSchedulerService {
             }
 
             sseEmitterRepository.get(userId).ifPresent(emitter -> {
+                long unreadCount = notificationRepository.countByUserIdAndIsReadAndIsDeleted(
+                        userId, StatusType.N, StatusType.N
+                );
                 try {
                     emitter.send(SseEmitter.event()
                             .name("new-notification")
-                            .data(content));
+                            .data(Map.of(
+                                    "message", content,
+                                    "unreadCount", unreadCount
+                            ))
+                    );
                 } catch (IOException e) {
                     sseEmitterRepository.delete(userId);
                 }

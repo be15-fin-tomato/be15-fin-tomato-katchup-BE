@@ -7,8 +7,10 @@
     <select id="getNotificationsAll" resultType="be15fintomatokatchupbe.notification.query.dto.NotificationsAllDTO">
         SELECT    notification_id
                 , notification_content
+                , notification_type_id
                 , is_read
-                , get_time
+                , DATE_FORMAT(get_time, '%Y-%m-%d %H:%i') AS getTime
+                , target_id
         FROM notification
         WHERE user_id = #{userId}
         AND is_deleted = 'N'
