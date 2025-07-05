@@ -82,7 +82,6 @@ public class CampaignQueryService {
                 campaignQueryMapper.findQuotationList(request, offset, size, PipelineStepConstants.QUOTATION);
 
         List<QuotationCardResponse> response = new ArrayList<>();
-        // 2. 해쉬 셋에 {pipelineId}: {DTO} 형태로 저장하기
         for(QuotationCardDTO dto: quotationList){
             List<String> userNameList = Optional.ofNullable(dto.getUserNameInfo())
                     .map(s -> Arrays.stream(s.split(","))

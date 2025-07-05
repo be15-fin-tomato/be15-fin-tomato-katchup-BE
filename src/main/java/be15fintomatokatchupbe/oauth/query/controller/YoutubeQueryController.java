@@ -17,17 +17,24 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @Tag(name = "YouTube OAuth", description = "YouTube 연동 및 통계 조회 API")
 @Slf4j
 @RestController
-@RequestMapping("/oauth2")
+@RequestMapping("/oauth2/youtube")
 @RequiredArgsConstructor
 public class YoutubeQueryController {
 
     private final YoutubeOAuthQueryService youtubeOAuthQueryService;
     private final YoutubeAnalyticsService youtubeAnalyticsService;
+
+    @GetMapping("/callback")
+    public ResponseEntity<ApiResponse<String>> registerYoutube(
+            @RequestParam("code") String code,
+            @RequestParam("state") Long influencerId
+    ) {
+        youtubeOAuthQueryService.registerYoutubeByOAuth(code, influencerId);
+        return ResponseEntity.ok(ApiResponse.success("✅ 유튜브 계정 연동 완료"));
+    }
 
     @Operation(summary = "YouTube 권한 요청 URL 발급", description = "클라이언트가 YouTube OAuth 인증을 시작하기 위한 URL을 발급받습니다.")
     @GetMapping("/authorize/youtube")

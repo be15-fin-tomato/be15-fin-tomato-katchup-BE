@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "캠페인 의견")
@@ -24,10 +25,11 @@ public class IdeaQueryController {
     @GetMapping("/all")
     @Operation(summary = "파이프라인 의견 전체 조회", description = "사용자는 파이프라인 단계별로 작성된 의견을 모두 조회할 수 있다.")
     public ResponseEntity<ApiResponse<IdeaResponse>> getIdeaListAll(
-            @AuthenticationPrincipal CustomUserDetail customUserDetail
+            @AuthenticationPrincipal CustomUserDetail customUserDetail,
+            @RequestParam Long pipelineId
     ){
         Long userId = customUserDetail.getUserId();
-        IdeaResponse response = ideaQueryService.getIdeaListAll(userId);
+        IdeaResponse response = ideaQueryService.getIdeaListAll(userId, pipelineId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

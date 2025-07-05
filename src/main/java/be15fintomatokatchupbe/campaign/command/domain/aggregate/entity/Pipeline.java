@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -38,11 +39,11 @@ public class Pipeline {
 
     private String name;
 
-    private LocalDateTime startedAt;
+    private LocalDate startedAt;
 
-    private LocalDateTime endedAt;
+    private LocalDate endedAt;
 
-    private LocalDateTime presentedAt;
+    private LocalDate presentedAt;
 
     private String notes;
 
@@ -50,7 +51,7 @@ public class Pipeline {
 
     private BigDecimal expectedProfitMargin;
 
-    private LocalDateTime requestAt;
+    private LocalDate requestAt;
 
     private String content;
 
@@ -73,10 +74,10 @@ public class Pipeline {
     public void updateQuotation(PipelineStatus pipelineStatus,
                                 User writer,
                                 String name,
-                                LocalDateTime requestAt,
-                                LocalDateTime startedAt,
-                                LocalDateTime endedAt,
-                                LocalDateTime presentedAt,
+                                LocalDate requestAt,
+                                LocalDate startedAt,
+                                LocalDate endedAt,
+                                LocalDate presentedAt,
                                 Campaign campaign,
                                 String content,
                                 String notes,
@@ -102,10 +103,10 @@ public class Pipeline {
     public void updateContract(PipelineStatus pipelineStatus,
                                 User writer,
                                 String name,
-                                LocalDateTime requestAt,
-                                LocalDateTime startedAt,
-                                LocalDateTime endedAt,
-                                LocalDateTime presentedAt,
+                                LocalDate requestAt,
+                                LocalDate startedAt,
+                                LocalDate endedAt,
+                                LocalDate presentedAt,
                                 Campaign campaign,
                                 String content,
                                 String notes,
@@ -132,10 +133,10 @@ public class Pipeline {
             PipelineStatus pipelineStatus,
             Campaign campaign,
             String name,
-            LocalDateTime requestAt,
-            LocalDateTime startedAt,
-            LocalDateTime endedAt,
-            LocalDateTime presentedAt,
+            LocalDate requestAt,
+            LocalDate startedAt,
+            LocalDate endedAt,
+            LocalDate presentedAt,
             String content,
             String notes,
             User writer

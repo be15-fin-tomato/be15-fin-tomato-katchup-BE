@@ -22,54 +22,43 @@ public class SearchRatioQueryService {
     private final YoutubeService youtubeService;
     private final SearchRatioQueryMapper searchRatioQueryMapper;
 
-    public SearchRatioResponse getSearchRatioByCampaignId(Long campaignId) {
-        // 1. 캠페인 상태 확인 및 상품명 조회
-        String productName = searchRatioQueryMapper.findProductNameByCampaignId(campaignId);
-        if (productName == null) {
-            throw new BusinessException(CampaignErrorCode.INVALID_CAMPAIGN_STATUS);
-        }
-
-        // 2. pipeline_id 조회
-        Long pipelineId = searchRatioQueryMapper.findPipelineIdByCampaignId(campaignId);
-        if (pipelineId == null) {
-            throw new BusinessException(CampaignErrorCode.PIPELINE_STATUS_NOT_FOUND);
-        }
-
-        // 3. 유튜브 링크 조회 후 videoId 추출
-        String youtubeLink = searchRatioQueryMapper.findYoutubeLinkByPipelineId(pipelineId);
+    public SearchRatioResponse getSearchRatioByPipelineInfluencerId(Long pipelineInfluencerId) {
+        // 1. 유튜브 링크 조회 및 videoId 추출
+        String youtubeLink = searchRatioQueryMapper.findYoutubeLinkByPipelineInfluencerId(pipelineInfluencerId);
         String videoId = YoutubeService.extractVideoId(youtubeLink);
         if (videoId == null) {
             throw new BusinessException(CampaignErrorCode.INVALID_YOUTUBE_LINK);
         }
 
-        // 4. 업로드 날짜 조회
+        // 2. 업로드 날짜 조회
         String uploadDateString = youtubeService.getUploadDate(videoId);
         LocalDate uploadDate = LocalDate.parse(uploadDateString);
 
-        // 5. 시작일/종료일 계산 (오늘보다 미래로 가면 안 됨)
+        // 3. 상품명 조회 (pipelineInfluencer → pipeline → campaign → product)
+        String productName = searchRatioQueryMapper.findProductNameByPipelineInfluencerId(pipelineInfluencerId);
+        if (productName == null) {
+            throw new BusinessException(CampaignErrorCode.INVALID_CAMPAIGN_STATUS);
+        }
+        System.out.println("🎯 조회된 상품명: " + productName);
+
+        // 4. 시작일/종료일 계산
         LocalDate startDate = uploadDate.minusDays(3);
         LocalDate tentativeEndDate = uploadDate.plusDays(3);
         LocalDate endDate = tentativeEndDate.isAfter(LocalDate.now()) ? LocalDate.now() : tentativeEndDate;
 
-        // 6. 검색량 데이터 조회
+        // 5. 검색 데이터 조회
         Map<String, Integer> googleData = googleTrendsClient.getSearchRatio(productName, startDate, endDate);
         Map<String, Integer> naverData = naverDataLabClient.getSearchRatio(productName, startDate, endDate);
 
         return new SearchRatioResponse(googleData, naverData);
     }
-    public String extractVideoIdByCampaignId(Long campaignId) {
-        Long pipelineId = searchRatioQueryMapper.findPipelineIdByCampaignId(campaignId);
-        if (pipelineId == null) {
-            throw new BusinessException(CampaignErrorCode.PIPELINE_STATUS_NOT_FOUND);
-        }
 
-        String youtubeLink = searchRatioQueryMapper.findYoutubeLinkByPipelineId(pipelineId);
+    public String extractVideoIdByPipelineInfluencerId(Long pipelineInfluencerId) {
+        String youtubeLink = searchRatioQueryMapper.findYoutubeLinkByPipelineInfluencerId(pipelineInfluencerId);
         String videoId = YoutubeService.extractVideoId(youtubeLink);
         if (videoId == null) {
             throw new BusinessException(CampaignErrorCode.INVALID_YOUTUBE_LINK);
         }
-
         return videoId;
     }
-
 }

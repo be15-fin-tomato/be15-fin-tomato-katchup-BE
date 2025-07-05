@@ -13,7 +13,7 @@ public class PipelineSearchRequest {
     private String category;
     private String keyword;
     private Long userId;
-    private Integer filter;
+    private Long filter;
     private String sort = "date";
     private String sortOrder = "asc";
 }

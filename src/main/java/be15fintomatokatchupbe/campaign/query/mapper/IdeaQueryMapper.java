@@ -7,5 +7,5 @@ import java.util.List;
 
 @Mapper
 public interface IdeaQueryMapper {
-    List<IdeaDTO> getIdeaListsAll(Long userId);
+    List<IdeaDTO> getIdeaListsAll(Long userId, Long pipelineId);
 }

@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.dashboard.query.external.OpenAiClient;
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Instagram;
 import be15fintomatokatchupbe.influencer.command.domain.repository.InstagramRepository;
+import be15fintomatokatchupbe.infra.redis.InstagramTokenRepository;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
 import be15fintomatokatchupbe.oauth.query.dto.CommentInfo;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramPostInsightResponse;
@@ -27,7 +28,7 @@ import java.util.regex.Pattern;
 public class InstagramPostQueryService {
 
     private final WebClient webClient;
-    private final InstagramRedisService instagramRedisService;
+    private final InstagramTokenRepository instagramTokenRepository;
     private final PipeInfClientManagerRepository picmRepository;
     private final InstagramRepository instagramRepository;
     private final OpenAiClient openAiClient;
@@ -47,7 +48,7 @@ public class InstagramPostQueryService {
                 .map(Instagram::getAccountId)
                 .orElseThrow(() -> new BusinessException(OAuthErrorCode.MEDIA_NOT_FOUND));
 
-        String accessToken = instagramRedisService.getAccessToken(igUserId);
+        String accessToken = instagramTokenRepository.getAccessToken(igUserId);
         if (accessToken == null) {
             log.warn("[InstagramPostQueryService] Redis에 토큰 없음. igUserId={}", igUserId);
             throw new BusinessException(OAuthErrorCode.TOKEN_NOT_FOUND);
@@ -191,7 +192,7 @@ public class InstagramPostQueryService {
                 .map(Instagram::getAccountId)
                 .orElseThrow(() -> new BusinessException(OAuthErrorCode.MEDIA_NOT_FOUND));
 
-        String accessToken = instagramRedisService.getAccessToken(igUserId);
+        String accessToken = instagramTokenRepository.getAccessToken(igUserId);
         if (accessToken == null) {
             log.warn("[InstagramPostQueryService] Redis에 토큰 없음. igUserId={}", igUserId);
             throw new BusinessException(OAuthErrorCode.TOKEN_NOT_FOUND);
