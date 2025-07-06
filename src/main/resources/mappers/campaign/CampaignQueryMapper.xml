@@ -192,6 +192,9 @@
         <if test="req.userId != null">
             AND u.user_id = #{req.userId}
         </if>
+        <if test="req.filter != null">
+            AND p.pipeline_status_id = #{req.filter}
+        </if>
 
         GROUP BY
         p.pipeline_id, p.name, ps.status_name, cc.client_company_name, c.product_name, p.expected_revenue, cm.name
@@ -256,6 +259,9 @@
         </if>
         <if test="req.userId != null">
             AND u.user_id = #{req.userId}
+        </if>
+        <if test="req.filter != null">
+            AND p.pipeline_status_id = #{req.filter}
         </if>
 
         GROUP BY
