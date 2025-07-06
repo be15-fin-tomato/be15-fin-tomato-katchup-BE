@@ -700,11 +700,12 @@
         FROM
             campaign
         <where>
+            is_deleted = 'N'
             <if test="clientCompanyId != null">
-                client_company_id = #{clientCompanyId}
+                AND client_company_id = #{clientCompanyId}
             </if>
             <if test="keyword != null and keyword != ''">
-                campaign_name LIKE CONCAT('%', #{keyword}, '%')
+                AND campaign_name LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
 

@@ -234,8 +234,9 @@
         FROM
              client_company
         <where>
+            is_deleted = 'N'
             <if test="keyword != null and keyword != ''">
-                client_company_name LIKE CONCAT('%', #{keyword}, '%')
+                AND client_company_name LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
     </select>
