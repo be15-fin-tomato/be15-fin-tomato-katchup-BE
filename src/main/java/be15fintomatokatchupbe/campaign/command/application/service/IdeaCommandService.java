@@ -23,6 +23,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -75,20 +77,31 @@ public class IdeaCommandService {
                         .notificationTypeId(3L)
                         .notificationContent(body)
                         .getTime(now)
+                        .targetId(request.getPipeline())
                         .build();
 
                 notificationRepository.save(notification);
 
                 sseEmitterRepository.get(target.getUserId()).ifPresent(emitter -> {
+                    long unreadCount = notificationRepository.countByUserIdAndIsReadAndIsDeleted(
+                            target.getUserId(), StatusType.N, StatusType.N
+                    );
                     try {
                         emitter.send(SseEmitter.event()
                                 .name("new-notification")
-                                .data(body));
+                                .data(Map.of(
+                                        "id", notification.getNotificationId(),
+                                        "message", notification.getNotificationContent(),
+                                        "typeId", notification.getNotificationTypeId(),
+                                        "targetId", notification.getTargetId(),
+                                        "unreadCount", unreadCount
+                                ))
+                        ); log.info("전송");
                     } catch (IOException e) {
+                        log.error("실패");
                         sseEmitterRepository.delete(target.getUserId());
                     }
                 });
-
             }
         }
     }

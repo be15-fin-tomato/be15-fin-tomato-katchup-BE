@@ -45,6 +45,8 @@ public class Notification {
     @Builder.Default
     private StatusType isDeleted = StatusType.N;
 
+    private Long targetId;
+
     public void markAsRead() {
         this.isRead = StatusType.Y;
     }
