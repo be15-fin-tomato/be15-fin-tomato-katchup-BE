@@ -13,6 +13,9 @@ public class UpdateContractRequest extends BasePipelineRequest{
     // 파이프라인 정보
     private Long pipelineId;
 
+    // 유지해야하는 파일 목록
+    private List<Long> existingFileList;
+
     // 인플루언서
     private List<Long> influencerId;
     private List<IdeaRequest> ideaList;

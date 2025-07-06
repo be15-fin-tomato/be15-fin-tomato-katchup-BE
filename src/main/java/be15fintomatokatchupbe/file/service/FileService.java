@@ -198,6 +198,11 @@ public class FileService {
         fileRepository.deleteAllByPipeline(pipeline);
     }
 
+    /* 내부 호출용 */
+    public void deleteByPipeline(Pipeline pipeline, List<Long> fileIdList){
+        fileRepository.deleteAllByPipelineIdExcept(pipeline.getPipelineId(), fileIdList);
+    }
+
     public PicFile uploadProfileImage(MultipartFile file, Long userId) throws Exception {
         log.info("프로필 이미지 업로드 시작 (userId={})", userId);
 

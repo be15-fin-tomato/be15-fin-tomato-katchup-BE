@@ -139,6 +139,7 @@ public class CampaignQueryService {
             ContractCardResponse contractCardResponse = ContractCardResponse.builder()
                     .pipelineId(dto.getPipelineId())
                     .name(dto.getName())
+//                    .campaignName()
                     .statusName(dto.getStatusName())
                     .clientCompanyName(dto.getClientCompanyName())
                     .clientManagerName(dto.getClientManagerName())
@@ -427,8 +428,8 @@ public class CampaignQueryService {
 
     }
 
-    public CampaignSearchResponse findCampaignList(String keyword) {
-        List<CampaignSimpleDto> campaignList = campaignQueryMapper.findCampaignList(keyword);
+    public CampaignSearchResponse findCampaignList(String keyword, Long clientCompanyId) {
+        List<CampaignSimpleDto> campaignList = campaignQueryMapper.findCampaignList(keyword, clientCompanyId);
 
         return CampaignSearchResponse.builder()
                 .campaignList(campaignList)

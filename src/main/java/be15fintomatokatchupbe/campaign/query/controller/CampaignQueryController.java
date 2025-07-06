@@ -133,9 +133,10 @@ public class CampaignQueryController {
     @Operation(summary = "캠페인 검색", description = "캠페인을 키워드로 검색합니다.")
     public ResponseEntity<ApiResponse<CampaignSearchResponse>> findCampaignList(
             @AuthenticationPrincipal CustomUserDetail userDetail,
-            @RequestParam(required = false) String keyword
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long clientCompanyId
     ){
-        CampaignSearchResponse response = campaignQueryService.findCampaignList(keyword);
+        CampaignSearchResponse response = campaignQueryService.findCampaignList(keyword, clientCompanyId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
