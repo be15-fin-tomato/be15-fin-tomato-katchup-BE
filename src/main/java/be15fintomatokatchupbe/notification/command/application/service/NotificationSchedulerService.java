@@ -63,7 +63,9 @@ public class NotificationSchedulerService {
                     emitter.send(SseEmitter.event()
                             .name("new-notification")
                             .data(Map.of(
-                                    "message", notificationContent,
+                                    "id", notification.getNotificationId(),
+                                    "message", notification.getNotificationContent(),
+                                    "typeId", notification.getNotificationTypeId(),
                                     "unreadCount", unreadCount
                             ))
                     );
@@ -134,7 +136,10 @@ public class NotificationSchedulerService {
                     emitter.send(SseEmitter.event()
                             .name("new-notification")
                             .data(Map.of(
-                                    "message", notificationContent,
+                                    "id", notification.getNotificationId(),
+                                    "message", notification.getNotificationContent(),
+                                    "typeId", notification.getNotificationTypeId(),
+                                    "targetId", notification.getTargetId(),
                                     "unreadCount", unreadCount
                             ))
                     );

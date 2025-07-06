@@ -90,7 +90,10 @@ public class IdeaCommandService {
                         emitter.send(SseEmitter.event()
                                 .name("new-notification")
                                 .data(Map.of(
-                                        "message", body,
+                                        "id", notification.getNotificationId(),
+                                        "message", notification.getNotificationContent(),
+                                        "typeId", notification.getNotificationTypeId(),
+                                        "targetId", notification.getTargetId(),
                                         "unreadCount", unreadCount
                                 ))
                         ); log.info("전송");
