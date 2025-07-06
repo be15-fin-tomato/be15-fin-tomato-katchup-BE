@@ -39,4 +39,6 @@ public class Satisfaction {
 
     private Date sentDate;
 
+    private Long influencerId;
+
 }
