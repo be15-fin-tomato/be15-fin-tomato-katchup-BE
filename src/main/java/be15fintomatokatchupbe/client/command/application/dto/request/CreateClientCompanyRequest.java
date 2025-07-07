@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -52,7 +53,7 @@ public class CreateClientCompanyRequest {
 
     @Schema(description = "고객사 소속 사원 목록", required = true)
     @Valid
-    private List<CreateClientManagerRequest> clientManagers;
+    private List<CreateClientManagerRequest> clientManagers = new ArrayList<>();
 
     @Schema(description = "담당자")
     private List<Long> userIds;
