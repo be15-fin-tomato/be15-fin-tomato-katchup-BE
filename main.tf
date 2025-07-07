@@ -140,6 +140,13 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+# 로그 그룹 생성
+resource "aws_cloudwatch_log_group" "ecs_log_group" {
+  name              = "/ecs/spring-service"
+  retention_in_days = 7
+}
+
+
 # ECS Task Definition
 resource "aws_ecs_task_definition" "spring_task" {
   family                   = "spring-task"
@@ -199,10 +206,14 @@ resource "aws_ecs_task_definition" "spring_task" {
           awslogs-group         = "/ecs/spring-service",
           awslogs-region        = "ap-northeast-2",
           awslogs-stream-prefix = "ecs"
+        }
       }
     }
-    }
   ])
+
+  depends_on = [
+    aws_cloudwatch_log_group.ecs_log_group
+  ]
 }
 
 # Security Group
