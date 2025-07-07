@@ -8,6 +8,7 @@ import be15fintomatokatchupbe.chat.command.domain.repository.MessageRepository;
 import be15fintomatokatchupbe.chat.exception.ChatErrorCode;
 import be15fintomatokatchupbe.chat.query.application.mapper.ChatRoomQueryMapper;
 import be15fintomatokatchupbe.chat.query.application.mapper.UserChatMapper;
+import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.notification.command.application.service.FcmService;
 import be15fintomatokatchupbe.notification.command.domain.aggregate.Notification;
@@ -106,15 +107,26 @@ public class ChatSocketController {
                     .notificationTypeId(5L)
                     .notificationContent(messages)
                     .getTime(now)
+                    .targetId(chatId)
                     .build();
 
             notificationRepository.save(notification);
 
             sseEmitterRepository.get(receiverId).ifPresent(emitter -> {
                 try {
+                    long unreadCount = notificationRepository.countByUserIdAndIsReadAndIsDeleted(
+                            receiverId, StatusType.N, StatusType.N
+                    );
                     emitter.send(SseEmitter.event()
                             .name("new-notification")
-                            .data(messages));
+                            .data(Map.of(
+                                    "id", notification.getNotificationId(),
+                                    "message", notification.getNotificationContent(),
+                                    "typeId", notification.getNotificationTypeId(),
+                                    "targetId", notification.getTargetId(),
+                                    "unreadCount", unreadCount
+                            ))
+                    );
                 } catch (IOException e) {
                     sseEmitterRepository.delete(receiverId);
                 }

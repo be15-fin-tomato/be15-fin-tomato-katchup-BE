@@ -1,7 +1,6 @@
 package be15fintomatokatchupbe.user.command.application.service;
 
 import be15fintomatokatchupbe.common.exception.BusinessException;
-import be15fintomatokatchupbe.file.exception.FileErrorCode;
 import be15fintomatokatchupbe.file.service.FileService;
 import be15fintomatokatchupbe.user.command.application.dto.request.ChangeMyAccountRequest;
 import be15fintomatokatchupbe.user.command.application.dto.request.ChangePasswordRequest;
@@ -18,11 +17,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -62,7 +56,7 @@ public class UserCommendService {
             throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
         }
         /* 현재 비밀번호와 일치하지 않는 경우 */
-        if(passwordEncoder.matches(user.getPassword(), request.getPassword())) {
+        if(!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BusinessException(UserErrorCode.PASSWORD_MISMATCH);
         }
         /* 새로운 비밀번호가 일치하지않을 때*/

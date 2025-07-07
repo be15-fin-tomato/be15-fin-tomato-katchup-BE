@@ -3,6 +3,7 @@ package be15fintomatokatchupbe.notification.command.domain.repository;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,6 +23,10 @@ public class SseEmitterRepository {
 
     public void delete(Long userId) {
         emitters.remove(userId);
+    }
+
+    public Map<Long, SseEmitter> findAll() {
+        return emitters;
     }
 
 }

@@ -24,6 +24,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     List<User> findByUserIdInAndIsDeleted(List<Long> userId, StatusType statusType);
 
-    String findFcmTokenByUserId(Long userId);
+    List<User> findAllByIsDeleted(StatusType statusType);
 }
 
