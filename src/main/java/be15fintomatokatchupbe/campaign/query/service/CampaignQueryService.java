@@ -6,7 +6,6 @@ import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
-import be15fintomatokatchupbe.campaign.query.mapper.PipelineStepMapper;
 import be15fintomatokatchupbe.common.dto.Pagination;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -310,6 +309,7 @@ public class CampaignQueryService {
                 .expectedRevenue(contractFormDto.getExpectedRevenue())
                 .availableQuantity(contractFormDto.getAvailableQuantity())
                 .expectedProfit(contractFormDto.getExpectedProfit())
+                .productPrice(contractFormDto.getProductPrice())
                 .build();
 
         /* 응답하기 */

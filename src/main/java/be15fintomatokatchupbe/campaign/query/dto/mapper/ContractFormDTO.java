@@ -41,4 +41,7 @@ public class ContractFormDTO {
     private final Long expectedRevenue;
     private final Long availableQuantity;
     private final Long expectedProfit;
+
+    /* 참조용 */
+    private final Long productPrice;
 }

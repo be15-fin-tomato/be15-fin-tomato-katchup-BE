@@ -393,6 +393,7 @@
             , p.expected_revenue AS expectedRevenue
             , p.available_quantity AS availableQuantity
             , p.expected_profit AS expectedProfit
+            , c.product_price AS productPrice
         FROM
             pipeline p
         JOIN
@@ -736,6 +737,8 @@
                 pipeline_step_id = #{pipelineStepId}
             AND
                 is_deleted = 'N'
+            AND
+                pipeline_status_id = 2
             <if test="campaignId != null">
                 AND campaign_id = #{campaignId}
             </if>
