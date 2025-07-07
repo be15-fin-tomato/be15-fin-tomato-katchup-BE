@@ -6,8 +6,10 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ListupResponse {
+    private Long pipelineId;
     private String companyName;
-    private String contractName;
+    private String campaignName;
+    private String productName;
     private String listupTitle;
     private String clientManagerName;
     private String clientManagerPosition;

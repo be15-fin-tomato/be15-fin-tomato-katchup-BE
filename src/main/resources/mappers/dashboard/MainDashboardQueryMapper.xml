@@ -77,11 +77,13 @@
     <!--  내 리스트업 조회  -->
     <select id="findListupByUserId" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.ListupResponse">
         SELECT
+            p.pipeline_id,
             cc.client_company_name AS company_name,
-            c.campaign_name AS contract_name,
+            c.campaign_name,
+            c.product_name,
             p.name AS listup_title,
-            cm.name AS client_manager_name,
-            cm.position AS client_manager_position
+            MAX(cm.name) AS client_manager_name,
+            MAX(cm.position) AS client_manager_position
         FROM pipeline p
         JOIN pipeline_user pu ON pu.pipeline_id = p.pipeline_id
         JOIN campaign c ON p.campaign_id = c.campaign_id
@@ -91,14 +93,20 @@
         LEFT JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
         WHERE pu.user_id = #{userId}
             AND ps.step_name = '리스트업'
-            AND p.is_deleted = 'N';
+            AND p.is_deleted = 'N'
+        GROUP BY
+            cc.client_company_name,
+            c.campaign_name,
+            p.name;
     </select>
 
     <!--  내 제안 조회  -->
     <select id="findProposalByUserId" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.ProposalResponse">
         SELECT
+            p.pipeline_id,
             cc.client_company_name AS company_name,
-            c.campaign_name AS contract_name,
+            c.campaign_name,
+            c.product_name,
             p.name AS proposal_title,
             cm.name AS client_manager_name,
             cm.position AS client_manager_position,
@@ -114,14 +122,23 @@
         LEFT JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
         WHERE pu.user_id = #{userId}
             AND ps.step_name = '제안'
-            AND p.is_deleted = 'N';
+            AND p.is_deleted = 'N'
+        GROUP BY
+            cc.client_company_name,
+            c.campaign_name,
+            p.name;
     </select>
 
     <!--  내 계약 조회  -->
     <select id="findContractByUserId" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.ContractResponse">
         SELECT
+            p.pipeline_id,
             cc.client_company_name AS company_name,
-            c.campaign_name AS contract_name,
+            c.campaign_name,
+            c.product_name,
+            p.name AS contract_title,
+            p.expected_revenue,
+            p.expected_profit,
             pss.status_name,
             p.created_at
         FROM pipeline p
@@ -133,15 +150,24 @@
         LEFT JOIN pipeline_influencer_client_manager picm ON picm.pipeline_id = p.pipeline_id
         WHERE pu.user_id = #{userId}
             AND ps.step_name = '계약'
-            AND p.is_deleted = 'N';
+            AND p.is_deleted = 'N'
+        GROUP BY
+            cc.client_company_name,
+            c.campaign_name,
+            p.name;
     </select>
 
     <!--  내 견적 조회  -->
     <select id="findQuotationByUserId" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.QuotationResponse">
         SELECT
+            p.pipeline_id,
             cc.client_company_name AS company_name,
-            c.campaign_name AS contract_name,
-            p.expected_profit_margin,
+            c.campaign_name,
+            c.product_name,
+            p.name AS quotation_title,
+            picm.ad_price,
+            p.expected_revenue,
+            p.expected_profit,
             p.created_at
         FROM pipeline p
         JOIN pipeline_user pu ON pu.pipeline_id = p.pipeline_id
@@ -150,10 +176,12 @@
         JOIN pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
         LEFT JOIN pipeline_influencer_client_manager picm ON picm.pipeline_id = p.pipeline_id
         WHERE pu.user_id = #{userId}
-        AND ps.step_name = '계약'
-        AND p.is_deleted = 'N';
+        AND ps.step_name = '견적'
+        AND p.is_deleted = 'N'
+        GROUP BY
+            cc.client_company_name,
+            c.campaign_name,
+            p.name;
     </select>
-
-
 
 </mapper>
