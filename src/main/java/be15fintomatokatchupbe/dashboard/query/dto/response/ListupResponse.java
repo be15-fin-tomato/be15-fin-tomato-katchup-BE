@@ -11,7 +11,5 @@ public class ListupResponse {
     private String campaignName;
     private String productName;
     private String listupTitle;
-    private String clientManagerName;
-    private String clientManagerPosition;
 }
 
