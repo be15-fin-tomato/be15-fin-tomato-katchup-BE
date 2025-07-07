@@ -2,12 +2,14 @@ package be15fintomatokatchupbe.contract.command.application.service;
 
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.contract.command.application.dto.request.ContractObjectUpdateRequest;
+import be15fintomatokatchupbe.contract.command.application.dto.request.ObjectCreateRequest;
 import be15fintomatokatchupbe.contract.command.domain.entity.ContractObject;
 import be15fintomatokatchupbe.contract.command.domain.entity.Detail;
 import be15fintomatokatchupbe.contract.command.domain.repository.ContractFileRepository;
 import be15fintomatokatchupbe.contract.command.domain.repository.DetailRepository;
 import be15fintomatokatchupbe.contract.command.domain.repository.ObjectRepository;
 import be15fintomatokatchupbe.contract.exception.ContractErrorCode;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +47,15 @@ public class ContractObjectCommandService {
                 .orElseThrow(() -> new BusinessException(ContractErrorCode.NOT_FOUND));
         object.setTitle(request.getTitle());
         objectRepository.save(object);
+    }
+
+    @Transactional
+    public void createObject(ObjectCreateRequest request) {
+        ContractObject contractObject = ContractObject.builder()
+                .title(request.getTitle())
+                .build();
+
+        objectRepository.save(contractObject);
     }
 }
 

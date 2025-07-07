@@ -8,7 +8,9 @@ import be15fintomatokatchupbe.contract.command.domain.entity.Detail;
 import be15fintomatokatchupbe.contract.command.domain.repository.ContractFileRepository;
 import be15fintomatokatchupbe.contract.command.domain.repository.DetailRepository;
 import be15fintomatokatchupbe.contract.exception.ContractErrorCode;
+import be15fintomatokatchupbe.file.service.FileService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,57 +18,73 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DetailCommandService {
 
     private final DetailRepository detailRepository;
     private final ContractFileRepository contractFileRepository;
+    private final FileService fileService;
 
-    private static final String FILE_UPLOAD_DIR = "C:/Users/Playdata/Desktop/Tomato_contract_file/";
+//    private static final String FILE_UPLOAD_DIR = "C:/Users/Playdata/Desktop/Tomato_contract_file/";
+@Transactional
+public void updateDetail(Long detailId, DetailUpdateRequest request, MultipartFile file) {
+    Detail detail = detailRepository.findById(detailId)
+            .orElseThrow(() -> new BusinessException(ContractErrorCode.NOT_FOUND));
 
-    @Transactional
-    public void updateDetail(Long detailId, DetailUpdateRequest request, MultipartFile file) {
-        Detail detail = detailRepository.findById(detailId)
-                .orElseThrow(() -> new BusinessException(ContractErrorCode.NOT_FOUND));
+    if (request.getSubTitle() != null) {
+        detail.setSubTitle(request.getSubTitle());
+    }
 
-        if (request.getSubTitle() != null) {
-            detail.setSubTitle(request.getSubTitle());
-        }
+    if (request.getContent() != null) {
+        detail.setContent(request.getContent());
+    }
 
-        if (request.getContent() != null) {
-            detail.setContent(request.getContent());
-        }
-
-        if (file != null && !file.isEmpty()) {
-            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            File dest = new File(FILE_UPLOAD_DIR, fileName);
-            try {
-                file.transferTo(dest);
-            } catch (IOException e) {
-                throw new RuntimeException("파일 저장 실패", e);
-            }
-
-            String extension = Optional.ofNullable(file.getOriginalFilename())
+    if (file != null && !file.isEmpty()) {
+        try {
+            String originalFilename = file.getOriginalFilename();
+            String extension = Optional.ofNullable(originalFilename)
                     .filter(f -> f.contains("."))
-                    .map(f -> f.substring(f.lastIndexOf('.') + 1))
+                    .map(f -> f.substring(originalFilename.lastIndexOf(".") + 1))
                     .orElse("unknown");
 
-            ContractFile contractFile = ContractFile.builder()
-                    .originalName(file.getOriginalFilename())
-                    .filePath(dest.getAbsolutePath())
-                    .program(extension)
-                    .build();
+            String program = switch (extension.toLowerCase()) {
+                case "doc", "docx" -> "word";
+                case "hwp" -> "hwp";
+                case "txt" -> "text";
+                case "pdf" -> "pdf";
+                default -> "unknown";
+            };
 
-            ContractFile savedFile = contractFileRepository.save(contractFile);
+            List<ContractFile> uploadedFiles = fileService.uploadContractFile(List.of(file));
+            ContractFile s3File = uploadedFiles.get(0);
+
+            // ✅ 4. ContractFile 저장
+            ContractFile savedFile = contractFileRepository.save(
+                    ContractFile.builder()
+                            .originalName(originalFilename)
+                            .filePath(s3File.getFilePath())  // S3 key 또는 URL
+                            .program(program)
+                            .build()
+            );
+            log.info(String.valueOf(savedFile.getFileId()));
+
+            // ✅ 5. Detail에 연결
             detail.setFileId(savedFile.getFileId());
-        }
+            detailRepository.save(detail);
 
-        detail.setUpdatedAt(LocalDateTime.now());
+        } catch (Exception e) {
+            throw new BusinessException(ContractErrorCode.FILE_UPLOAD_FAILED);
+        }
     }
+
+    detail.setUpdatedAt(LocalDateTime.now());
+}
 
     @Transactional
     public void createDetail(DetailCreateRequest request, MultipartFile file) {
@@ -74,22 +92,14 @@ public class DetailCommandService {
 
         if (file != null && !file.isEmpty()) {
             try {
-                // 원본 파일명 및 확장자 추출
+                // 1. 파일명 및 확장자
                 String originalFilename = file.getOriginalFilename();
                 String extension = Optional.ofNullable(originalFilename)
                         .filter(f -> f.contains("."))
                         .map(f -> f.substring(originalFilename.lastIndexOf(".") + 1))
-                        .orElse("");
+                        .orElse("unknown");
 
-                // 저장할 파일명 생성
-                String storedFileName = UUID.randomUUID() + "." + extension;
-                String fullPath = FILE_UPLOAD_DIR + storedFileName;
-
-                // 실제 파일 저장
-                File destination = new File(fullPath);
-                file.transferTo(destination);
-
-                // program 추정 (예: docx, hwp, txt 등)
+                // 2. program 추정
                 String program = switch (extension.toLowerCase()) {
                     case "doc", "docx" -> "word";
                     case "hwp" -> "hwp";
@@ -98,22 +108,23 @@ public class DetailCommandService {
                     default -> "unknown";
                 };
 
-                // DB 저장
+                List<ContractFile> uploadedFiles = fileService.uploadContractFile(List.of(file));
+                ContractFile s3File = uploadedFiles.get(0);
+
                 ContractFile savedFile = contractFileRepository.save(
                         ContractFile.builder()
                                 .originalName(originalFilename)
-                                .filePath(fullPath)
+                                .filePath(s3File.getFilePath())
                                 .program(program)
                                 .build()
                 );
 
                 fileId = savedFile.getFileId();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new BusinessException(ContractErrorCode.FILE_UPLOAD_FAILED);
             }
         }
 
-        // Detail 저장
         Detail detail = Detail.builder()
                 .objectId(request.getObjectId())
                 .subTitle(request.getSubTitle())
@@ -126,6 +137,7 @@ public class DetailCommandService {
         detailRepository.save(detail);
     }
 
+
     @Transactional
     public void deleteDetail(Long detailId) {
         Detail detail = detailRepository.findById(detailId)
@@ -135,7 +147,6 @@ public class DetailCommandService {
 
         detailRepository.delete(detail);
 
-        // 그 다음 ContractFile 삭제
         if (fileId != null) {
             contractFileRepository.findById(fileId).ifPresent(file -> {
                 new File(file.getFilePath()).delete();
