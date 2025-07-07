@@ -153,7 +153,7 @@ resource "aws_ecs_task_definition" "spring_task" {
   container_definitions = jsonencode([
     {
       name      = "spring-container",
-      image     = "577206044379.dkr.ecr.ap-northeast-2.amazonaws.com/tomato/tomato-spring-app:latest",
+      image = "577206044379.dkr.ecr.ap-northeast-2.amazonaws.com/tomato:latest"
       essential = true,
       portMappings = [
         {

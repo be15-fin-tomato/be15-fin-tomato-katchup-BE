@@ -7,7 +7,7 @@ on:
 
 env:
   AWS_REGION: ap-northeast-2
-  ECR_REPOSITORY: tomato/tomato-spring-app
+  ECR_REPOSITORY: tomato
   ECS_CLUSTER: tomato-cluster
   ECS_SERVICE: spring-service
   CONTAINER_NAME: spring-container
