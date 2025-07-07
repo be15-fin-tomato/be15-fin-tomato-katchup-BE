@@ -148,7 +148,7 @@
 
     <!--  내 견적 조회  -->
     <select id="findQuotationByUserId" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.QuotationResponse">
-        SELECT
+        SELECT DISTINCT
             p.pipeline_id,
             cc.client_company_name AS company_name,
             c.campaign_name,
@@ -167,10 +167,7 @@
         WHERE pu.user_id = #{userId}
         AND ps.step_name = '견적'
         AND p.is_deleted = 'N'
-        GROUP BY
-            cc.client_company_name,
-            c.campaign_name,
-            p.name;
+        GROUP BY p.pipeline_id
     </select>
 
 </mapper>
