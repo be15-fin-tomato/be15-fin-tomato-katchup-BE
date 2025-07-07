@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MessageMongoRepository extends MongoRepository<Message, String> {
+public interface MessageMongoRepository extends MongoRepository<Message, String>, MessageMongoRepositoryCustom {
 
     Optional<Message> findFirstByChatIdOrderBySentAtDesc(Long chatId);
 

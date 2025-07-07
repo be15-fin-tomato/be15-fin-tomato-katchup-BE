@@ -7,6 +7,7 @@ import be15fintomatokatchupbe.chat.query.application.mapper.ChatRoomQueryMapper;
 import be15fintomatokatchupbe.user.query.mapper.UserQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -56,6 +57,7 @@ public class ChatQueryService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public ChatRoomDetailResponse getChatRoomDetail(Long chatId, Long userId) {
         List<Message> messages = messageMongoRepository.findByChatIdOrderBySentAtAsc(chatId);
 
@@ -77,9 +79,12 @@ public class ChatQueryService {
                         .build())
                 .toList();
 
+        messageMongoRepository.markMessagesAsRead(chatId, userId);
+
         return ChatRoomDetailResponse.builder()
                 .chatId(chatId)
                 .messages(messageResponses)
+                .unreadCount(0L)
                 .build();
     }
 }
