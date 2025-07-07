@@ -8,8 +8,13 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class QuotationResponse {
+    private Long pipelineId;
     private String companyName;
-    private String quotationName;
-    private String expectedProfitMargin;
+    private String campaignName;
+    private String productName;
+    private String quotationTitle;
+    private Long adPrice;
+    private Long expectedRevenue;
+    private Long expectedProfit;
     private LocalDateTime createdAt;
 }
