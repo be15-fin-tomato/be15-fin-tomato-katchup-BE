@@ -69,4 +69,9 @@ public class Campaign {
         this.isDeleted = StatusType.Y;
         this.deletedAt = LocalDateTime.now();
     }
+
+    public void updateRevenue(Long productPrice, Long salesQuantity) {
+        this.productPrice = productPrice;
+        this.salesQuantity = salesQuantity;
+    }
 }

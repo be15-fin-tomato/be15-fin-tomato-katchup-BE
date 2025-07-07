@@ -12,6 +12,5 @@ public class RevenueCardDTO {
     private String clientCompanyName;
     private String clientManagerName;
     private String productName;
-    private Long expectedRevenue;
     private String userNameInfo;
 }

@@ -6,7 +6,6 @@ import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
-import be15fintomatokatchupbe.campaign.query.mapper.PipelineStepMapper;
 import be15fintomatokatchupbe.common.dto.Pagination;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -139,6 +138,7 @@ public class CampaignQueryService {
             ContractCardResponse contractCardResponse = ContractCardResponse.builder()
                     .pipelineId(dto.getPipelineId())
                     .name(dto.getName())
+//                    .campaignName()
                     .statusName(dto.getStatusName())
                     .clientCompanyName(dto.getClientCompanyName())
                     .clientManagerName(dto.getClientManagerName())
@@ -175,8 +175,9 @@ public class CampaignQueryService {
         List<RevenueCardDTO> quotationList =
                 campaignQueryMapper.findRevenueList(request, offset, size, PipelineStepConstants.REVENUE);
 
+        // 광고 단가 합 가져오기
+
         List<RevenueCardResponse> response = new ArrayList<>();
-        // 2. 해쉬 셋에 {pipelineId}: {DTO} 형태로 저장하기
         for(RevenueCardDTO dto: quotationList){
             List<String> userNameList = Optional.ofNullable(dto.getUserNameInfo())
                     .map(s -> Arrays.stream(s.split(","))
@@ -184,6 +185,7 @@ public class CampaignQueryService {
                             .toList())
                     .orElse(List.of());
 
+            Long totalAdPrice = campaignQueryMapper.findTotalAdPrice(dto.getPipelineId());
             RevenueCardResponse revenueCardResponse = RevenueCardResponse.builder()
                     .pipelineId(dto.getPipelineId())
                     .name(dto.getName())
@@ -191,7 +193,7 @@ public class CampaignQueryService {
                     .clientCompanyName(dto.getClientCompanyName())
                     .clientManagerName(dto.getClientManagerName())
                     .productName(dto.getProductName())
-                    .expectedRevenue(dto.getExpectedRevenue())
+                    .totalAdPrice(totalAdPrice)
                     .userName(userNameList)
                     .build();
 
@@ -307,6 +309,7 @@ public class CampaignQueryService {
                 .expectedRevenue(contractFormDto.getExpectedRevenue())
                 .availableQuantity(contractFormDto.getAvailableQuantity())
                 .expectedProfit(contractFormDto.getExpectedProfit())
+                .productPrice(contractFormDto.getProductPrice())
                 .build();
 
         /* 응답하기 */
@@ -335,7 +338,7 @@ public class CampaignQueryService {
 
         /* 파일 목록 가져오기 */
         List<FileInfo> fileDto = campaignQueryMapper.findPipeFile(pipelineId);
-
+        log.info("판매 수량: {}", revenueFormDto.getSalesQuantity());
         /* 조합하기 */
         RevenueFormResponse form = RevenueFormResponse.builder()
                 .name(revenueFormDto.getName())
@@ -427,8 +430,8 @@ public class CampaignQueryService {
 
     }
 
-    public CampaignSearchResponse findCampaignList(String keyword) {
-        List<CampaignSimpleDto> campaignList = campaignQueryMapper.findCampaignList(keyword);
+    public CampaignSearchResponse findCampaignList(String keyword, Long clientCompanyId) {
+        List<CampaignSimpleDto> campaignList = campaignQueryMapper.findCampaignList(keyword, clientCompanyId);
 
         return CampaignSearchResponse.builder()
                 .campaignList(campaignList)
@@ -467,6 +470,22 @@ public class CampaignQueryService {
         }
 
         return campaigns;
+    }
+
+    public QuotationReferenceListResponse getQuotationReferenceList(Long campaignId) {
+        List<ReferenceDto> contractReferenceList = campaignQueryMapper.getReferenceList(campaignId, PipelineStepConstants.QUOTATION);
+
+        return QuotationReferenceListResponse.builder()
+                .referenceList(contractReferenceList)
+                .build();
+    }
+
+    public ContractReferenceListResponse getContractReferenceList(Long campaignId) {
+        List<ReferenceDto> contractReferenceList = campaignQueryMapper.getReferenceList(campaignId, PipelineStepConstants.CONTRACT);
+
+        return ContractReferenceListResponse.builder()
+                .referenceList(contractReferenceList)
+                .build();
     }
 
 }

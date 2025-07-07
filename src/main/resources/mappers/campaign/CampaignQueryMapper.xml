@@ -192,6 +192,9 @@
         <if test="req.userId != null">
             AND u.user_id = #{req.userId}
         </if>
+        <if test="req.filter != null">
+            AND p.pipeline_status_id = #{req.filter}
+        </if>
 
         GROUP BY
         p.pipeline_id, p.name, ps.status_name, cc.client_company_name, c.product_name, p.expected_revenue, cm.name
@@ -217,7 +220,6 @@
         cc.client_company_name AS clientCompanyName,
         cm.name AS clientManagerName,
         c.product_name AS productName,
-        p.expected_revenue AS expectedRevenue,
         GROUP_CONCAT(u.name SEPARATOR ', ') AS userNameInfo
         FROM
         pipeline p
@@ -257,6 +259,9 @@
         <if test="req.userId != null">
             AND u.user_id = #{req.userId}
         </if>
+        <if test="req.filter != null">
+            AND p.pipeline_status_id = #{req.filter}
+        </if>
 
         GROUP BY
         p.pipeline_id, p.name, ps.status_name, cc.client_company_name, c.product_name, p.expected_revenue, cm.name
@@ -273,6 +278,17 @@
         </choose>
 
         LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="findTotalAdPrice" resultType="Long">
+        SELECT
+            SUM(ad_price) AS totalAdPrice
+        FROM
+            pipeline_influencer_client_manager
+        WHERE
+            influencer_id IS NOT NULL
+        AND
+            ad_price IS NOT NULL;
     </select>
 
     <select id="countPipeline" resultType="int">
@@ -377,6 +393,7 @@
             , p.expected_revenue AS expectedRevenue
             , p.available_quantity AS availableQuantity
             , p.expected_profit AS expectedProfit
+            , c.product_price AS productPrice
         FROM
             pipeline p
         JOIN
@@ -416,8 +433,8 @@
         , p.notes AS notes
         , p.content AS content
         , p.expected_revenue AS expectedRevenue
-        , c.product_price AS productPrice
-        , c.sales_quantity AS salesQuantity
+        , IFNULL(c.product_price, 0) AS productPrice
+        , IFNULL(c.sales_quantity, 0) AS salesQuantity
         FROM
         pipeline p
         JOIN
@@ -700,10 +717,31 @@
         FROM
             campaign
         <where>
+            is_deleted = 'N'
+            <if test="clientCompanyId != null">
+                AND client_company_id = #{clientCompanyId}
+            </if>
             <if test="keyword != null and keyword != ''">
-                campaign_name LIKE CONCAT('%', #{keyword}, '%')
+                AND campaign_name LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
 
+    </select>
+    <select id="getReferenceList" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.ReferenceDto">
+        SELECT
+              pipeline_id AS pipelineId
+            , name AS name
+        FROM
+            pipeline
+        <where>
+                pipeline_step_id = #{pipelineStepId}
+            AND
+                is_deleted = 'N'
+            AND
+                pipeline_status_id = 2
+            <if test="campaignId != null">
+                AND campaign_id = #{campaignId}
+            </if>
+        </where>
     </select>
 </mapper>

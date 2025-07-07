@@ -59,6 +59,17 @@ public class CampaignQueryController {
 
     }
 
+    @GetMapping("/quotation/reference")
+    @Operation(summary = "견적 참조 조회", description = "참조할 수 있는 견적 목록을 조회합니다.")
+    public ResponseEntity<ApiResponse<QuotationReferenceListResponse>> getQuotationReferenceList(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @RequestParam(value = "campaignId", required = false) Long campaignId
+    ){
+        QuotationReferenceListResponse response = campaignQueryService.getQuotationReferenceList(campaignId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     @GetMapping("/contract")
     @Operation(summary = "계약 목록 조회", description = "계약 목록을 조회합니다.")
     public ResponseEntity<ApiResponse<ContractSearchResponse>> getContractList(
@@ -72,7 +83,7 @@ public class CampaignQueryController {
     }
 
     @GetMapping("/contract/{id}")
-    @Operation(summary = "견적 상세 조회", description = "견적 상세 조회를 합니다.")
+    @Operation(summary = "계약 상세 조회", description = "계약 상세 조회를 합니다.")
     public ResponseEntity<ApiResponse<ContractDetailResponse>> getContractDetail(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @PathVariable("id") Long pipelineId
@@ -81,7 +92,17 @@ public class CampaignQueryController {
         ContractDetailResponse response = campaignQueryService.getContractDetail(userId, pipelineId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
 
+    @GetMapping("/contract/reference")
+    @Operation(summary = "계약 참조 조회", description = "참조할 수 있는 계약 목록을 조회합니다.")
+    public ResponseEntity<ApiResponse<ContractReferenceListResponse>> getContractReferenceList(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @RequestParam(value = "campaignId", required = false) Long campaignId
+    ){
+        ContractReferenceListResponse response = campaignQueryService.getContractReferenceList(campaignId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping("/revenue")
@@ -133,9 +154,10 @@ public class CampaignQueryController {
     @Operation(summary = "캠페인 검색", description = "캠페인을 키워드로 검색합니다.")
     public ResponseEntity<ApiResponse<CampaignSearchResponse>> findCampaignList(
             @AuthenticationPrincipal CustomUserDetail userDetail,
-            @RequestParam(required = false) String keyword
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Long clientCompanyId
     ){
-        CampaignSearchResponse response = campaignQueryService.findCampaignList(keyword);
+        CampaignSearchResponse response = campaignQueryService.findCampaignList(keyword, clientCompanyId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

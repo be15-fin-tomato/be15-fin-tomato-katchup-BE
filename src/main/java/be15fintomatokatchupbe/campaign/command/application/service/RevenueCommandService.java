@@ -128,7 +128,7 @@ public class RevenueCommandService {
                     PipelineStatusConstants.APPROVED
             );
 
-            if(existPipeline != null){
+            if(existPipeline != null && !Objects.equals(existPipeline.getPipelineId(), request.getPipelineId())){
                 throw new BusinessException(CampaignErrorCode.APPROVED_REVENUE_ALREADY_EXISTS);
             }
         }
@@ -149,7 +149,9 @@ public class RevenueCommandService {
         campaignHelperService.deleteRelationTable(foundPipeline);
 
         /* 파일 테이블 지워주기 */
-        fileService.deleteByPipeline(foundPipeline);
+        fileService.deleteByPipeline(foundPipeline, request.getExistingFileList());
+
+        campaign.updateRevenue(request.getProductPrice(), request.getSalesQuantity());
 
         foundPipeline.updateRevenue(
                 pipelineStatus,
