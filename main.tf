@@ -192,7 +192,15 @@ resource "aws_ecs_task_definition" "spring_task" {
         { name = "FCM_SECRET_FILE", value = "${var.fcm_secret_file}" },
         { name = "OPENAI_API_KEY", value = "${var.openai_api_key}" },
         { name = "OPENAI_MODEL_ID", value = "${var.openai_model_id}" }
-      ]
+      ],
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          awslogs-group         = "/ecs/spring-service",
+          awslogs-region        = "ap-northeast-2",
+          awslogs-stream-prefix = "ecs"
+      }
+    }
     }
   ])
 }
