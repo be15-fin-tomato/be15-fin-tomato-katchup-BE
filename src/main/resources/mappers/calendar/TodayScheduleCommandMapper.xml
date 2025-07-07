@@ -19,6 +19,7 @@
     <select id="todayPipeLine" resultType="be15fintomatokatchupbe.notification.command.application.dto.response.NotificationPipeLineResponse">
         SELECT
               p.pipeline_id
+            , p.pipeline_step_id
             , pu.user_id
             , p.name
             , p.presented_at

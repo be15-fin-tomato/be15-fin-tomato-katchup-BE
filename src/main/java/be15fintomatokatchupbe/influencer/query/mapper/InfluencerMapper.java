@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.influencer.query.mapper;
 
+import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
 import be15fintomatokatchupbe.influencer.query.dto.response.InfluencerCardResponse;
 import be15fintomatokatchupbe.influencer.query.dto.response.InfluencerSearchDto;
 import org.apache.ibatis.annotations.Mapper;
@@ -13,5 +14,7 @@ public interface InfluencerMapper {
     int countInfluencers();
 
     List<InfluencerSearchDto> findInfluencerList(String keyword);
+
+    List<CategoryDto> findCategoryList();
 }
 

@@ -15,7 +15,6 @@ import be15fintomatokatchupbe.contract.command.domain.entity.Contract;
 import be15fintomatokatchupbe.contract.command.domain.repository.ContractRepository;
 import be15fintomatokatchupbe.email.command.domain.aggregate.Satisfaction;
 import be15fintomatokatchupbe.email.command.domain.repository.SatisfactionRepository;
-import be15fintomatokatchupbe.file.service.FileService;
 import be15fintomatokatchupbe.relation.service.HashInfCampService;
 import be15fintomatokatchupbe.relation.service.PipeInfClientManagerService;
 import be15fintomatokatchupbe.relation.service.PipeUserService;
@@ -142,15 +141,16 @@ public class CampaignCommandService {
 
         /* 캠페인 ID가 5가 됐으면 */
         if(campaign.getCampaignStatus().getCampaignStatusId() == 5L){
-            /*만족도 테이블에 값 삽입*/
-            Satisfaction satisfaction = Satisfaction.builder()
-                    .campaignId(request.getCampaignId())
-                    .clientManagerId(request.getClientManagerId())
-                    .build();
-            satisfactionRepository.save(satisfaction);
-
             List<Long> influencerId = campaignCommandMapper.getInfluencerId(request.getCampaignId());
             for (Long influencer : influencerId) {
+                /*만족도 테이블에 값 삽입*/
+                Satisfaction satisfaction = Satisfaction.builder()
+                        .campaignId(request.getCampaignId())
+                        .clientManagerId(request.getClientManagerId())
+                        .influencerId(influencer)
+                        .build();
+                satisfactionRepository.save(satisfaction);
+
                 /* 계약서 테이블 값 삽입 */
                 Contract contract = Contract.builder()
                         .campaignId(request.getCampaignId())
