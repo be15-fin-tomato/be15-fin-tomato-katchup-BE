@@ -7,7 +7,6 @@ import be15fintomatokatchupbe.influencer.query.dto.response.*;
 import be15fintomatokatchupbe.influencer.query.mapper.InfluencerMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
