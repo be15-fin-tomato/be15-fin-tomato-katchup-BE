@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.influencer.query.controller;
 
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
+import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
 import be15fintomatokatchupbe.influencer.query.dto.response.InfluencerSearchResponse;
 import be15fintomatokatchupbe.influencer.query.dto.request.InfluencerListRequestDTO;
 import be15fintomatokatchupbe.influencer.query.service.InfluencerQueryService;
@@ -12,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "인플루언서 조회")
 @RestController
@@ -36,6 +39,16 @@ public class InfluencerQueryController {
             ){
 
         InfluencerSearchResponse response = influencerQueryService.findInfluencerList(keyword);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @Operation(summary = "카테고리 목록 조회", description = "사용자는 인플루언서 카테고리의 전체 목록을 조회할 수 있다.")
+    @GetMapping("/category")
+    public ResponseEntity<ApiResponse<List<CategoryDto>>> getCategoryList(
+            @AuthenticationPrincipal CustomUserDetail userDetail
+    ){
+        List<CategoryDto> response = influencerQueryService.getCategoryList();
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

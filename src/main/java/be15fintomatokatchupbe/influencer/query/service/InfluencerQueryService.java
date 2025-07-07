@@ -3,10 +3,7 @@ package be15fintomatokatchupbe.influencer.query.service;
 import be15fintomatokatchupbe.common.dto.Pagination;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.influencer.query.dto.request.InfluencerListRequestDTO;
-import be15fintomatokatchupbe.influencer.query.dto.response.InfluencerCardResponse;
-import be15fintomatokatchupbe.influencer.query.dto.response.InfluencerListResponse;
-import be15fintomatokatchupbe.influencer.query.dto.response.InfluencerSearchDto;
-import be15fintomatokatchupbe.influencer.query.dto.response.InfluencerSearchResponse;
+import be15fintomatokatchupbe.influencer.query.dto.response.*;
 import be15fintomatokatchupbe.influencer.query.mapper.InfluencerMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +59,10 @@ public class InfluencerQueryService {
         return  InfluencerSearchResponse.builder()
                 .influencerList(influencerList)
                 .build();
+    }
+
+    public List<CategoryDto> getCategoryList() {
+        return influencerMapper.findCategoryList();
     }
 }
 
