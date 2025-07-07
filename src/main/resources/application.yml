@@ -43,8 +43,8 @@ spring:
   data:
     redis:
       port: ${REDIS_PORT}
-      username: ${REDIS_USERNAME}
-      password: ${REDIS_PASSWORD}
+#      username: ${REDIS_USERNAME}
+#      password: ${REDIS_PASSWORD}
       host: ${REDIS_HOST}
     mongodb:
       uri: ${MONGODB_URI}
