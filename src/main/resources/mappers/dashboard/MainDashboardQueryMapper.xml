@@ -92,11 +92,12 @@
         WHERE pu.user_id = #{userId}
             AND ps.step_name = '리스트업'
             AND p.is_deleted = 'N'
+        GROUP BY p.pipeline_id
     </select>
 
     <!--  내 제안 조회  -->
     <select id="findProposalByUserId" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.ProposalResponse">
-        SELECT
+        SELECT DISTINCT
             p.pipeline_id,
             cc.client_company_name AS company_name,
             c.campaign_name,
@@ -117,15 +118,12 @@
         WHERE pu.user_id = #{userId}
             AND ps.step_name = '제안'
             AND p.is_deleted = 'N'
-        GROUP BY
-            cc.client_company_name,
-            c.campaign_name,
-            p.name;
+        GROUP BY p.pipeline_id
     </select>
 
     <!--  내 계약 조회  -->
     <select id="findContractByUserId" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.ContractResponse">
-        SELECT
+        SELECT DISTINCT
             p.pipeline_id,
             cc.client_company_name AS company_name,
             c.campaign_name,
