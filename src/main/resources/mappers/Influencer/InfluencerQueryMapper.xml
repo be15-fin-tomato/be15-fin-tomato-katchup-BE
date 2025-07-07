@@ -82,4 +82,9 @@
         </where>
     </select>
 
+    <select id="findCategoryList" resultType="be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto">
+        SELECT *
+        FROM category
+    </select>
+
 </mapper>
