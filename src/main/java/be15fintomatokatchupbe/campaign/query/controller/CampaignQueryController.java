@@ -81,7 +81,17 @@ public class CampaignQueryController {
         ContractDetailResponse response = campaignQueryService.getContractDetail(userId, pipelineId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
 
+    @GetMapping("/contract/reference")
+    @Operation(summary = "견적 참조 조회", description = "참조할 수 있는 견적 목록을 조회합니다.")
+    public ResponseEntity<ApiResponse<ContractReferenceListResponse>> getContractReferenceList(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @RequestParam("campaignId") Long campaignId
+    ){
+        ContractReferenceListResponse response = campaignQueryService.getContractReferenceList(campaignId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping("/revenue")

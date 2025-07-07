@@ -79,4 +79,8 @@ public interface CampaignQueryMapper {
     List<PipelineStepStatusDto> findPipelineStepsByCampaignIds(@Param("campaignIds") List<Long> campaignIds);
 
     List<CampaignSimpleDto> findCampaignList(String keyword, Long clientCompanyId);
+
+    Long findTotalAdPrice(Long pipelineId);
+
+    List<ReferenceDto> getReferenceList(Long campaignId, Long pipelineStepId);
 }

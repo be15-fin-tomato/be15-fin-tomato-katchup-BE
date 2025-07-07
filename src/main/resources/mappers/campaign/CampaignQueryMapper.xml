@@ -220,7 +220,6 @@
         cc.client_company_name AS clientCompanyName,
         cm.name AS clientManagerName,
         c.product_name AS productName,
-        p.expected_revenue AS expectedRevenue,
         GROUP_CONCAT(u.name SEPARATOR ', ') AS userNameInfo
         FROM
         pipeline p
@@ -279,6 +278,17 @@
         </choose>
 
         LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="findTotalAdPrice" resultType="Long">
+        SELECT
+            SUM(ad_price) AS totalAdPrice
+        FROM
+            pipeline_influencer_client_manager
+        WHERE
+            influencer_id IS NOT NULL
+        AND
+            ad_price IS NOT NULL;
     </select>
 
     <select id="countPipeline" resultType="int">
@@ -422,8 +432,8 @@
         , p.notes AS notes
         , p.content AS content
         , p.expected_revenue AS expectedRevenue
-        , c.product_price AS productPrice
-        , c.sales_quantity AS salesQuantity
+        , IFNULL(c.product_price, 0) AS productPrice
+        , IFNULL(c.sales_quantity, 0) AS salesQuantity
         FROM
         pipeline p
         JOIN
@@ -715,5 +725,18 @@
             </if>
         </where>
 
+    </select>
+    <select id="getReferenceList" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.ReferenceDto">
+        SELECT
+              pipeline_id AS pipelineId
+            , name AS name
+        FROM
+            pipeline
+        WHERE
+            campaign_id = #{campaignId}
+        AND
+            pipeline_step_id = #{pipelineStepId}
+        AND
+            is_deleted = 'N'
     </select>
 </mapper>
