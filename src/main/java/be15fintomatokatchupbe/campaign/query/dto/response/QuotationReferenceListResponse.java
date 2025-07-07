@@ -8,6 +8,6 @@ import java.util.List;
 
 @Getter
 @Builder
-public class ContractReferenceListResponse {
+public class QuotationReferenceListResponse {
     List<ReferenceDto> referenceList;
 }

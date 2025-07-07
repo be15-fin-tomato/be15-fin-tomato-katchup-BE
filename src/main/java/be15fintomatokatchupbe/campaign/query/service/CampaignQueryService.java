@@ -472,11 +472,20 @@ public class CampaignQueryService {
         return campaigns;
     }
 
+    public QuotationReferenceListResponse getQuotationReferenceList(Long campaignId) {
+        List<ReferenceDto> contractReferenceList = campaignQueryMapper.getReferenceList(campaignId, PipelineStepConstants.QUOTATION);
+
+        return QuotationReferenceListResponse.builder()
+                .referenceList(contractReferenceList)
+                .build();
+    }
+
     public ContractReferenceListResponse getContractReferenceList(Long campaignId) {
         List<ReferenceDto> contractReferenceList = campaignQueryMapper.getReferenceList(campaignId, PipelineStepConstants.CONTRACT);
 
         return ContractReferenceListResponse.builder()
-                .contractReferenceList(contractReferenceList)
+                .referenceList(contractReferenceList)
                 .build();
     }
+
 }

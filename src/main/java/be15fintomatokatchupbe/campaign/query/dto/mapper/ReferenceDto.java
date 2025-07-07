@@ -9,5 +9,5 @@ import lombok.Setter;
 @Setter
 public class ReferenceDto {
     public Long pipelineId;
-    public Long name;
+    public String name;
 }

@@ -732,11 +732,13 @@
             , name AS name
         FROM
             pipeline
-        WHERE
-            campaign_id = #{campaignId}
-        AND
-            pipeline_step_id = #{pipelineStepId}
-        AND
-            is_deleted = 'N'
+        <where>
+                pipeline_step_id = #{pipelineStepId}
+            AND
+                is_deleted = 'N'
+            <if test="campaignId != null">
+                AND campaign_id = #{campaignId}
+            </if>
+        </where>
     </select>
 </mapper>
