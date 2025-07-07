@@ -9,6 +9,8 @@
         <id property="influencerId" column="influencer_id"/>
         <result property="name" column="name"/>
         <result property="gender" column="gender"/>
+        <result property="targetGender" column="target_gender"/>
+        <result property="ageRange" column="age_range"/>
         <result property="national" column="national"/>
         <result property="price" column="price"/>
         <result property="instagramIsConnected" column="instagram_is_connected"/>
@@ -36,6 +38,8 @@
         i.influencer_id,
         i.name,
         i.gender,
+        i.target_gender,
+        ad.age_range,
         i.national,
         i.price,
         i.instagram_is_connected,
@@ -57,6 +61,7 @@
         LEFT JOIN instagram ig ON i.influencer_id = ig.influencer_id
         LEFT JOIN hashtag_influencer_campaign h ON i.influencer_id = h.influencer_id
         LEFT JOIN category c ON h.category_id = c.category_id
+        LEFT JOIN influencer_age_distribution ad ON i.age_distribution_id = ad.age_distribution_id
 
         WHERE i.is_deleted = 'N'
         ORDER BY i.influencer_id DESC
