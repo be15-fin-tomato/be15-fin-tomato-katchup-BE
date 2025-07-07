@@ -19,6 +19,6 @@ public class NotificationsAllDTO {
     private StatusType isRead;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime getTime;
-    private Long targetId;
+    private String targetId;
 
 }
