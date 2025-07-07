@@ -176,7 +176,7 @@
         JOIN pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
         LEFT JOIN pipeline_influencer_client_manager picm ON picm.pipeline_id = p.pipeline_id
         WHERE pu.user_id = #{userId}
-        AND ps.step_name = '계약'
+        AND ps.step_name = '견적'
         AND p.is_deleted = 'N'
         GROUP BY
             cc.client_company_name,
