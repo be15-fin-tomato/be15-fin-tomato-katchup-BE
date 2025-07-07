@@ -104,8 +104,8 @@ public class ContractCommandService {
         if(files != null && !files.isEmpty()){
             // 1. 파일 S3에 올리고 돌려 받기
             List<File> fileList = fileService.uploadFile(files);
-            fileList.forEach(file -> file.setPipeline(pipeline));
 
+            fileList.forEach(file -> file.setPipeline(pipeline));
             // 2. 파일 DB에 저장하기
             fileService.saveFile(fileList);
         }
@@ -125,7 +125,7 @@ public class ContractCommandService {
                     PipelineStatusConstants.APPROVED
             );
 
-            if(existPipeline != null){
+            if(existPipeline != null && !Objects.equals(existPipeline.getPipelineId(), request.getPipelineId())){
                 throw new BusinessException(CampaignErrorCode.APPROVED_REVENUE_ALREADY_EXISTS);
             }
         }
@@ -147,7 +147,7 @@ public class ContractCommandService {
         campaignHelperService.deleteRelationTable(foundPipeline);
 
         /* 파일 테이블 지워주기 */
-        fileService.deleteByPipeline(foundPipeline);
+        fileService.deleteByPipeline(foundPipeline, request.getExistingFileList());
 
         /* 테이블 값 입력하기 */
         foundPipeline.updateContract(

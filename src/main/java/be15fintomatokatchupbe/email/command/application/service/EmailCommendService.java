@@ -75,6 +75,7 @@ public class EmailCommendService {
         emailUtil.sendEmail(content, title, manager.getEmail());
 
         satisfaction.setEmailStatus(StatusType.Y);
+        satisfaction.setSentDate(new Date());
         satisfactionRepository.save(satisfaction);
 
     }

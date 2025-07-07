@@ -108,7 +108,7 @@ public class QuotationCommandService {
                     PipelineStatusConstants.APPROVED
             );
 
-            if(existPipeline != null){
+            if(existPipeline != null && !Objects.equals(existPipeline.getPipelineId(), request.getPipelineId())){
                 throw new BusinessException(CampaignErrorCode.APPROVED_REVENUE_ALREADY_EXISTS);
             }
         }

@@ -15,4 +15,5 @@ public class ContractFormResponse extends PipelineFormResponse {
     private Long expectedRevenue;
     private Long availableQuantity;
     private Long expectedProfit;
+    private Long productPrice;
 }

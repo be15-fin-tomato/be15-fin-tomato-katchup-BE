@@ -81,8 +81,9 @@
         FROM
             influencer
         <where>
+            is_deleted = 'N'
             <if test="keyword != null and keyword != ''">
-                name LIKE CONCAT('%',#{keyword}, '%')
+                AND name LIKE CONCAT('%',#{keyword}, '%')
             </if>
         </where>
     </select>
