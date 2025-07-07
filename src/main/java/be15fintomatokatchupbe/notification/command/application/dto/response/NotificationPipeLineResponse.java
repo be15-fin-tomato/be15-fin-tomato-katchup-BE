@@ -10,6 +10,8 @@ import java.time.LocalDate;
 public class NotificationPipeLineResponse {
     private Long pipeLineId;
 
+    private Long pipelineStepId;
+
     private Long userId;
 
     private String name;

@@ -6,7 +6,7 @@
 <mapper namespace="be15fintomatokatchupbe.email.query.mapper.EmailQueryMapper">
     <select id="getCampaignSatisfaction" resultType="be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionDTO">
         SELECT
-              a.satisfaction_id
+              DISTINCT a.satisfaction_id
             , a.email_status
             , a.is_reacted
             , a.response_date
@@ -66,7 +66,7 @@
 
     <select id="totalList" resultType="int">
         SELECT
-            count(*)
+            count(DISTINCT a.satisfaction_id)
         FROM satisfaction a
         JOIN campaign b ON a.campaign_id = b.campaign_id
         JOIN pipeline p ON p.campaign_id = b.campaign_id
