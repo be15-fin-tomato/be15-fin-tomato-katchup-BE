@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,6 +9,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+@Slf4j
 @Component
 public class FileUtil {
 
@@ -32,12 +34,30 @@ public class FileUtil {
             "hwp"
     ));
 
+    private String normalizeMimeType(String mimeType, String extension) {
+        if ("application/x-tika-ooxml".equals(mimeType)) {
+            switch (extension.toLowerCase()) {
+                case "docx":
+                    return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+                case "xlsx":
+                    return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                case "pptx":
+                    return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+            }
+        }
+        return mimeType;
+    }
+
 
     public boolean validateFile(MultipartFile file) throws Exception {
         String mimeType = tika.detect(file.getInputStream());
         String extension = getExtension(file.getOriginalFilename());
+        String normalizedMime = normalizeMimeType(mimeType, extension);
+        log.info(mimeType);
+        log.info(ALLOWED_MIME_TYPES.contains(mimeType)? "true" : "false");
+        log.info(String.valueOf(ALLOWED_EXTENSIONS.contains(extension.toLowerCase())));
 
-        return ALLOWED_MIME_TYPES.contains(mimeType) && ALLOWED_EXTENSIONS.contains(extension.toLowerCase());
+        return ALLOWED_MIME_TYPES.contains(normalizedMime) && ALLOWED_EXTENSIONS.contains(extension.toLowerCase());
     }
 
     // 확장자 추출
