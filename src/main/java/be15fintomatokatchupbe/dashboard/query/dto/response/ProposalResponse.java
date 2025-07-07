@@ -8,8 +8,10 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class ProposalResponse {
+    private Long pipelineId;
     private String companyName;
-    private String contractName;
+    private String campaignName;
+    private String productName;
     private String proposalTitle;
     private String clientManagerName;
     private String clientManagerPosition;
