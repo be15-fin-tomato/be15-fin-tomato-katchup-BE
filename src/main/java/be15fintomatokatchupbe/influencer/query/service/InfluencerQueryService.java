@@ -46,6 +46,7 @@ public class InfluencerQueryService {
                 .pagination(Pagination.builder()
                         .currentPage(request.getPage())
                         .totalPage(totalPage)
+                        .totalCount(total)
                         .size(size)
                         .build())
                 .build();
