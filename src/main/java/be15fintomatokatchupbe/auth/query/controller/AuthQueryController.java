@@ -77,7 +77,7 @@ public class AuthQueryController {
     private ResponseCookie createRefreshTokenCookie(String refreshToken) {
         return ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)                     // HttpOnly 속성 설정 (JavaScript 에서 접근 불가)
-//                 .secure(true)                    // HTTPS 환경일 때만 전송 (운영 환경에서 활성화 권장)
+                 .secure(true)                    // HTTPS 환경일 때만 전송 (운영 환경에서 활성화 권장)
                 .path("/")                          // 쿠키 범위 : 전체 경로
                 .maxAge(Duration.ofDays(7))         // 쿠키 만료 기간 : 7일
                 .sameSite("Strict")                 // CSRF 공격 방어를 위한 SameSite 설정

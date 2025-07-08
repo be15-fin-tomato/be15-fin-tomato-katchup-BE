@@ -31,7 +31,7 @@ resource "aws_internet_gateway" "main" {
   }
 }
 
-# 퍼블릭 서브넷
+# 퍼블릭 서브넷 1
 resource "aws_subnet" "public_1" {
   vpc_id                  = aws_vpc.main.id
   cidr_block              = "10.0.3.0/24"
@@ -43,6 +43,18 @@ resource "aws_subnet" "public_1" {
   }
 }
 
+# 퍼블릭 서브넷 2
+resource "aws_subnet" "public_2" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.5.0/24"
+  availability_zone       = "ap-northeast-2c"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "tomato-public-2"
+  }
+}
+
 # 프라이빗 서브넷
 resource "aws_subnet" "private_1" {
   vpc_id            = aws_vpc.main.id
@@ -51,6 +63,17 @@ resource "aws_subnet" "private_1" {
 
   tags = {
     Name = "tomato-private-1"
+  }
+}
+
+# 프라이빗 서브넷 2
+resource "aws_subnet" "private_2" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.6.0/24"
+  availability_zone = "ap-northeast-2c"
+
+  tags = {
+    Name = "tomato-private-2"
   }
 }
 
@@ -87,6 +110,11 @@ resource "aws_route_table" "public" {
   }
 }
 
+resource "aws_route_table_association" "public_2" {
+  subnet_id      = aws_subnet.public_2.id
+  route_table_id = aws_route_table.public.id
+}
+
 # 프라이빗 라우팅 테이블
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
@@ -112,6 +140,12 @@ resource "aws_route_table_association" "private_1" {
   subnet_id      = aws_subnet.private_1.id
   route_table_id = aws_route_table.private.id
 }
+
+resource "aws_route_table_association" "private_2" {
+  subnet_id      = aws_subnet.private_2.id
+  route_table_id = aws_route_table.private.id
+}
+
 
 # ECS 클러스터 생성
 resource "aws_ecs_cluster" "main" {
@@ -244,16 +278,71 @@ resource "aws_security_group" "ecs_service" {
 }
 
 # ALB
-# resource "aws_lb" "spring_alb" {
-#   name               = "spring-alb"
-#   load_balancer_type = "application"
-#   subnets            = [aws_subnet.public_1.id]
-#   security_groups    = [aws_security_group.ecs_service.id]
-#
-#   tags = {
-#     Name = "spring-alb"
-#   }
-# }
+resource "aws_lb" "spring_alb" {
+  name               = "spring-alb"
+  load_balancer_type = "application"
+  subnets            = [
+    aws_subnet.public_1.id,
+    aws_subnet.public_2.id
+  ]
+  security_groups    = [aws_security_group.alb.id]
+
+  tags = {
+    Name = "spring-alb"
+  }
+}
+
+
+resource "aws_lb_target_group" "spring_tg" {
+  name        = "spring-tg"
+  port        = 8080
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
+  target_type = "ip"
+
+  health_check {
+    path                = "/"
+    protocol            = "HTTP"
+    matcher             = "200-399"
+    interval            = 30
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+  }
+
+  tags = {
+    Name = "spring-tg"
+  }
+}
+
+
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.spring_alb.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.spring_alb.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = var.backend_cert_arn  # 인증서 ARN을 변수로 주입
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.spring_tg.arn
+  }
+}
 
 resource "aws_ecs_service" "spring_service" {
   name            = "spring-service"
@@ -263,14 +352,58 @@ resource "aws_ecs_service" "spring_service" {
   desired_count   = 1
 
   network_configuration {
-    subnets          = [aws_subnet.public_1.id]
-    assign_public_ip = true
+    subnets          = [
+      aws_subnet.private_1.id,
+      aws_subnet.private_2.id
+    ]
+    assign_public_ip = false
     security_groups  = [aws_security_group.ecs_service.id]
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.spring_tg.arn
+    container_name   = "spring-container"
+    container_port   = 8080
   }
 
   depends_on = [
     aws_ecs_task_definition.spring_task
   ]
+}
+
+# ALB용 Security Group
+resource "aws_security_group" "alb" {
+  name        = "alb-sg"
+  description = "Allow HTTP and HTTPS inbound"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    description = "Allow HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Allow HTTPS"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "alb-sg"
+  }
 }
 
 ###### REDIS #######
