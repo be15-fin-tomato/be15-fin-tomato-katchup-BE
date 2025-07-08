@@ -4,7 +4,7 @@ import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.oauth.query.dto.request.YoutubeCodeRequest;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeCodeResponse;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeStatsResponse;
-import be15fintomatokatchupbe.oauth.query.service.YoutubeAnalyticsService;
+import be15fintomatokatchupbe.oauth.query.service.YoutubeAnalyticsQueryService;
 import be15fintomatokatchupbe.oauth.query.service.YoutubeOAuthQueryService;
 import be15fintomatokatchupbe.oauth.query.service.YoutubeOAuthQueryService.AnalyticsResponse;
 import be15fintomatokatchupbe.oauth.query.service.YoutubeOAuthQueryService.ChannelIdResponse;
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class YoutubeQueryController {
 
     private final YoutubeOAuthQueryService youtubeOAuthQueryService;
-    private final YoutubeAnalyticsService youtubeAnalyticsService;
+    private final YoutubeAnalyticsQueryService youtubeAnalyticsQueryService;
 
     @GetMapping("/callback")
     public ResponseEntity<ApiResponse<String>> registerYoutube(
@@ -102,7 +102,7 @@ public class YoutubeQueryController {
             @RequestParam String startDate,
             @RequestParam String endDate
     ) {
-        YoutubeStatsResponse stats = youtubeAnalyticsService.getYoutubeStatsByInfluencer(influencerId, startDate, endDate);
+        YoutubeStatsResponse stats = youtubeAnalyticsQueryService.getYoutubeStatsByInfluencer(influencerId, startDate, endDate);
         return ResponseEntity.ok(ApiResponse.success(stats));
     }
 
