@@ -25,6 +25,7 @@
         <association property="instagram" javaType="be15fintomatokatchupbe.influencer.query.dto.response.InstagramInfoResponse">
             <result property="accountId" column="instagram_account_id"/>
             <result property="follower" column="instagram_follower"/>
+            <result property="name" column="instagram_name"/>
         </association>
 
         <collection property="tags" ofType="be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto">
@@ -33,6 +34,8 @@
         </collection>
     </resultMap>
 
+    <!-- 먼저 influencer_id만 추출 -> 22명 추출
+    태그로 인해서 중복 row 발생한 것을 서브쿼리 사용으로 해결 -->
     <select id="findInfluencers" resultMap="InfluencerCardMap">
         SELECT
         i.influencer_id,
@@ -53,19 +56,24 @@
         y.name AS youtube_name,
 
         ig.account_id AS instagram_account_id,
-        ig.follower AS instagram_follower
+        ig.follower AS instagram_follower,
+        ig.name AS instagram_name
 
-        FROM influencer i
+        FROM (
+        SELECT influencer_id
+        FROM influencer
+        WHERE is_deleted = 'N'
+        ORDER BY influencer_id ASC
+        LIMIT #{size} OFFSET #{offset}
+        ) sub
+
+        JOIN influencer i ON sub.influencer_id = i.influencer_id
         LEFT JOIN user u ON i.user_id = u.user_id
         LEFT JOIN youtube y ON i.influencer_id = y.influencer_id
         LEFT JOIN instagram ig ON i.influencer_id = ig.influencer_id
         LEFT JOIN hashtag_influencer_campaign h ON i.influencer_id = h.influencer_id
         LEFT JOIN category c ON h.category_id = c.category_id
         LEFT JOIN influencer_age_distribution ad ON i.age_distribution_id = ad.age_distribution_id
-
-        WHERE i.is_deleted = 'N'
-        ORDER BY i.influencer_id DESC
-        LIMIT #{size} OFFSET #{offset}
     </select>
 
     <select id="countInfluencers" resultType="int">

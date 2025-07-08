@@ -15,11 +15,12 @@ public class InfluencerRegisterRequestDTO {
     private Long userId;
 
     private boolean youtubeConnected;
-    private String youtubeAccountId;
-
     private boolean instagramConnected;
-    private String instagramAccountId;
-    private Long instagramFollower;
+
+     /* 유튜브 , 인스타그램 연동 분리 */
+//    private String youtubeAccountId;
+//    private String instagramAccountId;
+//    private Long instagramFollower;
 
     private List<Long> categoryIds;
 }
