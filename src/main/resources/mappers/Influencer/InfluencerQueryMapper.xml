@@ -25,6 +25,7 @@
         <association property="instagram" javaType="be15fintomatokatchupbe.influencer.query.dto.response.InstagramInfoResponse">
             <result property="accountId" column="instagram_account_id"/>
             <result property="follower" column="instagram_follower"/>
+            <result property="name" column="instagram_name"/>
         </association>
 
         <collection property="tags" ofType="be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto">
@@ -55,7 +56,8 @@
         y.name AS youtube_name,
 
         ig.account_id AS instagram_account_id,
-        ig.follower AS instagram_follower
+        ig.follower AS instagram_follower,
+        ig.name AS instagram_name
 
         FROM (
         SELECT influencer_id
