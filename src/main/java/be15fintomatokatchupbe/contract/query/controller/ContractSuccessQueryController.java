@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,7 +37,7 @@ public class ContractSuccessQueryController {
     }
 
     @Operation(summary = "계약서 조회",description = "사용자는 등록된 계약서를 조회할 수 있다.")
-    @GetMapping("/success/view/{contractId}")
+    @PostMapping("/success/view/{contractId}")
     public ResponseEntity<ApiResponse<ContractViewResponse>> getContractView (
             @PathVariable Long contractId,
             @RequestPart String password
