@@ -46,7 +46,7 @@ public class AuthCommandController {
     private ResponseCookie createDeleteRefreshTokenCookie() {
         return ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)     // HttpOnly 유지
-                // .secure(true)    // HTTPS 환경에서만 사용 시 주석 해제
+                 .secure(true)    // HTTPS 환경에서만 사용 시 주석 해제
                 .path("/")          // 동일 path 범위
                 .maxAge(0)          // 즉시 만료
                 .sameSite("Strict") // SameSite 유지
