@@ -179,6 +179,31 @@ public class FileService {
         }
     }
 
+    public FileDownloadResult downloadContractFile(String key) {
+        ContractFile fileInfo = (ContractFile) contractFileRepository.findByFilePath(key)
+                .orElseThrow(() -> new BusinessException(FileErrorCode.FILE_NOT_FOUND));
+
+        try {
+            var getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+
+            var s3Object = s3Client.getObject(getObjectRequest);
+            byte[] fileBytes = s3Object.readAllBytes();
+
+            return FileDownloadResult.builder()
+                    .fileBytes(fileBytes)
+                    .originalFilename(fileInfo.getOriginalName())
+                    .mimeType(fileInfo.getProgram())
+                    .build();
+
+        } catch (IOException e) {
+            log.error("파일 다운로드 중 오류 발생", e);
+            throw new BusinessException(FileErrorCode.FILE_DOWNLOAD_ERROR); // 새 에러코드 정의 필요
+        }
+    }
+
     /* 내부 호출용*/
     public void saveFile(List<File> filesList){
         fileRepository.saveAll(filesList);
