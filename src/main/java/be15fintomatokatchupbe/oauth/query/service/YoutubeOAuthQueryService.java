@@ -219,19 +219,48 @@ public class YoutubeOAuthQueryService {
         }
     }
 
-    public Map<String, Double> getSubscribedStatusRatio(String accessToken, String channelId, String startDate, String endDate) {
+    public Map<String, Double> getSubscribedStatusRatio(String accessToken, String channelId, String ignoredStartDate, String endDate) {
         try {
-            AnalyticsResponse response = getChannelAnalytics(accessToken, channelId, startDate, endDate,
-                    "views", "subscribedStatus", null);
+            // 안정성을 위해 subscribedStatus 조회는 항상 90일로 제한
+            LocalDate end = LocalDate.parse(endDate);
+            LocalDate start = end.minusDays(90);
+
+
+            String startStr = start.toString();
+            String endStr = end.toString();
+
+            log.info("🔍 subscribedStatus 조회 시작 - channelId={}, startDate={}, endDate={}", channelId, startStr, endStr);
+            log.info("📆 subscribedStatus 요청 기간 = {}일", ChronoUnit.DAYS.between(start, end));
+
+            AnalyticsResponse response = getChannelAnalytics(
+                    accessToken,
+                    channelId,
+                    startStr,
+                    endStr,
+                    "views",
+                    "subscribedStatus",
+                    null
+            );
+
+            if (response.getRows() == null || response.getRows().isEmpty()) {
+                return Map.of("subscribed", 0.0, "notSubscribed", 0.0);
+            }
+
             long totalViews = response.getRows().stream().mapToLong(r -> ((Number) r.get(1)).longValue()).sum();
-            if (totalViews == 0) return Map.of("subscribed", 0.0, "notSubscribed", 0.0);
+            if (totalViews == 0) {
+                return Map.of("subscribed", 0.0, "notSubscribed", 0.0);
+            }
 
             return response.getRows().stream().collect(Collectors.toMap(
                     row -> row.get(0).toString().equals("SUBSCRIBED") ? "subscribed" : "notSubscribed",
                     row -> ((Number) row.get(1)).doubleValue() * 100 / totalViews
             ));
+
         } catch (WebClientResponseException e) {
-            log.warn("⚠️ subscribedStatus 불가 - fallback to empty result: {}", e.getResponseBodyAsString());
+            log.warn("⚠️ subscribedStatus API 오류 - channelId={}, fallback to 0.0", channelId);
+            return Map.of("subscribed", 0.0, "notSubscribed", 0.0);
+        } catch (Exception e) {
+            log.warn("⚠️ subscribedStatus 기타 오류 - channelId={}, fallback to 0.0", channelId);
             return Map.of("subscribed", 0.0, "notSubscribed", 0.0);
         }
     }
