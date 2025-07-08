@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.oauth.query.service;
 
+import be15fintomatokatchupbe.influencer.command.application.support.YoutubeHelperService;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeStatsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -9,8 +10,15 @@ import org.springframework.stereotype.Service;
 public class YoutubeAnalyticsService {
 
     private final YoutubeOAuthQueryService youtubeApi;
+    private final YoutubeHelperService youtubeHelper;
 
-    public YoutubeStatsResponse getYoutubeStats(String accessToken, String channelId, String startDate, String endDate) {
+    public YoutubeStatsResponse getYoutubeStatsByInfluencer(Long influencerId, String startDate, String endDate) {
+        // 유튜브 테이블에서 채널 ID 조회
+        String channelId = youtubeHelper.findByInfluencerId(influencerId).getChannelId();
+
+        // accessToken 조회 (Redis → 없으면 refresh)
+        String accessToken = youtubeApi.getValidAccessToken(channelId);
+
         // 기본 수치 조회
         int totalVideos = youtubeApi.getTotalVideoCount(accessToken, channelId);
         long totalViews = youtubeApi.getTotalViews(accessToken, channelId, startDate, endDate);
