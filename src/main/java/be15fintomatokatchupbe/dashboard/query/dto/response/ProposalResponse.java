@@ -16,5 +16,5 @@ public class ProposalResponse {
     private String clientManagerName;
     private String clientManagerPosition;
     private String statusName;
-    private LocalDateTime createdAt;
+    private LocalDateTime presentedAt;
 }

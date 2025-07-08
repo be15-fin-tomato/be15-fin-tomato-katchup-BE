@@ -106,7 +106,7 @@
             cm.name AS client_manager_name,
             cm.position AS client_manager_position,
             pss.status_name,
-            p.created_at
+            p.presented_at
         FROM pipeline p
         JOIN pipeline_user pu ON pu.pipeline_id = p.pipeline_id
         JOIN campaign c ON p.campaign_id = c.campaign_id
@@ -132,7 +132,7 @@
             p.expected_revenue,
             p.expected_profit,
             pss.status_name,
-            p.created_at
+            p.presented_at
         FROM pipeline p
         JOIN pipeline_user pu ON pu.pipeline_id = p.pipeline_id
         JOIN campaign c ON p.campaign_id = c.campaign_id
@@ -157,7 +157,7 @@
             picm.ad_price,
             p.expected_revenue,
             p.expected_profit,
-            p.created_at
+            p.presented_at
         FROM pipeline p
         JOIN pipeline_user pu ON pu.pipeline_id = p.pipeline_id
         JOIN campaign c ON p.campaign_id = c.campaign_id
