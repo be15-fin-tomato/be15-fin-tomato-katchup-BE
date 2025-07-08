@@ -194,7 +194,7 @@ resource "aws_ecs_task_definition" "spring_task" {
         { name = "FACEBOOK_CLIENT_SECRET", value = "${var.facebook_client_secret}" },
         { name = "FACEBOOK_REDIRECT_URI", value = "${var.facebook_redirect_uri}" },
         { name = "NAVER_CLIENT_KEY", value = "${var.naver_client_key}" },
-        { name = "NAME_CLIENT_SECRET", value = "${var.name_client_secret}" },
+        { name = "NAVER_CLIENT_SECRET", value = "${var.naver_client_secret}" },
         { name = "MONGODB_URI", value = "${var.mongodb_uri}" },
         { name = "FCM_SECRET_FILE", value = "${var.fcm_secret_file}" },
         { name = "OPENAI_API_KEY", value = "${var.openai_api_key}" },
