@@ -12,7 +12,6 @@ public class YoutubeAnalyticsQueryService {
 
     private final YoutubeOAuthQueryService youtubeApi;
     private final YoutubeHelperService youtubeHelper;
-    private final YoutubeCommandService youtubeCommandService;
 
     public YoutubeStatsResponse getYoutubeStatsByInfluencer(Long influencerId, String startDate, String endDate) {
         // 유튜브 테이블에서 채널 ID 조회
@@ -50,9 +49,6 @@ public class YoutubeAnalyticsQueryService {
                 .topVideos(youtubeApi.getTopVideos(accessToken, channelId, startDate, endDate))
                 .topShorts(youtubeApi.getTopShorts(accessToken, channelId, startDate, endDate))
                 .build();
-
-        // 저장 서비스 호출
-        youtubeCommandService.saveSnapshot(influencerId, response);
 
         return response;
     }
