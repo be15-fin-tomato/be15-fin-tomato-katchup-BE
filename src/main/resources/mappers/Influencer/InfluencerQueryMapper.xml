@@ -19,7 +19,9 @@
 
         <association property="youtube" javaType="be15fintomatokatchupbe.influencer.query.dto.response.YoutubeInfoResponse">
             <result property="accountId" column="channel_id"/>
-            <result property="name" column="youtube_name"/>
+            <result property="subscriber" column="subscriber"/>
+            <result property="name" column="name"/>
+            <result property="thumbnailUrl" column="image_url"/>
         </association>
 
         <association property="instagram" javaType="be15fintomatokatchupbe.influencer.query.dto.response.InstagramInfoResponse">
@@ -117,8 +119,10 @@
             c.category_id,
             c.category_name,
 
-            y.channel_id AS channel_id,
-            y.name AS youtube_name,
+            y.channel_id,
+            y.name,
+            y.image_url,
+            y.subscriber,
 
             ig.account_id AS instagram_account_id,
             ig.follower AS instagram_follower,
