@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.oauth.query.service;
 
 import be15fintomatokatchupbe.influencer.command.application.support.YoutubeHelperService;
+import be15fintomatokatchupbe.oauth.command.application.Service.YoutubeCommandService;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeStatsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ public class YoutubeAnalyticsQueryService {
 
     private final YoutubeOAuthQueryService youtubeApi;
     private final YoutubeHelperService youtubeHelper;
+    private final YoutubeCommandService youtubeCommandService;
 
     public YoutubeStatsResponse getYoutubeStatsByInfluencer(Long influencerId, String startDate, String endDate) {
         // 유튜브 테이블에서 채널 ID 조회
@@ -33,27 +35,26 @@ public class YoutubeAnalyticsQueryService {
         double dailyAvgViews = safeDivide(totalViews, dateRange);
         double monthlyAvgViews = safeDivide(totalViews, Math.max(1, dateRange / 30.0));
 
-        // 전체 통계 응답 구성
-        return YoutubeStatsResponse.builder()
+        // 통계 DTO 생성
+        YoutubeStatsResponse response = YoutubeStatsResponse.builder()
                 .totalVideos(totalVideos)
                 .avgViews(avgViews)
                 .avgLikes(avgLikes)
                 .avgComments(avgComments)
                 .dailyAvgViews(dailyAvgViews)
                 .monthlyAvgViews(monthlyAvgViews)
-                .subscriberAgeRatio(
-                        youtubeApi.getAgeGroupRatio(accessToken, channelId, startDate, endDate))
-                .subscriberGenderRatio(
-                        youtubeApi.getGenderRatio(accessToken, channelId, startDate, endDate))
-                .subscriberChange(
-                        youtubeApi.getSubscriberChanges(accessToken, channelId))
-                .subscribedVsNot(
-                        youtubeApi.getSubscribedStatusRatio(accessToken, channelId, startDate, endDate))
-                .topVideos(
-                        youtubeApi.getTopVideos(accessToken, channelId, startDate, endDate))
-                .topShorts(
-                        youtubeApi.getTopShorts(accessToken, channelId, startDate, endDate))
+                .subscriberAgeRatio(youtubeApi.getAgeGroupRatio(accessToken, channelId, startDate, endDate))
+                .subscriberGenderRatio(youtubeApi.getGenderRatio(accessToken, channelId, startDate, endDate))
+                .subscriberChange(youtubeApi.getSubscriberChanges(accessToken, channelId))
+                .subscribedVsNot(youtubeApi.getSubscribedStatusRatio(accessToken, channelId, startDate, endDate))
+                .topVideos(youtubeApi.getTopVideos(accessToken, channelId, startDate, endDate))
+                .topShorts(youtubeApi.getTopShorts(accessToken, channelId, startDate, endDate))
                 .build();
+
+        // 저장 서비스 호출
+        youtubeCommandService.saveSnapshot(influencerId, response);
+
+        return response;
     }
 
     private double safeDivide(double numerator, double denominator) {
