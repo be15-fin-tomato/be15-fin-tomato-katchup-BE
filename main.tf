@@ -181,7 +181,7 @@ resource "aws_ecs_task_definition" "spring_task" {
         { name = "EMAIL_PASSWORD", value = "${var.email_password}" },
         { name = "EMAIL_PORT", value = "${tostring(var.email_port)}" },
         { name = "EMAIL_HOST", value = "${var.email_host}" },
-        { name = "YOUTUBE_APIKEY", value = "${var.youtube_apikey}" },
+        { name = "YOUTUBE_API_KEY", value = "${var.youtube_apikey}" },
         { name = "YOUTUBE_CLIENT_ID", value = "${var.youtube_client_id}" },
         { name = "YOUTUBE_CLIENT_SECRET", value = "${var.youtube_client_secret}" },
         { name = "YOUTUBE_REDIRECT_URI", value = "${var.youtube_redirect_uri}" },
