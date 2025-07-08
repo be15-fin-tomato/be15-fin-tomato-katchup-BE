@@ -16,5 +16,5 @@ public class ContractResponse {
     private Long expectedRevenue;
     private Long expectedProfit;
     private String statusName;
-    private LocalDateTime createdAt;
+    private LocalDateTime presentedAt;
 }

@@ -16,5 +16,5 @@ public class QuotationResponse {
     private Long adPrice;
     private Long expectedRevenue;
     private Long expectedProfit;
-    private LocalDateTime createdAt;
+    private LocalDateTime presentedAt;
 }
