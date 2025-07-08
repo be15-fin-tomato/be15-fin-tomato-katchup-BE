@@ -1,10 +1,7 @@
 package be15fintomatokatchupbe.contract.command.application.controller;
 
 import be15fintomatokatchupbe.common.dto.ApiResponse;
-import be15fintomatokatchupbe.contract.command.application.dto.request.ContractObjectUpdateRequest;
-import be15fintomatokatchupbe.contract.command.application.dto.request.DetailCreateRequest;
-import be15fintomatokatchupbe.contract.command.application.dto.request.DetailUpdateRequest;
-import be15fintomatokatchupbe.contract.command.application.dto.request.SendEmailRequest;
+import be15fintomatokatchupbe.contract.command.application.dto.request.*;
 import be15fintomatokatchupbe.contract.command.application.service.ContractObjectCommandService;
 import be15fintomatokatchupbe.contract.command.application.service.DetailCommandService;
 import be15fintomatokatchupbe.utils.EmailUtils;
@@ -27,6 +24,16 @@ public class ContractCommandController {
     private final DetailCommandService detailCommandService;
     private final ContractObjectCommandService contractObjectCommandService;
     private final EmailUtils emailUtils;
+
+    @Operation(summary= "조건 생성" , description = "사용자는 계약서의 종류를 추가할 수 있다.")
+    @PostMapping("/object/create")
+    public ResponseEntity<ApiResponse<Void>> createObject(
+            @RequestBody @Valid ObjectCreateRequest request) {
+        contractObjectCommandService.createObject(request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success(null));
+    }
 
     @Operation(summary = "계약서 생성", description = "사용자는 계약서의 내용과 관련 파일을 첨부하여 계약서을 생성할 수 있다.")
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

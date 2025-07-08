@@ -24,4 +24,7 @@ public class InfluencerCardResponse {
 
     private YoutubeInfoResponse youtube;
     private InstagramInfoResponse instagram;
+
+    private String targetGender;
+    private String ageRange;
 }
