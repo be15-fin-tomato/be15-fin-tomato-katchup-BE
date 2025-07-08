@@ -101,4 +101,38 @@
         FROM category
     </select>
 
+    <select id="findInfluencerById" resultMap="InfluencerCardMap">
+        SELECT
+            i.influencer_id,
+            i.name,
+            i.gender,
+            i.target_gender,
+            ad.age_range,
+            i.national,
+            i.price,
+            i.instagram_is_connected,
+            i.youtube_is_connected,
+            u.name AS manager,
+
+            c.category_id,
+            c.category_name,
+
+            y.channel_id AS channel_id,
+            y.name AS youtube_name,
+
+            ig.account_id AS instagram_account_id,
+            ig.follower AS instagram_follower,
+            ig.name AS instagram_name
+
+        FROM influencer i
+        LEFT JOIN user u ON i.user_id = u.user_id
+        LEFT JOIN youtube y ON i.influencer_id = y.influencer_id
+        LEFT JOIN instagram ig ON i.influencer_id = ig.influencer_id
+        LEFT JOIN hashtag_influencer_campaign h ON i.influencer_id = h.influencer_id
+        LEFT JOIN category c ON h.category_id = c.category_id
+        LEFT JOIN influencer_age_distribution ad ON i.age_distribution_id = ad.age_distribution_id
+        WHERE i.is_deleted = 'N'
+        AND i.influencer_id = #{influencerId}
+    </select>
+
 </mapper>

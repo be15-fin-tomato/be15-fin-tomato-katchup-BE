@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 @Mapper
 public interface InfluencerMapper {
@@ -16,5 +17,8 @@ public interface InfluencerMapper {
     List<InfluencerSearchDto> findInfluencerList(String keyword);
 
     List<CategoryDto> findCategoryList();
+
+    Optional<InfluencerCardResponse> findInfluencerById(@Param("influencerId") Long influencerId);
+
 }
 
