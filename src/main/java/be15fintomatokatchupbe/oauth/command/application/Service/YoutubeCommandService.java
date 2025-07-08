@@ -2,10 +2,15 @@ package be15fintomatokatchupbe.oauth.command.application.Service;
 
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.influencer.command.application.support.YoutubeHelperService;
+import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Youtube;
+import be15fintomatokatchupbe.influencer.command.domain.repository.InfluencerRepository;
+import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
 import be15fintomatokatchupbe.infra.redis.YoutubeTokenRepository;
 import be15fintomatokatchupbe.oauth.command.application.domain.YoutubeStatsSnapshot;
+import be15fintomatokatchupbe.oauth.command.application.domain.YoutubeVideoSnapshot;
 import be15fintomatokatchupbe.oauth.command.application.repository.YoutubeStatsSnapshotRepository;
+import be15fintomatokatchupbe.oauth.command.application.repository.YoutubeVideoSnapshotRepository;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeStatsResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -22,7 +29,9 @@ public class YoutubeCommandService {
 
     private final YoutubeHelperService youtubeHelperService;
     private final YoutubeTokenRepository youtubeTokenRepository;
-    private final YoutubeStatsSnapshotRepository snapshotRepository;
+    private final YoutubeStatsSnapshotRepository statsSnapshotRepository;
+    private final YoutubeVideoSnapshotRepository videoSnapshotRepository;
+    private final InfluencerRepository influencerRepository;
 
     @Transactional
     public void disconnectYoutubeAccount(Long influencerId) {
@@ -48,35 +57,58 @@ public class YoutubeCommandService {
     }
 
     @Transactional
-    public void saveSnapshot(Long influencerId, YoutubeStatsResponse dto) {
-        YoutubeStatsSnapshot snapshot = YoutubeStatsSnapshot.builder()
-                .influencerId(influencerId)
-                .totalVideos(dto.getTotalVideos())
-                .avgViews(dto.getAvgViews())
-                .avgLikes(dto.getAvgLikes())
-                .avgComments(dto.getAvgComments())
-                .dailyAvgViews(dto.getDailyAvgViews())
-                .monthlyAvgViews(dto.getMonthlyAvgViews())
+    public void saveOrUpdateSnapshot(Long influencerId, YoutubeStatsResponse response) {
+        Influencer influencer = influencerRepository.findById(influencerId)
+                .orElseThrow(() -> new BusinessException(InfluencerErrorCode.INFLUENCER_NOT_FOUND));
 
-                .age1824(dto.getSubscriberAgeRatio().getOrDefault("age18-24", 0.0))
-                .age2534(dto.getSubscriberAgeRatio().getOrDefault("age25-34", 0.0))
-                .age3544(dto.getSubscriberAgeRatio().getOrDefault("age35-44", 0.0))
-                .age4554(dto.getSubscriberAgeRatio().getOrDefault("age45-54", 0.0))
+        Optional<YoutubeStatsSnapshot> optional = statsSnapshotRepository.findByInfluencerId(influencerId);
 
-                .genderFemale(dto.getSubscriberGenderRatio().getOrDefault("female", 0.0))
-                .genderMale(dto.getSubscriberGenderRatio().getOrDefault("male", 0.0))
+        YoutubeStatsSnapshot snapshot = optional
+                .map(existing -> existing.updateFrom(response))
+                .orElseGet(() -> YoutubeStatsSnapshot.builder()
+                        .influencerId(influencerId)
+                        .totalVideos(response.getTotalVideos())
+                        .avgViews(response.getAvgViews())
+                        .avgLikes(response.getAvgLikes())
+                        .avgComments(response.getAvgComments())
+                        .dailyAvgViews(response.getDailyAvgViews())
+                        .monthlyAvgViews(response.getMonthlyAvgViews())
+                        .age1824(response.getSubscriberAgeRatio().getOrDefault("age18-24", 0.0))
+                        .age2534(response.getSubscriberAgeRatio().getOrDefault("age25-34", 0.0))
+                        .age3544(response.getSubscriberAgeRatio().getOrDefault("age35-44", 0.0))
+                        .age4554(response.getSubscriberAgeRatio().getOrDefault("age45-54", 0.0))
+                        .genderFemale(response.getSubscriberGenderRatio().getOrDefault("female", 0.0))
+                        .genderMale(response.getSubscriberGenderRatio().getOrDefault("male", 0.0))
+                        .subscriberChangeDaily(response.getSubscriberChange().getOrDefault("daily", 0))
+                        .subscriberChangeWeekly(response.getSubscriberChange().getOrDefault("weekly", 0))
+                        .subscriberChangeMonthly(response.getSubscriberChange().getOrDefault("monthly", 0))
+                        .subscribedRatio(response.getSubscribedVsNot().getOrDefault("subscribed", 0.0))
+                        .notSubscribedRatio(response.getSubscribedVsNot().getOrDefault("notSubscribed", 0.0))
+                        .createdAt(LocalDateTime.now())
+                        .build());
 
-                .subscriberChangeDaily(dto.getSubscriberChange().getOrDefault("daily", 0))
-                .subscriberChangeWeekly(dto.getSubscriberChange().getOrDefault("weekly", 0))
-                .subscriberChangeMonthly(dto.getSubscriberChange().getOrDefault("monthly", 0))
+        YoutubeStatsSnapshot saved = statsSnapshotRepository.save(snapshot);
 
-                .subscribedRatio(dto.getSubscribedVsNot().getOrDefault("subscribed", 0.0))
-                .notSubscribedRatio(dto.getSubscribedVsNot().getOrDefault("notSubscribed", 0.0))
+        // 영상 스냅샷 먼저 삭제
+        videoSnapshotRepository.deleteBySnapshotId(saved.getId());
 
-                .createdAt(LocalDateTime.now())
-                .build();
+        // 영상 스냅샷 재저장
+        List<YoutubeVideoSnapshot> videoSnapshots = response.getTopVideos().stream()
+                .map(video -> YoutubeVideoSnapshot.builder()
+                        .title(video.getTitle())
+                        .videoId(video.getVideoId())
+                        .views(video.getViews())
+                        .likes(video.getLikes())
+                        .comments(video.getComments())
+                        .thumbnailUrl(video.getThumbnailUrl())
+                        .snapshot(saved)
+                        .influencer(influencer)
+                        .createdAt(LocalDateTime.now())
+                        .build())
+                .toList();
 
-        snapshotRepository.save(snapshot);
+        videoSnapshotRepository.saveAll(videoSnapshots);
     }
 
 }
+
