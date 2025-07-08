@@ -148,7 +148,7 @@ public class YoutubeOAuthQueryService {
         log.info("[YT API] {}", uri);
 
         try {
-            return getWithAuth(uri,channelId, AnalyticsResponse.class);
+            return getWithAuth(uri,accessToken, AnalyticsResponse.class);
         } catch (WebClientResponseException e) {
             log.error("🔥 YouTube API 오류: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString());
             throw e;
@@ -157,7 +157,7 @@ public class YoutubeOAuthQueryService {
 
     public int getTotalVideoCount(String accessToken, String channelId) {
         String url = "https://www.googleapis.com/youtube/v3/channels?part=statistics&id=" + channelId;
-        ChannelStatsResponse response = getWithAuth(url,channelId, ChannelStatsResponse.class);
+        ChannelStatsResponse response = getWithAuth(url,accessToken, ChannelStatsResponse.class);
         return response.getItems().get(0).getStatistics().getVideoCount();
     }
 
@@ -295,6 +295,19 @@ public class YoutubeOAuthQueryService {
                 .retrieve()
                 .bodyToMono(responseType)
                 .block();
+    }
+
+    public String getValidAccessToken(String channelId) {
+        // 1. Redis에서 accessToken 조회
+        String accessToken = youtubeTokenRepository.findAccessToken(channelId);
+
+        // 2. 없으면 refresh_token으로 accessToken 재발급
+        if (accessToken == null || accessToken.isBlank()) {
+            log.info("🔄 Redis에 accessToken 없음 → refresh token으로 재발급 시도");
+            accessToken = refreshAndGetAccessToken(channelId);
+        }
+
+        return accessToken;
     }
 
     public String refreshAndGetAccessToken(String channelId) {
