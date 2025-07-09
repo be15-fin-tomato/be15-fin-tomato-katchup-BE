@@ -489,11 +489,12 @@ public class CampaignQueryService {
                 .build();
     }
 
-    public List<CampaignResultResponse> findCampaignResultList(CampaignResultRequest request) {
-        int page = Math.max(1, request.getPage());
-        int size = request.getSize();
-        int offset = (page - 1) * size;
+    public CampaignResultListResponse findCampaignResultList(CampaignResultRequest request) {
+        int page = request.getPage() != null ? request.getPage() : 0;
+        int size = request.getSize() != null ? request.getSize() : 6;
+        int offset = page * size;
 
+        int total = campaignQueryMapper.countCampaignResultList(request);
         List<CampaignResultResponse> rawResultList =
                 campaignQueryMapper.findCampaignResultList(
                         request,
@@ -502,23 +503,13 @@ public class CampaignQueryService {
                         request.getSortBy(),
                         request.getSortOrder()
                 );
-        Map<Long, CampaignResultResponse> consolidatedMap = new LinkedHashMap<>();
 
-        for (CampaignResultResponse item : rawResultList) {
-            Long pipelineId = item.getPipelineId();
-            if (!consolidatedMap.containsKey(pipelineId)) {
-                consolidatedMap.put(pipelineId, item);
-            } else {
-                CampaignResultResponse existing = consolidatedMap.get(pipelineId);
-                if (existing.getInfluencerName() == null && item.getInfluencerName() != null) {
-                    existing.setInfluencerName(item.getInfluencerName());
-                }
-                if (existing.getClientName() == null && item.getClientName() != null) {
-                    existing.setClientName(item.getClientName());
-                }
-            }
-        }
-        return new ArrayList<>(consolidatedMap.values());
+        List<CampaignResultResponse> finalResultList = rawResultList;
+        return CampaignResultListResponse.builder()
+                .data(finalResultList)
+                .total(total)
+                .build();
     }
 }
+
 
