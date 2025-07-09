@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.campaign.query.dto.response;
 
+import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,15 +18,14 @@ public class CampaignDetailDto {
     private Long campaignStatusId;
     private Long clientCompanyId;
     private String clientCompanyName;
+    private String address;
+    private String detailAddress;
     private Long clientManagerId;
     private String clientManagerName;
     // raw 타임스탬프 (쿼리 결과로 받음)
-    private Timestamp startedAtRaw;
-    private Timestamp endedAtRaw;
-    // 포맷팅해서 클라이언트에 전달할 필드
     private String startedAt;
     private String endedAt;
-    private List<Long> userList;                     // 고객사 담당자 유저 ID 리스트
+    private List<User> userList;                           // 고객사 담당자 유저 ID 리스트
     private String awarenessPath;
     private String productName;
     private Long productPrice;

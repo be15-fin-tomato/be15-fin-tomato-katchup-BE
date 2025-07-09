@@ -7,6 +7,7 @@ import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
 import be15fintomatokatchupbe.common.dto.Pagination;
+import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -380,24 +381,8 @@ public class CampaignQueryService {
         // 날짜 포맷터 선언
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        // startedAt/endedAt Timestamp → yyyy-MM-dd String 포맷으로 변환
-        if (detail.getStartedAtRaw() != null) {
-            LocalDateTime startedAt = detail.getStartedAtRaw()
-                    .toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-            detail.setStartedAt(startedAt.format(formatter));
-        }
-        if (detail.getEndedAtRaw() != null) {
-            LocalDateTime endedAt = detail.getEndedAtRaw()
-                    .toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-            detail.setEndedAt(endedAt.format(formatter));
-        }
-
         // 2. 캠페인 유저 리스트 조회
-        List<Long> userList = campaignQueryMapper.selectCampaignUserList(detail.getClientCompanyId());
+        List<User> userList = campaignQueryMapper.selectCampaignUserList(detail.getClientCompanyId());
         detail.setUserList(userList);
 
         // 3. 캠페인 카테고리 리스트 조회
