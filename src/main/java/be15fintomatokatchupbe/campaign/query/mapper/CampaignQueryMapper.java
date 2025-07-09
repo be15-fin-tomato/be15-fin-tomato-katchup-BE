@@ -19,12 +19,21 @@ public interface CampaignQueryMapper {
             @Param("pipelineStepId") Long pipelineStepId
     );
 
+    List<ListupCardDTO> findListupList(
+            @Param("req") PipelineSearchRequest req,
+            @Param("offset") int offset,
+            @Param("size") int size,
+            @Param("pipelineStepId") Long pipelineStepId
+    );
+
     List<QuotationCardDTO> findQuotationList(
             @Param("req") PipelineSearchRequest req,
             @Param("offset") int offset,
             @Param("size") int size,
             @Param("pipelineStepId") Long pipelineStepId
     );
+
+    int countListup(@Param("req")PipelineSearchRequest request, @Param("pipelineStepId") Long pipelineStepId);
 
     int countPipeline(@Param("req")PipelineSearchRequest request, @Param("pipelineStepId") Long pipelineStepId);
 
@@ -41,6 +50,8 @@ public interface CampaignQueryMapper {
             @Param("size") int size,
             @Param("pipelineStepId") Long pipelineStepId
     );
+
+    ListupFormDTO findListupDetail(Long pipelineId, Long pipelineStepId);
 
     QuotationFormDTO findQuotationDetail(Long pipelineId, Long pipelineStepId);
 

@@ -24,6 +24,18 @@ import java.util.List;
 public class CampaignQueryController {
     private final CampaignQueryService campaignQueryService;
 
+    @GetMapping("/listup")
+    @Operation(summary = "리스트업 목록 조회", description = "리스트업 목록을 조회합니다.")
+    public ResponseEntity<ApiResponse<ListupSearchResponse>> getListupList(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @ModelAttribute PipelineSearchRequest request
+    ){
+        Long userId = userDetail.getUserId();
+        ListupSearchResponse response = campaignQueryService.getListupList(userId, request);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     @GetMapping("/proposal")
     @Operation(summary = "제안 목록 조회", description = "제안 목록을 조회합니다.")
     public ResponseEntity<ApiResponse<ProposalSearchResponse>> getProposalList(
@@ -44,6 +56,18 @@ public class CampaignQueryController {
     ){
         Long userId = userDetail.getUserId();
         QuotationSearchResponse response = campaignQueryService.getQuotationList(userId, request);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/listup/{id}")
+    @Operation(summary = "리스트업 조회", description = "리스트업 상세 조회를 합니다.")
+    public ResponseEntity<ApiResponse<ListupDetailResponse>> getListupDetail(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable("id") Long pipelineId
+    ){
+        Long userId = userDetail.getUserId();
+        ListupDetailResponse response = campaignQueryService.getListupDetail(userId, pipelineId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

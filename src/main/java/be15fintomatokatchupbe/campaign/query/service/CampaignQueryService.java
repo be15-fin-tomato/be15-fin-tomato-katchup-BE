@@ -7,6 +7,7 @@ import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
+import be15fintomatokatchupbe.campaign.query.dto.mapper.ListupFormDTO;
 import be15fintomatokatchupbe.common.dto.Pagination;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,51 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CampaignQueryService {
     private final CampaignQueryMapper campaignQueryMapper;
+
+    public ListupSearchResponse getListupList(Long userId, PipelineSearchRequest request) {
+        int offset = (request.getPage() - 1) * request.getSize();
+        int size = request.getSize();
+
+        List<ListupCardDTO> listupList = campaignQueryMapper.findListupList(request, offset, size, PipelineStepConstants.LIST_UP);
+
+        List<ListupCardResponse> response = new ArrayList<>();
+
+        for(ListupCardDTO dto: listupList){
+            List<String> influencerNameList = Optional.ofNullable(dto.getInfluencerNameInfo())
+                    .map(s -> Arrays.stream(s.split(","))
+                            .map(String::trim)
+                            .toList())
+                    .orElse(List.of());
+            ListupCardResponse listupCardResponse = ListupCardResponse.builder()
+                    .pipelineId(dto.getPipelineId())
+                    .name(dto.getName())
+                    .campaignName(dto.getCampaignName())
+                    .clientCompanyName(dto.getClientCompanyName())
+//                    .clientManagerName(dto.getClientManagerName())
+                    .productName(dto.getProductName())
+                    .userName(Collections.singletonList(dto.getUserName()))
+                    .influencerList(influencerNameList)
+                    .build();
+            response.add(listupCardResponse);
+        }
+
+
+
+        int totalCount = campaignQueryMapper.countListup(request, PipelineStepConstants.LIST_UP);
+        log.info("총 개수: {}", totalCount);
+
+        Pagination pagination = Pagination.builder()
+                .currentPage(request.getPage())
+                .size(size)
+                .totalPage((int) Math.ceil((double) totalCount /size))
+                .totalCount(totalCount)
+                .build();
+
+        return ListupSearchResponse.builder()
+                .response(response)
+                .pagination(pagination)
+                .build();
+    }
 
     public ProposalSearchResponse getProposalList(Long userId, PipelineSearchRequest request) {
         int offset = (request.getPage() - 1) * request.getSize();
@@ -508,6 +554,22 @@ public class CampaignQueryService {
         return CampaignResultListResponse.builder()
                 .data(finalResultList)
                 .total(total)
+                .build();
+    }
+
+    public ListupDetailResponse getListupDetail(Long userId, Long pipelineId) {
+        /* 인플루언서 가져오기 */
+        List<InfluencerInfo> influencerList = campaignQueryMapper.findPipelineInfluencer(pipelineId);
+
+        /* 폼 가져오기 */
+        ListupFormDTO listupFormDto = campaignQueryMapper.findListupDetail(pipelineId, PipelineStepConstants.LIST_UP);
+
+        return ListupDetailResponse.builder()
+                .campaignId(listupFormDto.getCampaignId())
+                .campaignName(listupFormDto.getCampaignName())
+                .clientCompanyId(listupFormDto.getClientCompanyId())
+                .clientCompanyName(listupFormDto.getClientCompanyName())
+                .influencerList(influencerList)
                 .build();
     }
 }
