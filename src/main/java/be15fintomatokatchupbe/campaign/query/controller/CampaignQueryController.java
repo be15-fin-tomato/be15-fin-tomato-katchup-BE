@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.campaign.query.controller;
 
+import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.service.CampaignQueryService;
@@ -8,6 +9,7 @@ import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -185,4 +187,13 @@ public class CampaignQueryController {
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @GetMapping("/resultlist")
+    @Operation(summary = "성과 목록 조회", description = "완료된 캠페인 목록을 조회할 수 있다. 검색, 필터, 정렬, 페이지네이션 기능을 모두 지원한다.")
+    public ResponseEntity<ApiResponse<CampaignResultListResponse>> getCampaignResults(
+            @ModelAttribute CampaignResultRequest request) {
+        CampaignResultListResponse response = campaignQueryService.findCampaignResultList(request);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 }
+
