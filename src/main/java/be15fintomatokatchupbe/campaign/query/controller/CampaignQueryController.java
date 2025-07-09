@@ -166,9 +166,10 @@ public class CampaignQueryController {
 
     @GetMapping("/resultlist")
     @Operation(summary = "성과 목록 조회", description = "완료된 캠페인 목록을 조회할 수 있다. 검색, 필터, 정렬, 페이지네이션 기능을 모두 지원한다.")
-    public ResponseEntity<ApiResponse<List<CampaignResultResponse>>> getCampaignResults(
+    public ResponseEntity<ApiResponse<CampaignResultListResponse>> getCampaignResults(
             @ModelAttribute CampaignResultRequest request) {
-        List<CampaignResultResponse> responseList = campaignQueryService.findCampaignResultList(request);
-        return ResponseEntity.ok(ApiResponse.success(responseList));
+        CampaignResultListResponse response = campaignQueryService.findCampaignResultList(request);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
+
