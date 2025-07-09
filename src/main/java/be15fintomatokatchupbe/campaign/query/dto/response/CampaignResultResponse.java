@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class CampaignResultResponse {
     private Long pipelineId;
-    private String campaignName;
+    private String name;
     private String clientCompanyName;
     private String clientName;
     private String influencerName;

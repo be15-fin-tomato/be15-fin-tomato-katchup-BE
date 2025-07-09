@@ -859,7 +859,7 @@
     <select id="findCampaignResultList" resultType="be15fintomatokatchupbe.campaign.query.dto.response.CampaignResultResponse">
         SELECT
         picm.pipeline_id AS pipelineId,
-        c.campaign_name AS campaignName,
+        c.campaign_name AS name,
         cc.client_company_name AS clientCompanyName,
         c.product_name AS productName,
         c.updated_at AS updatedAt,
