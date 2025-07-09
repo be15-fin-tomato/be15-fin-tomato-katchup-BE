@@ -20,6 +20,7 @@
             cc.notes,
 
             cm.client_manager_id AS managerId,
+            cm.client_manager_status_id AS managerStatusId,
             cm.name AS managerName,
             cm.department AS managerDepartment,
             cm.position AS managerPosition,
@@ -57,6 +58,7 @@
 
         <collection property="clientManagers" ofType="be15fintomatokatchupbe.client.query.dto.ClientManagerResponse">
             <result property="clientManagerId" column="managerId"/>
+            <result property="clientManagerStatusId" column="managerStatusId"/>
             <result property="name" column="managerName"/>
             <result property="department" column="managerDepartment"/>
             <result property="position" column="managerPosition"/>
