@@ -536,21 +536,24 @@ public class CampaignQueryService {
     }
 
     public CampaignResultListResponse findCampaignResultList(CampaignResultRequest request) {
-        int page = request.getPage() != null ? request.getPage() : 0;
+        int page = request.getPage() != null ? request.getPage() : 1;
         int size = request.getSize() != null ? request.getSize() : 6;
-        int offset = page * size;
+
+        int offset = (page - 1) * size;
 
         int total = campaignQueryMapper.countCampaignResultList(request);
+
         List<CampaignResultResponse> rawResultList =
                 campaignQueryMapper.findCampaignResultList(
-                        request,
-                        offset,
-                        size,
+                        request,    // @Param("request")로 매퍼에 전달
+                        offset,     // @Param("offset")로 매퍼에 전달
+                        size,       // @Param("size")로 매퍼에 전달
                         request.getSortBy(),
                         request.getSortOrder()
                 );
 
         List<CampaignResultResponse> finalResultList = rawResultList;
+
         return CampaignResultListResponse.builder()
                 .data(finalResultList)
                 .total(total)

@@ -864,7 +864,7 @@
         c.product_name AS productName,
         c.updated_at AS updatedAt,
         c.created_at AS registrationDate,
-        MIN(i.name) AS influencerName, -- 가장 첫 번째 인플루언서 이름 (알파벳순)
+        MIN(i.name) AS influencerName, -- 단일 인플루언서 이름 (요청에 따라 MIN 유지)
         GROUP_CONCAT(DISTINCT cm.name ORDER BY cm.name SEPARATOR ', ') AS clientName
         FROM
         pipeline_influencer_client_manager picm
