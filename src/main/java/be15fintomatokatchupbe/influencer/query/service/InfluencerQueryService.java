@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.influencer.query.service;
 
 import be15fintomatokatchupbe.common.dto.Pagination;
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
 import be15fintomatokatchupbe.influencer.query.dto.request.InfluencerListRequestDTO;
 import be15fintomatokatchupbe.influencer.query.dto.response.*;
 import be15fintomatokatchupbe.influencer.query.mapper.InfluencerMapper;
@@ -63,6 +64,11 @@ public class InfluencerQueryService {
 
     public List<CategoryDto> getCategoryList() {
         return influencerMapper.findCategoryList();
+    }
+
+    public InfluencerCardResponse getInfluencerById(Long influencerId) {
+        return influencerMapper.findInfluencerById(influencerId)
+                .orElseThrow(() -> new BusinessException(InfluencerErrorCode.INFLUENCER_NOT_FOUND));
     }
 }
 
