@@ -5,8 +5,8 @@ import be15fintomatokatchupbe.influencer.command.application.support.YoutubeHelp
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Youtube;
 import be15fintomatokatchupbe.infra.redis.YoutubeTokenRepository;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
+import be15fintomatokatchupbe.oauth.query.dto.YoutubeVideoInfo;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeChannelInfoResponse;
-import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeStatsResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
@@ -219,51 +219,47 @@ public class YoutubeOAuthQueryService {
         }
     }
 
-    public Map<String, Double> getSubscribedStatusRatio(String accessToken, String channelId, String ignoredStartDate, String endDate) {
+    public Map<String, Double> getSubscribedStatusRatio(String accessToken, String channelId, String startDate, String endDate) {
         try {
-            // 안정성을 위해 subscribedStatus 조회는 항상 90일로 제한
-            LocalDate end = LocalDate.parse(endDate);
-            LocalDate start = end.minusDays(90);
-
-
-            String startStr = start.toString();
-            String endStr = end.toString();
-
-            log.info("🔍 subscribedStatus 조회 시작 - channelId={}, startDate={}, endDate={}", channelId, startStr, endStr);
-            log.info("📆 subscribedStatus 요청 기간 = {}일", ChronoUnit.DAYS.between(start, end));
-
             AnalyticsResponse response = getChannelAnalytics(
                     accessToken,
                     channelId,
-                    startStr,
-                    endStr,
+                    startDate,
+                    endDate,
                     "views",
                     "subscribedStatus",
                     null
             );
 
-            if (response.getRows() == null || response.getRows().isEmpty()) {
-                return Map.of("subscribed", 0.0, "notSubscribed", 0.0);
-            }
+            long totalViews = response.getRows().stream()
+                    .mapToLong(row -> ((Number) row.get(1)).longValue())
+                    .sum();
 
-            long totalViews = response.getRows().stream().mapToLong(r -> ((Number) r.get(1)).longValue()).sum();
             if (totalViews == 0) {
                 return Map.of("subscribed", 0.0, "notSubscribed", 0.0);
             }
 
-            return response.getRows().stream().collect(Collectors.toMap(
-                    row -> row.get(0).toString().equals("SUBSCRIBED") ? "subscribed" : "notSubscribed",
-                    row -> ((Number) row.get(1)).doubleValue() * 100 / totalViews
-            ));
+            return response.getRows().stream()
+                    .collect(Collectors.toMap(
+                            row -> {
+                                String key = String.valueOf(row.get(0));
+                                return switch (key) {
+                                    case "SUBSCRIBED" -> "subscribed";
+                                    case "UNSUBSCRIBED" -> "notSubscribed";
+                                    default -> "unknown";
+                                };
+                            },
+                            row -> ((Number) row.get(1)).doubleValue() * 100 / totalViews,
+                            (v1, v2) -> v1 // ⚠ 중복 key 있을 경우 첫 번째 값 유지
+                    ));
 
         } catch (WebClientResponseException e) {
-            log.warn("⚠️ subscribedStatus API 오류 - channelId={}, fallback to 0.0", channelId);
-            return Map.of("subscribed", 0.0, "notSubscribed", 0.0);
-        } catch (Exception e) {
-            log.warn("⚠️ subscribedStatus 기타 오류 - channelId={}, fallback to 0.0", channelId);
+            log.warn("⚠️ subscribedStatus 오류 - channelId={}, startDate={}, endDate={}, msg={}",
+                    channelId, startDate, endDate, e.getMessage());
             return Map.of("subscribed", 0.0, "notSubscribed", 0.0);
         }
     }
+
 
     public Map<String, Double> getAgeGroupRatio(String accessToken, String channelId, String startDate, String endDate) {
         return getRatioByDimension(accessToken, channelId, startDate, endDate, "ageGroup");
@@ -285,7 +281,7 @@ public class YoutubeOAuthQueryService {
         return getMetricSum(accessToken, channelId, startDate, endDate, "comments");
     }
 
-    public List<YoutubeStatsResponse.VideoInfo> getTopVideos(String accessToken, String channelId, String startDate, String endDate) {
+    public List<YoutubeVideoInfo> getTopVideos(String accessToken, String channelId, String startDate, String endDate) {
         try {
             // 1. 최신 영상 20개 조회
             URI searchUri = UriComponentsBuilder
@@ -333,7 +329,7 @@ public class YoutubeOAuthQueryService {
                     .bodyToMono(JsonNode.class)
                     .block();
 
-            List<YoutubeStatsResponse.VideoInfo> videoInfos = new ArrayList<>();
+            List<YoutubeVideoInfo> videoInfos = new ArrayList<>();
             for (JsonNode item : Objects.requireNonNull(statsRoot).get("items")) {
                 String videoId = item.get("id").asText();
                 JsonNode statistics = item.get("statistics");
@@ -341,7 +337,7 @@ public class YoutubeOAuthQueryService {
 
                 long views = statistics.has("viewCount") ? statistics.get("viewCount").asLong() : 0;
 
-                videoInfos.add(YoutubeStatsResponse.VideoInfo.builder()
+                videoInfos.add(YoutubeVideoInfo.builder()
                         .videoId(videoId)
                         .views(views)
                         .title(snippet != null ? snippet.get("title").asText() : "(제목 없음)")
@@ -350,7 +346,7 @@ public class YoutubeOAuthQueryService {
             }
 
             return videoInfos.stream()
-                    .sorted(Comparator.comparingLong(YoutubeStatsResponse.VideoInfo::getViews).reversed())
+                    .sorted(Comparator.comparingLong(YoutubeVideoInfo::getViews).reversed())
                     .limit(5)
                     .toList();
 
@@ -361,7 +357,7 @@ public class YoutubeOAuthQueryService {
     }
 
 
-    public List<YoutubeStatsResponse.VideoInfo> getTopShorts(String accessToken, String channelId, String startDate, String endDate) {
+    public List<YoutubeVideoInfo> getTopShorts(String accessToken, String channelId, String startDate, String endDate) {
         return getTopVideos(accessToken, channelId, startDate, endDate).stream()
                 .filter(v -> {
                     String title = v.getTitle().toLowerCase();
