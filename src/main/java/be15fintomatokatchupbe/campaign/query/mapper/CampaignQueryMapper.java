@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.campaign.query.mapper;
 
 import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
+import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import org.apache.ibatis.annotations.Mapper;
@@ -83,4 +84,14 @@ public interface CampaignQueryMapper {
     Long findTotalAdPrice(Long pipelineId);
 
     List<ReferenceDto> getReferenceList(Long campaignId, Long pipelineStepId);
+
+    List<CampaignResultResponse> findCampaignResultList(
+            @Param("request") CampaignResultRequest request,
+            @Param("offset") int offset,
+            @Param("size") int size,
+            @Param("sortBy") String sortBy,
+            @Param("sortOrder") String sortOrder
+    );
+
+    int countCampaignResultList(@Param("request") CampaignResultRequest request);
 }
