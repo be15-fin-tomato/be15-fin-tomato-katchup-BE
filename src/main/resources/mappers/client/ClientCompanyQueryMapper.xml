@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="be15fintomatokatchupbe.client.query.mapper.ClientCompanyQueryMapper">
 
@@ -241,5 +241,25 @@
                 AND client_company_name LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
+    </select>
+
+    <select id="getClientCompanyContract" resultType="be15fintomatokatchupbe.client.query.dto.ClientCompanyContractDto">
+        SELECT
+              a.contract_id contractId
+            , a.campaign_id
+            , b.campaign_name
+            , b.product_name
+            , c.name
+            , d.total_profit
+            , d.started_at
+            , d.ended_at
+          FROM contract a
+          JOIN campaign b ON a.campaign_id = b.campaign_id
+          JOIN influencer c ON a.influencer_id = c.influencer_id
+          JOIN pipeline d ON a.campaign_id = d.campaign_id
+        WHERE b.client_company_id = #{ clientCompanyId }
+          AND d.pipeline_step_id = 7
+          AND d.pipeline_status_id = 2
+        ORDER BY d.ended_at desc;
     </select>
 </mapper>
