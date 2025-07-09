@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
+import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -78,7 +79,7 @@ public interface CampaignQueryMapper {
 
     String selectCampaignNotes(Long campaignId);
 
-    List<Long> selectCampaignUserList(@Param("clientCompanyId") Long clientCompanyId);
+    List<User> selectCampaignUserList(@Param("clientCompanyId") Long clientCompanyId);
 
     List<Long> selectCampaignCategoryList(@Param("campaignId") Long campaignId);
 

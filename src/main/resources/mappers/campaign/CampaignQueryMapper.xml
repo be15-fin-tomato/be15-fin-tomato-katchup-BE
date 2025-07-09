@@ -660,6 +660,8 @@
         c.campaign_status_id AS campaignStatusId,
         c.client_company_id AS clientCompanyId,
         cc.client_company_name AS clientCompanyName,
+        cc.address,
+        cc.detail_address,
 
         (
             SELECT cm.client_manager_id
@@ -690,17 +692,17 @@
         c.product_price AS productPrice,
 
         (
-            SELECT MIN(p.presented_at)
+            SELECT DATE_FORMAT(MIN(p.presented_at), '%Y.%m.%d')
             FROM pipeline p
             WHERE p.campaign_id = c.campaign_id
-                AND p.is_deleted = 'N'
-        ) AS startedAtRaw,
+            AND p.is_deleted = 'N'
+        ) AS startedAt,
         (
-            SELECT MAX(p.presented_at)
+            SELECT DATE_FORMAT(MAX(p.presented_at), '%Y.%m.%d')
             FROM pipeline p
             WHERE p.campaign_id = c.campaign_id
                 AND p.is_deleted = 'N'
-        ) AS endedAtRaw
+        ) AS endedAt
 
         FROM campaign c
         LEFT JOIN client_company cc ON c.client_company_id = cc.client_company_id
@@ -734,8 +736,10 @@
     </select>
 
     <!-- 캠페인 유저 리스트 조회 -->
-    <select id="selectCampaignUserList" resultType="long">
-        SELECT u.user_id
+    <select id="selectCampaignUserList" resultType="be15fintomatokatchupbe.user.command.domain.aggregate.User">
+        SELECT
+              u.user_id
+            , u.name
         FROM client_company_user cu
         JOIN user u ON cu.user_id = u.user_id
         WHERE cu.client_company_id = #{clientCompanyId}
@@ -751,6 +755,8 @@
     <!-- 캠페인 파이프라인 타임라인 조회 -->
     <select id="selectPipelineTimeline" resultType="be15fintomatokatchupbe.campaign.query.dto.response.PipelineTimelineDto">
         SELECT
+        p.pipeline_id,
+        p.pipeline_step_id,
         ps.step_name AS stepType,
         p.name AS pipelineTitle,
         cc.client_company_name AS clientCompanyName,
@@ -768,7 +774,10 @@
         SELECT COUNT(*)
         FROM pipeline_influencer_client_manager picm
         WHERE picm.pipeline_id = p.pipeline_id
-        ) AS influencerCount
+        ) AS influencerCount,
+        p.started_at,
+        p.ended_at,
+        DATE_FORMAT(p.created_at, '%Y-%m-%d') createdAt
         FROM pipeline p
         JOIN pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
         JOIN campaign c ON p.campaign_id = c.campaign_id
