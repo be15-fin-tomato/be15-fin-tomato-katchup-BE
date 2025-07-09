@@ -744,4 +744,67 @@
             </if>
         </where>
     </select>
+
+    <select id="findCampaignResultList" resultType="be15fintomatokatchupbe.campaign.query.dto.response.CampaignResultResponse">
+        SELECT
+        picm.pipeline_id AS pipelineId,
+        c.campaign_name AS campaignName,
+        cc.client_company_name AS clientCompanyName,
+        c.product_name AS productName,
+        c.updated_at AS updatedAt,
+        c.created_at AS registrationDate,
+        MIN(i.name) AS influencerName, -- 가장 첫 번째 인플루언서 이름 (알파벳순)
+        GROUP_CONCAT(DISTINCT cm.name ORDER BY cm.name SEPARATOR ', ') AS clientName
+        FROM
+        pipeline_influencer_client_manager picm
+        LEFT JOIN
+        pipeline p ON picm.pipeline_id = p.pipeline_id
+        LEFT JOIN
+        campaign c ON p.campaign_id = c.campaign_id
+        LEFT JOIN
+        influencer i ON picm.influencer_id = i.influencer_id
+        LEFT JOIN
+        client_company cc ON c.client_company_id = cc.client_company_id
+        LEFT JOIN
+        client_manager cm ON picm.client_manager_id = cm.client_manager_id
+        LEFT JOIN
+        campaign_status cs ON c.campaign_status_id = cs.campaign_status_id
+        WHERE 1=1
+        AND c.campaign_status_id = 5
+        <if test="request.keyword != null and request.keyword != ''">
+            <choose>
+                <when test="request.searchCondition == 'all'">
+                    AND (
+                    c.campaign_name LIKE CONCAT('%', #{request.keyword}, '%') OR
+                    cc.client_company_name LIKE CONCAT('%', #{request.keyword}, '%') OR
+                    cm.name LIKE CONCAT('%', #{request.keyword}, '%') OR
+                    i.name LIKE CONCAT('%', #{request.keyword}, '%') OR
+                    c.product_name LIKE CONCAT('%', #{request.keyword}, '%')
+                    )
+                </when>
+                <when test="request.searchCondition == '제목'">
+                    AND c.campaign_name LIKE CONCAT('%', #{request.keyword}, '%')
+                </when>
+                <when test="request.searchCondition == '고객사'">
+                    AND cc.client_company_name LIKE CONCAT('%', #{request.keyword}, '%')
+                </when>
+                <when test="request.searchCondition == '담당자'">
+                    AND cm.name LIKE CONCAT('%', #{request.keyword}, '%')
+                </when>
+            </choose>
+        </if>
+        GROUP BY
+        picm.pipeline_id, c.campaign_name, cc.client_company_name, c.product_name, c.updated_at, c.created_at
+        ORDER BY
+        <choose>
+            <when test="sortBy == 'registrationDate'">c.created_at</when>
+            <when test="sortBy == 'campaignName'">c.campaign_name</when>
+            <when test="sortBy == 'clientCompanyName'">cc.client_company_name</when>
+            <when test="sortBy == 'clientName'">clientName</when>
+            <otherwise>c.created_at</otherwise>
+        </choose>
+        <if test="sortOrder == 'desc'">DESC</if>
+        <if test="sortOrder == 'asc'">ASC</if>
+        LIMIT #{size} OFFSET #{offset}
+    </select>
 </mapper>

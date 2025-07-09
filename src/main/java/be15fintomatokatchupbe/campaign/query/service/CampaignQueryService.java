@@ -3,6 +3,7 @@ package be15fintomatokatchupbe.campaign.query.service;
 
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
 import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
+import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
@@ -488,4 +489,36 @@ public class CampaignQueryService {
                 .build();
     }
 
+    public List<CampaignResultResponse> findCampaignResultList(CampaignResultRequest request) {
+        int page = Math.max(1, request.getPage());
+        int size = request.getSize();
+        int offset = (page - 1) * size;
+
+        List<CampaignResultResponse> rawResultList =
+                campaignQueryMapper.findCampaignResultList(
+                        request,
+                        offset,
+                        size,
+                        request.getSortBy(),
+                        request.getSortOrder()
+                );
+        Map<Long, CampaignResultResponse> consolidatedMap = new LinkedHashMap<>();
+
+        for (CampaignResultResponse item : rawResultList) {
+            Long pipelineId = item.getPipelineId();
+            if (!consolidatedMap.containsKey(pipelineId)) {
+                consolidatedMap.put(pipelineId, item);
+            } else {
+                CampaignResultResponse existing = consolidatedMap.get(pipelineId);
+                if (existing.getInfluencerName() == null && item.getInfluencerName() != null) {
+                    existing.setInfluencerName(item.getInfluencerName());
+                }
+                if (existing.getClientName() == null && item.getClientName() != null) {
+                    existing.setClientName(item.getClientName());
+                }
+            }
+        }
+        return new ArrayList<>(consolidatedMap.values());
+    }
 }
+
