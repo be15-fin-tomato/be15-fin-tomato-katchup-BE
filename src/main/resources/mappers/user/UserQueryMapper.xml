@@ -42,10 +42,12 @@
     <select id="findUserNamesByIds" resultType="be15fintomatokatchupbe.chat.query.application.dto.response.UserSimpleDto">
         SELECT user_id AS senderId, name AS senderName
         FROM user
-        WHERE user_id IN
-        <foreach item="id" collection="senderIds" open="(" separator="," close=")">
-            #{id}
-        </foreach>
+        <if test="senderIds != null and senderIds.size > 0">
+            WHERE user_id IN
+            <foreach item="id" collection="senderIds" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
     </select>
 
     <select id="findUserIdsByIds" parameterType="list" resultType="long">
