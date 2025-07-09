@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Tag(name ="계약서")
 @RestController
 @RequestMapping("/contracts")
@@ -51,14 +53,14 @@ public class ContractCommandController {
     @PostMapping(value = "/send", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Void>> sendEmail(
             @RequestPart("data") SendEmailRequest request,
-            @RequestPart(value = "file", required = false) MultipartFile file
+            @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) {
         String content = request.getContent();
         String title = request.getTitle();
         String email = request.getTargetEmail();
 
         // 파일 포함 여부에 따라 메서드 분기 없이 하나로 처리 가능
-        emailUtils.sendEmail(content, title, email, file);
+        emailUtils.sendEmail(content, title, email, files);
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }

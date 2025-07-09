@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class ClientManagerResponse {
     private Long clientManagerId;
+    private Long clientManagerStatusId;
     private String name;
     private String department;
     private String position;
