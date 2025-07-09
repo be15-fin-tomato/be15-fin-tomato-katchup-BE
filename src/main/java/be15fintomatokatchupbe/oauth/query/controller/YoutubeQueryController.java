@@ -4,7 +4,7 @@ import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.oauth.query.dto.request.YoutubeCodeRequest;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeCodeResponse;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeStatsResponse;
-import be15fintomatokatchupbe.oauth.query.service.YoutubeAnalyticsService;
+import be15fintomatokatchupbe.oauth.query.service.YoutubeAnalyticsQueryService;
 import be15fintomatokatchupbe.oauth.query.service.YoutubeOAuthQueryService;
 import be15fintomatokatchupbe.oauth.query.service.YoutubeOAuthQueryService.AnalyticsResponse;
 import be15fintomatokatchupbe.oauth.query.service.YoutubeOAuthQueryService.ChannelIdResponse;
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class YoutubeQueryController {
 
     private final YoutubeOAuthQueryService youtubeOAuthQueryService;
-    private final YoutubeAnalyticsService youtubeAnalyticsService;
+    private final YoutubeAnalyticsQueryService youtubeAnalyticsQueryService;
 
     @GetMapping("/callback")
     public ResponseEntity<ApiResponse<String>> registerYoutube(
@@ -96,14 +96,15 @@ public class YoutubeQueryController {
     }
 
     @Operation(summary = "YouTube 통합 통계 조회", description = "YouTube 채널에 대한 통계 정보를 통합 조회합니다. (조회수, 좋아요 수 등)")
-    @GetMapping("/youtube/stats")
+    @GetMapping("/stats")
     public ResponseEntity<ApiResponse<YoutubeStatsResponse>> getAggregatedStats(
-            @RequestParam String accessToken,
-            @RequestParam String channelId,
+            @RequestParam Long influencerId,
             @RequestParam String startDate,
             @RequestParam String endDate
     ) {
-        YoutubeStatsResponse stats = youtubeAnalyticsService.getYoutubeStats(accessToken, channelId, startDate, endDate);
+        YoutubeStatsResponse stats = youtubeAnalyticsQueryService.getYoutubeStatsByInfluencer(influencerId, startDate, endDate);
         return ResponseEntity.ok(ApiResponse.success(stats));
     }
+
+
 }

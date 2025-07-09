@@ -5,7 +5,7 @@ import be15fintomatokatchupbe.oauth.query.domain.InstagramStatsSnapshot;
 import be15fintomatokatchupbe.oauth.query.dto.FollowerTrend;
 import be15fintomatokatchupbe.oauth.query.dto.InstagramMediaStats;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramStatsResponse;
-import be15fintomatokatchupbe.oauth.query.repository.InstagramStatsSnapshotRepository;
+import be15fintomatokatchupbe.oauth.command.application.repository.InstagramStatsSnapshotRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
