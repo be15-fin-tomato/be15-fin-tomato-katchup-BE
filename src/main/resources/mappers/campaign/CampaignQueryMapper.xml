@@ -886,6 +886,8 @@
             campaign
         <where>
             is_deleted = 'N'
+            AND
+                campaign_status_id IN (2, 3, 4)
             <if test="clientCompanyId != null">
                 AND client_company_id = #{clientCompanyId}
             </if>
