@@ -3,10 +3,13 @@ package be15fintomatokatchupbe.campaign.query.service;
 
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
 import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
+import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
+import be15fintomatokatchupbe.campaign.query.dto.mapper.ListupFormDTO;
 import be15fintomatokatchupbe.common.dto.Pagination;
+import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,51 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CampaignQueryService {
     private final CampaignQueryMapper campaignQueryMapper;
+
+    public ListupSearchResponse getListupList(Long userId, PipelineSearchRequest request) {
+        int offset = (request.getPage() - 1) * request.getSize();
+        int size = request.getSize();
+
+        List<ListupCardDTO> listupList = campaignQueryMapper.findListupList(request, offset, size, PipelineStepConstants.LIST_UP);
+
+        List<ListupCardResponse> response = new ArrayList<>();
+
+        for(ListupCardDTO dto: listupList){
+            List<String> influencerNameList = Optional.ofNullable(dto.getInfluencerNameInfo())
+                    .map(s -> Arrays.stream(s.split(","))
+                            .map(String::trim)
+                            .toList())
+                    .orElse(List.of());
+            ListupCardResponse listupCardResponse = ListupCardResponse.builder()
+                    .pipelineId(dto.getPipelineId())
+                    .name(dto.getName())
+                    .campaignName(dto.getCampaignName())
+                    .clientCompanyName(dto.getClientCompanyName())
+//                    .clientManagerName(dto.getClientManagerName())
+                    .productName(dto.getProductName())
+                    .userName(Collections.singletonList(dto.getUserName()))
+                    .influencerList(influencerNameList)
+                    .build();
+            response.add(listupCardResponse);
+        }
+
+
+
+        int totalCount = campaignQueryMapper.countListup(request, PipelineStepConstants.LIST_UP);
+        log.info("총 개수: {}", totalCount);
+
+        Pagination pagination = Pagination.builder()
+                .currentPage(request.getPage())
+                .size(size)
+                .totalPage((int) Math.ceil((double) totalCount /size))
+                .totalCount(totalCount)
+                .build();
+
+        return ListupSearchResponse.builder()
+                .response(response)
+                .pagination(pagination)
+                .build();
+    }
 
     public ProposalSearchResponse getProposalList(Long userId, PipelineSearchRequest request) {
         int offset = (request.getPage() - 1) * request.getSize();
@@ -380,24 +428,8 @@ public class CampaignQueryService {
         // 날짜 포맷터 선언
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        // startedAt/endedAt Timestamp → yyyy-MM-dd String 포맷으로 변환
-        if (detail.getStartedAtRaw() != null) {
-            LocalDateTime startedAt = detail.getStartedAtRaw()
-                    .toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-            detail.setStartedAt(startedAt.format(formatter));
-        }
-        if (detail.getEndedAtRaw() != null) {
-            LocalDateTime endedAt = detail.getEndedAtRaw()
-                    .toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-            detail.setEndedAt(endedAt.format(formatter));
-        }
-
         // 2. 캠페인 유저 리스트 조회
-        List<Long> userList = campaignQueryMapper.selectCampaignUserList(detail.getClientCompanyId());
+        List<User> userList = campaignQueryMapper.selectCampaignUserList(detail.getClientCompanyId());
         detail.setUserList(userList);
 
         // 3. 캠페인 카테고리 리스트 조회
@@ -488,4 +520,46 @@ public class CampaignQueryService {
                 .build();
     }
 
+    public CampaignResultListResponse findCampaignResultList(CampaignResultRequest request) {
+        int page = request.getPage() != null ? request.getPage() : 1;
+        int size = request.getSize() != null ? request.getSize() : 6;
+
+        int offset = (page - 1) * size;
+
+        int total = campaignQueryMapper.countCampaignResultList(request);
+
+        List<CampaignResultResponse> rawResultList =
+                campaignQueryMapper.findCampaignResultList(
+                        request,    // @Param("request")로 매퍼에 전달
+                        offset,     // @Param("offset")로 매퍼에 전달
+                        size,       // @Param("size")로 매퍼에 전달
+                        request.getSortBy(),
+                        request.getSortOrder()
+                );
+
+        List<CampaignResultResponse> finalResultList = rawResultList;
+
+        return CampaignResultListResponse.builder()
+                .data(finalResultList)
+                .total(total)
+                .build();
+    }
+
+    public ListupDetailResponse getListupDetail(Long userId, Long pipelineId) {
+        /* 인플루언서 가져오기 */
+        List<InfluencerInfo> influencerList = campaignQueryMapper.findPipelineInfluencer(pipelineId);
+
+        /* 폼 가져오기 */
+        ListupFormDTO listupFormDto = campaignQueryMapper.findListupDetail(pipelineId, PipelineStepConstants.LIST_UP);
+
+        return ListupDetailResponse.builder()
+                .campaignId(listupFormDto.getCampaignId())
+                .campaignName(listupFormDto.getCampaignName())
+                .clientCompanyId(listupFormDto.getClientCompanyId())
+                .clientCompanyName(listupFormDto.getClientCompanyName())
+                .influencerList(influencerList)
+                .build();
+    }
 }
+
+

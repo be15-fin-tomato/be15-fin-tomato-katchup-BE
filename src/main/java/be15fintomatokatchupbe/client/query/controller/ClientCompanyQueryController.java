@@ -61,4 +61,15 @@ public class ClientCompanyQueryController {
         return ResponseEntity.ok(ApiResponse.success(response));
 
     }
+
+    @GetMapping("/success/{clientCompanyId}")
+    @Operation(summary = "계약완료 목록 조회")
+    public ResponseEntity<ApiResponse<ClientCompanyContractResponse>> getClientCompanyContract(
+            @PathVariable Long clientCompanyId
+    ) {
+        ClientCompanyContractResponse response = clientCompanyQueryService.getClientCompanyContract(clientCompanyId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
 }

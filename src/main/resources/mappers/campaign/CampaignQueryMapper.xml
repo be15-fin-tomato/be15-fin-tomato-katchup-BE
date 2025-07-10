@@ -40,7 +40,6 @@
         p.pipeline_step_id = #{ pipelineStepId }
         AND
         p.is_deleted = 'N'
-        <!-- 인플루언서는 조회하지 않음! -->
 
         <!-- 검색 조건 추가하기 -->
         <if test="req.keyword != null and req.keyword != ''">
@@ -60,6 +59,67 @@
 
         GROUP BY
         p.pipeline_id, p.name, ps.status_name, cc.client_company_name, c.product_name, p.expected_revenue, cm.name
+
+        ORDER BY
+        <choose>
+            <when test="req.sort == 'date'">p.created_at</when>
+            <when test="req.sort == 'title'">p.name</when>
+            <otherwise>p.created_at</otherwise>
+        </choose>
+        <choose>
+            <when test="req.sortOrder == 'desc'">DESC</when>
+            <otherwise>ASC</otherwise>
+        </choose>
+
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="findListupList" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.ListupCardDTO">
+        SELECT
+        p.pipeline_id AS pipelineId,
+        p.name AS name,
+        u.name AS userName,
+        c.campaign_name AS campaignName,
+        cc.client_company_name AS clientCompanyName,
+        c.product_name AS productName,
+        GROUP_CONCAT(i.name SEPARATOR ', ') AS influencerNameInfo
+        FROM
+        pipeline p
+        JOIN
+        campaign c ON p.campaign_id = c.campaign_id
+        JOIN
+        client_company cc ON c.client_company_id = cc.client_company_id
+        LEFT JOIN
+        pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id AND picm.influencer_id IS NOT NULL
+<!--        LEFT JOIN-->
+        LEFT JOIN
+        pipeline_user pu ON pu.pipeline_id = p.pipeline_id
+        LEFT JOIN
+        user u ON p.writer_id = u.user_id
+        LEFT JOIN
+        influencer i ON picm.influencer_id = i.influencer_id
+
+        WHERE
+        p.pipeline_step_id = #{ pipelineStepId }
+        AND
+        p.is_deleted = 'N'
+        <!-- 인플루언서는 조회하지 않음! -->
+
+        <!-- 검색 조건 추가하기 -->
+        <if test="req.keyword != null and req.keyword != ''">
+            <if test="req.category == 'title'">
+                AND p.name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+            <if test="req.category == 'clientCompany'">
+                AND cc.client_company_name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+        </if>
+        <if test="req.userId != null">
+            AND u.user_id = #{req.userId}
+        </if>
+
+        GROUP BY
+        p.pipeline_id, p.name, c.campaign_name, cc.client_company_name, c.product_name, u.name
 
         ORDER BY
         <choose>
@@ -291,6 +351,40 @@
             ad_price IS NOT NULL;
     </select>
 
+    <select id="countListup" resultType="int">
+        SELECT COUNT(DISTINCT p.pipeline_id)
+        FROM
+        pipeline p
+        JOIN
+        campaign c ON p.campaign_id = c.campaign_id
+        JOIN
+        client_company cc ON c.client_company_id = cc.client_company_id
+        LEFT JOIN
+        pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id AND picm.influencer_id IS NOT NULL
+        LEFT JOIN
+        user u ON p.writer_id = u.user_id
+        LEFT JOIN
+        influencer i ON picm.influencer_id = i.influencer_id
+
+        WHERE
+        p.pipeline_step_id = #{pipelineStepId}
+        AND p.is_deleted = 'N'
+
+        <!-- 검색 조건 -->
+        <if test="req.keyword != null and req.keyword != ''">
+            <if test="req.category == 'title'">
+                AND p.name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+            <if test="req.category == 'clientCompany'">
+                AND cc.client_company_name LIKE CONCAT('%', #{req.keyword}, '%')
+            </if>
+        </if>
+
+        <if test="req.userId != null">
+            AND u.user_id = #{req.userId}
+        </if>
+    </select>
+
     <select id="countPipeline" resultType="int">
         SELECT
         COUNT(DISTINCT p.pipeline_id)
@@ -332,6 +426,26 @@
     </select>
 
 <!-- 요기부터 detail -->
+    <select id="findListupDetail" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.ListupFormDTO">
+        SELECT
+              c.campaign_id AS campaignId
+            , c.campaign_name AS campaignName
+            , cc.client_company_id AS clientCompanyId
+            , cc.client_company_name AS clientCompanyName
+        FROM
+            pipeline p
+        JOIN
+            campaign c ON p.campaign_id = c.campaign_id
+        JOIN
+            client_company cc ON cc.client_company_id = c.client_company_id
+        WHERE
+            p.pipeline_step_id = #{pipelineStepId}
+        AND
+            p.pipeline_id = #{pipelineId}
+        AND
+            p.is_deleted = 'N'
+    </select>
+
     <select id="findQuotationDetail" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.QuotationFormDTO">
         SELECT
             p.name AS name
@@ -481,8 +595,6 @@
             pipeline_influencer_client_manager picm ON picm.influencer_id = i.influencer_id AND picm.influencer_id IS NOT NULL
         WHERE
             picm.pipeline_id = #{pipelineId}
-
-
     </select>
 
 
@@ -548,6 +660,8 @@
         c.campaign_status_id AS campaignStatusId,
         c.client_company_id AS clientCompanyId,
         cc.client_company_name AS clientCompanyName,
+        cc.address,
+        cc.detail_address,
 
         (
             SELECT cm.client_manager_id
@@ -578,17 +692,17 @@
         c.product_price AS productPrice,
 
         (
-            SELECT MIN(p.presented_at)
+            SELECT DATE_FORMAT(MIN(p.presented_at), '%Y.%m.%d')
             FROM pipeline p
             WHERE p.campaign_id = c.campaign_id
-                AND p.is_deleted = 'N'
-        ) AS startedAtRaw,
+            AND p.is_deleted = 'N'
+        ) AS startedAt,
         (
-            SELECT MAX(p.presented_at)
+            SELECT DATE_FORMAT(MAX(p.presented_at), '%Y.%m.%d')
             FROM pipeline p
             WHERE p.campaign_id = c.campaign_id
                 AND p.is_deleted = 'N'
-        ) AS endedAtRaw
+        ) AS endedAt
 
         FROM campaign c
         LEFT JOIN client_company cc ON c.client_company_id = cc.client_company_id
@@ -622,8 +736,10 @@
     </select>
 
     <!-- 캠페인 유저 리스트 조회 -->
-    <select id="selectCampaignUserList" resultType="long">
-        SELECT u.user_id
+    <select id="selectCampaignUserList" resultType="be15fintomatokatchupbe.user.command.domain.aggregate.User">
+        SELECT
+              u.user_id
+            , u.name
         FROM client_company_user cu
         JOIN user u ON cu.user_id = u.user_id
         WHERE cu.client_company_id = #{clientCompanyId}
@@ -639,6 +755,8 @@
     <!-- 캠페인 파이프라인 타임라인 조회 -->
     <select id="selectPipelineTimeline" resultType="be15fintomatokatchupbe.campaign.query.dto.response.PipelineTimelineDto">
         SELECT
+        p.pipeline_id,
+        p.pipeline_step_id,
         ps.step_name AS stepType,
         p.name AS pipelineTitle,
         cc.client_company_name AS clientCompanyName,
@@ -656,7 +774,10 @@
         SELECT COUNT(*)
         FROM pipeline_influencer_client_manager picm
         WHERE picm.pipeline_id = p.pipeline_id
-        ) AS influencerCount
+        ) AS influencerCount,
+        p.started_at,
+        p.ended_at,
+        DATE_FORMAT(p.created_at, '%Y-%m-%d') createdAt
         FROM pipeline p
         JOIN pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
         JOIN campaign c ON p.campaign_id = c.campaign_id
@@ -666,7 +787,6 @@
         ORDER BY p.presented_at ASC
     </select>
 
-    <!-- 캠페인 목록 조회 (기본 정보만) -->
     <select id="findPagedCampaigns" resultType="be15fintomatokatchupbe.campaign.query.dto.response.CampaignListResponse">
         SELECT
         c.campaign_id AS campaignId,
@@ -743,5 +863,110 @@
                 AND campaign_id = #{campaignId}
             </if>
         </where>
+    </select>
+
+    <select id="findCampaignResultList" resultType="be15fintomatokatchupbe.campaign.query.dto.response.CampaignResultResponse">
+        SELECT
+        picm.pipeline_id AS pipelineId,
+        c.campaign_name AS name,
+        cc.client_company_name AS clientCompanyName,
+        c.product_name AS productName,
+        c.updated_at AS updatedAt,
+        c.created_at AS registrationDate,
+        MIN(i.name) AS influencerName, -- 단일 인플루언서 이름 (요청에 따라 MIN 유지)
+        GROUP_CONCAT(DISTINCT cm.name ORDER BY cm.name SEPARATOR ', ') AS clientName
+        FROM
+        pipeline_influencer_client_manager picm
+        LEFT JOIN
+        pipeline p ON picm.pipeline_id = p.pipeline_id
+        LEFT JOIN
+        campaign c ON p.campaign_id = c.campaign_id
+        LEFT JOIN
+        influencer i ON picm.influencer_id = i.influencer_id
+        LEFT JOIN
+        client_company cc ON c.client_company_id = cc.client_company_id
+        LEFT JOIN
+        client_manager cm ON picm.client_manager_id = cm.client_manager_id
+        LEFT JOIN
+        campaign_status cs ON c.campaign_status_id = cs.campaign_status_id
+        WHERE 1=1
+        AND c.campaign_status_id = 5
+        <if test="request.keyword != null and request.keyword != ''">
+            <choose>
+                <when test="request.searchCondition == 'all'">
+                    AND (
+                    c.campaign_name LIKE CONCAT('%', #{request.keyword}, '%') OR
+                    cc.client_company_name LIKE CONCAT('%', #{request.keyword}, '%') OR
+                    cm.name LIKE CONCAT('%', #{request.keyword}, '%') OR
+                    i.name LIKE CONCAT('%', #{request.keyword}, '%') OR
+                    c.product_name LIKE CONCAT('%', #{request.keyword}, '%')
+                    )
+                </when>
+                <when test="request.searchCondition == '제목'">
+                    AND c.campaign_name LIKE CONCAT('%', #{request.keyword}, '%')
+                </when>
+                <when test="request.searchCondition == '고객사'">
+                    AND cc.client_company_name LIKE CONCAT('%', #{request.keyword}, '%')
+                </when>
+                <when test="request.searchCondition == '담당자'">
+                    AND cm.name LIKE CONCAT('%', #{request.keyword}, '%')
+                </when>
+            </choose>
+        </if>
+        GROUP BY
+        picm.pipeline_id, c.campaign_name, cc.client_company_name, c.product_name, c.updated_at, c.created_at
+        ORDER BY
+        <choose>
+            <when test="sortBy == 'registrationDate'">c.created_at</when>
+            <when test="sortBy == 'campaignName'">c.campaign_name</when>
+            <when test="sortBy == 'clientCompanyName'">cc.client_company_name</when>
+            <when test="sortBy == 'clientName'">clientName</when>
+            <otherwise>c.created_at</otherwise>
+        </choose>
+        <if test="sortOrder == 'desc'">DESC</if>
+        <if test="sortOrder == 'asc'">ASC</if>
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <select id="countCampaignResultList" resultType="int">
+        SELECT COUNT(DISTINCT picm.pipeline_id)
+        FROM
+        pipeline_influencer_client_manager picm
+        LEFT JOIN
+        pipeline p ON picm.pipeline_id = p.pipeline_id
+        LEFT JOIN
+        campaign c ON p.campaign_id = c.campaign_id
+        LEFT JOIN
+        influencer i ON picm.influencer_id = i.influencer_id
+        LEFT JOIN
+        client_company cc ON c.client_company_id = cc.client_company_id
+        LEFT JOIN
+        client_manager cm ON picm.client_manager_id = cm.client_manager_id
+        LEFT JOIN
+        campaign_status cs ON c.campaign_status_id = cs.campaign_status_id
+        WHERE 1=1
+        AND c.campaign_status_id = 5
+        <if test="request.keyword != null and request.keyword != ''">
+            <choose>
+                <when test="request.searchCondition == 'all'">
+                    AND (
+                    c.campaign_name LIKE CONCAT('%', #{request.keyword}, '%') OR
+                    cc.client_company_name LIKE CONCAT('%', #{request.keyword}, '%') OR
+                    cm.name LIKE CONCAT('%', #{request.keyword}, '%') OR
+                    i.name LIKE CONCAT('%', #{request.keyword}, '%') OR
+                    c.product_name LIKE CONCAT('%', #{request.keyword}, '%')
+                    )
+                </when>
+                <when test="request.searchCondition == '제목'">
+                    AND c.campaign_name LIKE CONCAT('%', #{request.keyword}, '%')
+                </when>
+                <when test="request.searchCondition == '고객사'">
+                    AND cc.client_company_name LIKE CONCAT('%', #{request.keyword}, '%')
+                </when>
+                <when test="request.searchCondition == '담당자'">
+                    AND cm.name LIKE CONCAT('%', #{request.keyword}, '%')
+                </when>
+            </choose>
+        </if>
     </select>
 </mapper>
