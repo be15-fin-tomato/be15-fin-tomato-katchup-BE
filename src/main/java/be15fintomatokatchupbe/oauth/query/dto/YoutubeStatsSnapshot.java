@@ -13,10 +13,13 @@ public class YoutubeStatsSnapshot {private int totalVideos;
     private double monthlyAvgViews;
 
     // 연령대
+    private double age1317;
     private double age1824;
     private double age2534;
     private double age3544;
     private double age4554;
+    private double age5564;
+    private double age65Plus;
 
     // 성별
     private double genderMale;

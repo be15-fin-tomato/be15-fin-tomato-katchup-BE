@@ -9,6 +9,7 @@ import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
 import be15fintomatokatchupbe.campaign.query.dto.mapper.ListupFormDTO;
 import be15fintomatokatchupbe.common.dto.Pagination;
+import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -495,9 +496,9 @@ public class CampaignQueryService {
                 List<PipelineStepDto> stepList = stepMap.getOrDefault(dto.getCampaignId(), Collections.emptyList());
                 dto.setPipelineSteps(stepList);
 
-                // 사후관리는 제외 (총 6단계만 계산)
+                // 사후관리는 제외 (총 7단계만 계산)
                 long completed = stepList.stream().filter(s -> s.getStartedAt() != null).count();
-                dto.setSuccessProbability((int) ((completed / 6.0) * 100));
+                dto.setSuccessProbability((int) ((completed / 7.0) * 100));
             }
         }
 
@@ -559,6 +560,50 @@ public class CampaignQueryService {
                 .clientCompanyName(listupFormDto.getClientCompanyName())
                 .influencerList(influencerList)
                 .build();
+    }
+
+    // 고객사 별 캠페인 목록 조회
+    public List<CampaignListResponse> getCampaignsByClientCompanyId(Long clientCompanyId) {
+        List<CampaignListResponse> campaigns = campaignQueryMapper.findCampaignsByClientCompanyId(clientCompanyId);
+        List<Long> campaignIds = campaigns.stream()
+                .map(CampaignListResponse::getCampaignId)
+                .toList();
+
+        if (!campaignIds.isEmpty()) {
+            List<PipelineStepStatusDto> steps = campaignQueryMapper.findPipelineStepsByCampaignIds(campaignIds);
+
+            Map<Long, List<PipelineStepDto>> stepMap = steps.stream()
+                    .collect(Collectors.groupingBy(
+                            PipelineStepStatusDto::getCampaignId,
+                            Collectors.mapping(
+                                    s -> new PipelineStepDto(s.getStepType(), s.getStartedAt()),
+                                    Collectors.toList()
+                            )
+                    ));
+
+            for (CampaignListResponse dto : campaigns) {
+                List<PipelineStepDto> stepList = stepMap.getOrDefault(dto.getCampaignId(), Collections.emptyList());
+                dto.setPipelineSteps(stepList);
+                long completed = stepList.stream().filter(s -> s.getStartedAt() != null).count();
+                dto.setSuccessProbability((int) ((completed / 7.0) * 100));
+            }
+        }
+
+        return campaigns;
+    }
+
+
+    public CampaignAiResponse getCampaignWithCategory(Long clientCompanyId, String campaignName, List<Long> tags) {
+        log.info("받은 쿼리 : "+ campaignName + clientCompanyId);
+
+        List<CampaignWithCategoryDTO> responseDto = campaignQueryMapper.findCampaignWithCategory(clientCompanyId, campaignName, tags);
+
+        for (CampaignWithCategoryDTO dto : responseDto) {
+            List<CategoryDto> categoryList = campaignQueryMapper.findCategoryByCampaignId(dto.getCampaignId());
+            dto.setCategoryList(categoryList);
+        }
+
+        return CampaignAiResponse.builder().campaignList(responseDto).build();
     }
 }
 

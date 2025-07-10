@@ -13,10 +13,13 @@
             daily_avg_views     AS dailyAvgViews,
             monthly_avg_views   AS monthlyAvgViews,
 
+            age1317             AS 'subscriberAgeRatio.age13-17',
             age1824             AS 'subscriberAgeRatio.age18-24',
             age2534             AS 'subscriberAgeRatio.age25-34',
             age3544             AS 'subscriberAgeRatio.age35-44',
             age4554             AS 'subscriberAgeRatio.age45-54',
+            age5564             AS 'subscriberAgeRatio.age55-64',
+            age65plus           AS 'subscriberAgeRatio.age65+',
 
             gender_male         AS 'subscriberGenderRatio.male',
             gender_female       AS 'subscriberGenderRatio.female',
