@@ -89,7 +89,7 @@ public interface CampaignQueryMapper {
 
     Long selectTotalExpectedRevenue(Long campaignId);
 
-    List<CampaignListResponse> findPagedCampaigns(@Param("limit") int limit, @Param("offset") int offset, ContractListRequest request);
+    List<CampaignListDTO> findPagedCampaigns(@Param("limit") int limit, @Param("offset") int offset, ContractListRequest request);
 
     List<PipelineStepStatusDto> findPipelineStepsByCampaignIds(@Param("campaignIds") List<Long> campaignIds);
 
@@ -112,7 +112,7 @@ public interface CampaignQueryMapper {
     );
 
     // 고객사 ID로 캠페인 목록 조회
-    List<CampaignListResponse> findCampaignsByClientCompanyId(@Param("clientCompanyId") Long clientCompanyId);
+    List<CampaignListDTO> findCampaignsByClientCompanyId(@Param("clientCompanyId") Long clientCompanyId);
 
 
     List<CampaignWithCategoryDTO> findCampaignWithCategory(Long clientCompanyId, String campaignName, List<Long> tags);
@@ -120,4 +120,6 @@ public interface CampaignQueryMapper {
     List<CategoryDto> findCategoryByCampaignId(Long campaignId);
 
     List<PipelineStepStatusDto> findPipelineStepsByCampaignIdsList(List<Long> campaignIds, ContractListRequest request);
+
+    int getTotalSize(ContractListRequest request);
 }

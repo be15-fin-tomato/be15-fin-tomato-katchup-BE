@@ -59,6 +59,8 @@ public class SecurityConfig {
                                         "/swagger-ui.html",
                                         "/oauth2/**")
                                 .permitAll()
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS Preflight 요청 허용
+
                                 /* 일반 권한 */
                                 /* TODO : 필요 할 때 주석 풀고 작성 해 주세요!*/
                                 .requestMatchers(HttpMethod.POST,
