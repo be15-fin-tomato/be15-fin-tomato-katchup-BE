@@ -176,6 +176,16 @@ public class CampaignQueryController {
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
+    @GetMapping("/by-client-company/{clientCompanyId}")
+    @Operation(summary = "고객사 ID로 캠페인 목록 조회", description = "해당 고객사 ID로 진행된 캠페인 목록을 조회합니다.")
+    public ResponseEntity<ApiResponse<List<CampaignListResponse>>> getCampaignsByClientCompanyId(
+            @PathVariable Long clientCompanyId
+    ) {
+        List<CampaignListResponse> result = campaignQueryService.getCampaignsByClientCompanyId(clientCompanyId);
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+
     @GetMapping("/search")
     @Operation(summary = "캠페인 검색", description = "캠페인을 키워드로 검색합니다.")
     public ResponseEntity<ApiResponse<CampaignSearchResponse>> findCampaignList(
