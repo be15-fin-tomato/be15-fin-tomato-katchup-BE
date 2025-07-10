@@ -3,6 +3,8 @@ package be15fintomatokatchupbe.oauth.query.dto;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Builder
 public class YoutubeVideoInfo {
@@ -13,4 +15,5 @@ public class YoutubeVideoInfo {
     private Long likes;
     private Long comments;
     private String thumbnailUrl;
+    private LocalDateTime publishedAt;
 }

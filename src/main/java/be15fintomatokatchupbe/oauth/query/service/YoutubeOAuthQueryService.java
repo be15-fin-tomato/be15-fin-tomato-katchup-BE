@@ -26,6 +26,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -339,6 +341,15 @@ public class YoutubeOAuthQueryService {
                 Long likes = statistics.has("likeCount") ? statistics.get("likeCount").asLong() : 0;
                 long comments = statistics.has("commentCount") ? statistics.get("commentCount").asLong() : 0;
 
+                LocalDateTime publishedAt = null;
+                if (snippet != null && snippet.has("publishedAt")) {
+                    try {
+                        publishedAt = LocalDateTime.parse(snippet.get("publishedAt").asText().replace("Z", ""));
+                    } catch (DateTimeParseException e) {
+                        log.warn("Failed to parse publishedAt for video {}: {}", videoId, e.getMessage());
+                    }
+                }
+
                 videoInfos.add(YoutubeVideoInfo.builder()
                         .videoId(videoId)
                         .views(views)
@@ -346,6 +357,7 @@ public class YoutubeOAuthQueryService {
                         .likes(likes)
                         .title(snippet != null ? snippet.get("title").asText() : "(제목 없음)")
                         .thumbnailUrl(snippet != null ? snippet.get("thumbnails").get("default").get("url").asText() : null)
+                        .publishedAt(publishedAt)
                         .build());
             }
 
