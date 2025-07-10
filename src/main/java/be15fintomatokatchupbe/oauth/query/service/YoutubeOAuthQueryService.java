@@ -335,11 +335,15 @@ public class YoutubeOAuthQueryService {
                 JsonNode statistics = item.get("statistics");
                 JsonNode snippet = snippetMap.get(videoId);
 
-                long views = statistics.has("viewCount") ? statistics.get("viewCount").asLong() : 0;
+                Long views = statistics.has("viewCount") ? statistics.get("viewCount").asLong() : 0;
+                Long likes = statistics.has("likeCount") ? statistics.get("likeCount").asLong() : 0;
+                long comments = statistics.has("commentCount") ? statistics.get("commentCount").asLong() : 0;
 
                 videoInfos.add(YoutubeVideoInfo.builder()
                         .videoId(videoId)
                         .views(views)
+                        .comments(comments)
+                        .likes(likes)
                         .title(snippet != null ? snippet.get("title").asText() : "(제목 없음)")
                         .thumbnailUrl(snippet != null ? snippet.get("thumbnails").get("default").get("url").asText() : null)
                         .build());
