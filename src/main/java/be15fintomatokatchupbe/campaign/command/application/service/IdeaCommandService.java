@@ -23,6 +23,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -55,11 +57,16 @@ public class IdeaCommandService {
         String title = "파이프라인 내 새로운 의견 등록";
         String body = user.getName() + "님이 새로운 의견을 등록했습니다.";
 
-        List<User> allUsers = userRepository.findAll();
+        List<User> allUsers = userRepository.findAllByIsDeleted(StatusType.N);
+
 
         LocalDateTime now = LocalDateTime.now();
 
+        Long pipelineStepId = pipeline.getPipelineStep().getPipelineStepId();
+
         for (User target : allUsers) {
+            String targetUrl = "";
+            StringBuilder sb = new StringBuilder();
             if (!target.getUserId().equals(user.getUserId())) {
 
                 // FCM 전송
@@ -68,26 +75,48 @@ public class IdeaCommandService {
                     fcmService.sendMessage(token, title, body);
                 }
 
+                if(pipelineStepId == 3L) {
+                    targetUrl = "/sales/proposal/";
+                } else if (pipelineStepId == 4L) {
+                    targetUrl = "/sales/quotation/";
+                } else if (pipelineStepId == 6L) {
+                    targetUrl = "/sales/contract/";
+                } else if (pipelineStepId == 7L) {
+                    targetUrl = "/sales/revenue/";
+                }
+                sb.append(targetUrl).append(request.getPipeline());
+
                 // Notification 저장
                 Notification notification = Notification.builder()
                         .userId(target.getUserId())
                         .notificationTypeId(3L)
                         .notificationContent(body)
                         .getTime(now)
+                        .targetId(sb.toString())
                         .build();
 
                 notificationRepository.save(notification);
 
                 sseEmitterRepository.get(target.getUserId()).ifPresent(emitter -> {
+                    long unreadCount = notificationRepository.countByUserIdAndIsReadAndIsDeleted(
+                            target.getUserId(), StatusType.N, StatusType.N
+                    );
                     try {
                         emitter.send(SseEmitter.event()
                                 .name("new-notification")
-                                .data(body));
+                                .data(Map.of(
+                                        "id", notification.getNotificationId(),
+                                        "message", notification.getNotificationContent(),
+                                        "typeId", notification.getNotificationTypeId(),
+                                        "targetId", notification.getTargetId(),
+                                        "unreadCount", unreadCount
+                                ))
+                        ); log.info("전송");
                     } catch (IOException e) {
+                        log.error("실패");
                         sseEmitterRepository.delete(target.getUserId());
                     }
                 });
-
             }
         }
     }

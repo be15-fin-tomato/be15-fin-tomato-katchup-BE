@@ -12,5 +12,4 @@ public class InstagramInfoResponse {
     private String accountId;
     private String name;
     private Long follower;
-    private String thumbnailUrl;
 }

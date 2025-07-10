@@ -1,12 +1,10 @@
 package be15fintomatokatchupbe.contract.command.application.controller;
 
 import be15fintomatokatchupbe.common.dto.ApiResponse;
-import be15fintomatokatchupbe.contract.command.application.dto.request.ContractObjectUpdateRequest;
-import be15fintomatokatchupbe.contract.command.application.dto.request.DetailCreateRequest;
-import be15fintomatokatchupbe.contract.command.application.dto.request.DetailUpdateRequest;
-import be15fintomatokatchupbe.contract.command.application.dto.request.SendEmailRequest;
+import be15fintomatokatchupbe.contract.command.application.dto.request.*;
 import be15fintomatokatchupbe.contract.command.application.service.ContractObjectCommandService;
 import be15fintomatokatchupbe.contract.command.application.service.DetailCommandService;
+import be15fintomatokatchupbe.contract.command.application.service.EmailSendingService;
 import be15fintomatokatchupbe.utils.EmailUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Tag(name ="계약서")
 @RestController
 @RequestMapping("/contracts")
@@ -27,6 +27,17 @@ public class ContractCommandController {
     private final DetailCommandService detailCommandService;
     private final ContractObjectCommandService contractObjectCommandService;
     private final EmailUtils emailUtils;
+    private final EmailSendingService emailSendingService;
+
+    @Operation(summary= "조건 생성" , description = "사용자는 계약서의 종류를 추가할 수 있다.")
+    @PostMapping("/object/create")
+    public ResponseEntity<ApiResponse<Void>> createObject(
+            @RequestBody @Valid ObjectCreateRequest request) {
+        contractObjectCommandService.createObject(request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success(null));
+    }
 
     @Operation(summary = "계약서 생성", description = "사용자는 계약서의 내용과 관련 파일을 첨부하여 계약서을 생성할 수 있다.")
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -44,14 +55,10 @@ public class ContractCommandController {
     @PostMapping(value = "/send", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Void>> sendEmail(
             @RequestPart("data") SendEmailRequest request,
-            @RequestPart(value = "file", required = false) MultipartFile file
+            @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) {
-        String content = request.getContent();
-        String title = request.getTitle();
-        String email = request.getTargetEmail();
-
-        // 파일 포함 여부에 따라 메서드 분기 없이 하나로 처리 가능
-        emailUtils.sendEmail(content, title, email, file);
+        // 모든 비즈니스 로직을 EmailSendingService로 위임
+        emailSendingService.sendContractEmail(request, files);
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }

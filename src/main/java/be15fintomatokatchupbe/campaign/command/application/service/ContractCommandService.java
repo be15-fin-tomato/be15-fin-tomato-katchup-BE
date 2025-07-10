@@ -3,6 +3,7 @@ package be15fintomatokatchupbe.campaign.command.application.service;
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateContractRequest;
 import be15fintomatokatchupbe.campaign.command.application.dto.request.UpdateContractRequest;
 import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelperService;
+import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.CampaignStatusConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStatusConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.*;
@@ -59,8 +60,13 @@ public class ContractCommandService {
             throw new BusinessException(CampaignErrorCode.APPROVED_CONTRACT_ALREADY_EXISTS);
         }
 
-        ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
         Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
+        /* 이미 완료된 캠페인인 경우 수정 불가 */
+        if(Objects.equals(campaign.getCampaignStatus().getCampaignStatusId(), CampaignStatusConstants.FINISHED)){
+            throw new BusinessException(CampaignErrorCode.FINISHED_CAMPAIGN);
+        }
+
+        ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
         PipelineStep pipelineStep = pipelineStepRepository.findById(PipelineStepConstants.CONTRACT)
                 .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STEP_NOT_FOUND));
         PipelineStatus pipelineStatus = pipelineStatusRepository.findById(request.getPipelineStatusId())
@@ -104,8 +110,8 @@ public class ContractCommandService {
         if(files != null && !files.isEmpty()){
             // 1. 파일 S3에 올리고 돌려 받기
             List<File> fileList = fileService.uploadFile(files);
-            fileList.forEach(file -> file.setPipeline(pipeline));
 
+            fileList.forEach(file -> file.setPipeline(pipeline));
             // 2. 파일 DB에 저장하기
             fileService.saveFile(fileList);
         }
@@ -125,7 +131,7 @@ public class ContractCommandService {
                     PipelineStatusConstants.APPROVED
             );
 
-            if(existPipeline != null){
+            if(existPipeline != null && !Objects.equals(existPipeline.getPipelineId(), request.getPipelineId())){
                 throw new BusinessException(CampaignErrorCode.APPROVED_REVENUE_ALREADY_EXISTS);
             }
         }
@@ -147,7 +153,7 @@ public class ContractCommandService {
         campaignHelperService.deleteRelationTable(foundPipeline);
 
         /* 파일 테이블 지워주기 */
-        fileService.deleteByPipeline(foundPipeline);
+        fileService.deleteByPipeline(foundPipeline, request.getExistingFileList());
 
         /* 테이블 값 입력하기 */
         foundPipeline.updateContract(

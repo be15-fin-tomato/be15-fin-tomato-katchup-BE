@@ -3,6 +3,7 @@ package be15fintomatokatchupbe.campaign.command.application.service;
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateRevenueRequest;
 import be15fintomatokatchupbe.campaign.command.application.dto.request.UpdateRevenueRequest;
 import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelperService;
+import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.CampaignStatusConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStatusConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.*;
@@ -60,10 +61,13 @@ public class RevenueCommandService {
         if(existPipeline != null){
             throw new BusinessException(CampaignErrorCode.APPROVED_REVENUE_ALREADY_EXISTS);
         }
-
+        Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
+        /* 이미 완료된 캠페인인 경우 수정 불가 */
+        if(Objects.equals(campaign.getCampaignStatus().getCampaignStatusId(), CampaignStatusConstants.FINISHED)){
+            throw new BusinessException(CampaignErrorCode.FINISHED_CAMPAIGN);
+        }
 
         ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
-        Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
         PipelineStep pipelineStep = pipelineStepRepository.findById(PipelineStepConstants.REVENUE)
                 .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STEP_NOT_FOUND));
         PipelineStatus pipelineStatus = pipelineStatusRepository.findById(request.getPipelineStatusId())
@@ -71,6 +75,10 @@ public class RevenueCommandService {
         User writer = userHelperService.findValidUser(userId);
 
         campaign.setProductPrice(request.getProductPrice());
+
+        if(Objects.equals(request.getPipelineStatusId(), PipelineStatusConstants.APPROVED)){
+            campaign.confirmCampaign();
+        }
         campaignRepository.save(campaign);
 
         Pipeline pipeline = Pipeline.builder()
@@ -128,13 +136,17 @@ public class RevenueCommandService {
                     PipelineStatusConstants.APPROVED
             );
 
-            if(existPipeline != null){
+            if(existPipeline != null && !Objects.equals(existPipeline.getPipelineId(), request.getPipelineId())){
                 throw new BusinessException(CampaignErrorCode.APPROVED_REVENUE_ALREADY_EXISTS);
             }
         }
+        Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
+        /* 이미 완료된 캠페인인 경우 수정 불가 */
+        if(Objects.equals(campaign.getCampaignStatus().getCampaignStatusId(), CampaignStatusConstants.FINISHED)){
+            throw new BusinessException(CampaignErrorCode.FINISHED_CAMPAIGN);
+        }
 
         ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
-        Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
         PipelineStatus pipelineStatus = pipelineStatusRepository.findById(request.getPipelineStatusId())
                 .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STATUS_NOT_FOUND));
         User writer = userHelperService.findValidUser(userId);
@@ -145,11 +157,17 @@ public class RevenueCommandService {
             throw new BusinessException(CampaignErrorCode.INVALID_ACCESS);
         }
 
+        if(Objects.equals(request.getPipelineStatusId(), PipelineStatusConstants.APPROVED)){
+            campaign.confirmCampaign();
+        }
+
         /* 연관 테이블 지워주기 */
         campaignHelperService.deleteRelationTable(foundPipeline);
 
         /* 파일 테이블 지워주기 */
-        fileService.deleteByPipeline(foundPipeline);
+        fileService.deleteByPipeline(foundPipeline, request.getExistingFileList());
+
+        campaign.updateRevenue(request.getProductPrice(), request.getSalesQuantity());
 
         foundPipeline.updateRevenue(
                 pipelineStatus,

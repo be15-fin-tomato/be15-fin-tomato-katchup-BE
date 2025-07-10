@@ -46,4 +46,11 @@ public class ClientCompanyQueryService {
                 .clientCompanyList(clientCompanyList)
                 .build();
     }
+
+    public ClientCompanyContractResponse getClientCompanyContract(Long clientCompanyId) {
+        List<ClientCompanyContractDto> res = clientCompanyQueryMapper.getClientCompanyContract(clientCompanyId);
+        return ClientCompanyContractResponse.builder()
+                .clientCompanyContract(res)
+                .build();
+    }
 }

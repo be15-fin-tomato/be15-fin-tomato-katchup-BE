@@ -9,5 +9,5 @@ import lombok.experimental.SuperBuilder;
 @Getter
 public class RevenueCardResponse extends CardResponse {
     private String productName;
-    private Long expectedRevenue;
+    private Long totalAdPrice;
 }

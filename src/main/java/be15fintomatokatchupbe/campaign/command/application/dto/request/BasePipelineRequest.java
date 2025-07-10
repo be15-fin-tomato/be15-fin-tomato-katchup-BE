@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @Getter
@@ -18,10 +18,10 @@ public class BasePipelineRequest {
     private Long clientManagerId;
     private List<Long> userId;
     private String name;
-    private LocalDateTime requestAt;
-    private LocalDateTime startedAt;
-    private LocalDateTime endedAt;
-    private LocalDateTime presentedAt;
+    private LocalDate requestAt;
+    private LocalDate startedAt;
+    private LocalDate endedAt;
+    private LocalDate presentedAt;
     private String campaignName;
     private String content;
     private String notes;

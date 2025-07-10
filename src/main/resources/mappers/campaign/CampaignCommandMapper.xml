@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.campaign.query.mapper.CampaignCommandMapper">
+    <select id="getInfluencerId" resultType="long">
+        SELECT
+              c.influencer_id
+          FROM campaign a
+          JOIN pipeline b ON a.campaign_id = b.campaign_id
+          JOIN pipeline_influencer_client_manager c ON c.pipeline_id = b.pipeline_id
+        WHERE a.campaign_id = #{ campaignId }
+          AND b.pipeline_step_id = 7
+          AND c.influencer_id IS NOT NULL
+    </select>
+</mapper>

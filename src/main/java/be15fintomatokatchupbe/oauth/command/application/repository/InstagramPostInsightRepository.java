@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.oauth.query.repository;
+package be15fintomatokatchupbe.oauth.command.application.repository;
 
 import be15fintomatokatchupbe.oauth.query.domain.InstagramPostInsight;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import be15fintomatokatchupbe.utils.jwt.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -30,7 +32,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         String token = parseToken(request);
 
-        if(token != null && jwtTokenProvider.validateToken(token)){
+        if (token != null && jwtTokenProvider.validateToken(token)) {
             Long userId = jwtTokenProvider.getUserIdFromJWT(token);
             String loginId = jwtTokenProvider.getLoginIdFromJWT(token);
 
@@ -40,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .build();
             PreAuthenticatedAuthenticationToken authentication
                     = new PreAuthenticatedAuthenticationToken(
-                    userDetail, null,userDetail.getAuthorities()
+                    userDetail, null, userDetail.getAuthorities()
             );
             log.info("[Jwt Filter] 인증된 유저: userId={}, loginId={}", userId, loginId);
 
@@ -51,10 +53,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String parseToken(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        boolean isSseRequest = uri.startsWith("/api/v1/sse/subscribe");
+
+        if (isSseRequest && request.getCookies() != null) {
+            return Arrays.stream(request.getCookies())
+                    .filter(cookie -> "accessToken".equals(cookie.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .orElse(null);
+        }
+
         String bearer = request.getHeader("Authorization");
         if (bearer != null && bearer.startsWith("Bearer ")) {
             return bearer.substring(7);
         }
+
         return null;
     }
+
+
 }
+

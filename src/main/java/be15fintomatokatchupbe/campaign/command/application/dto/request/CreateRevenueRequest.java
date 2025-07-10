@@ -16,5 +16,6 @@ public class CreateRevenueRequest extends BasePipelineRequest{
 
     // 광고 단가, 상품 가격
     private Long productPrice;
+    private Long salesQuantity;
 
 }

@@ -14,6 +14,11 @@ public class UpdateRevenueRequest extends BasePipelineRequest{
 
     private List<InfluencerRevenueRequest> influencerList;
 
+    // 유지해야하는 파일 목록
+    private List<Long> existingFileList;
+
+
     private Long productPrice;
+    private Long salesQuantity;
 
 }

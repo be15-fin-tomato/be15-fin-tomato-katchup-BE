@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.notification.command.application.service;
 
 import be15fintomatokatchupbe.calendar.command.domain.aggregate.Schedule;
 import be15fintomatokatchupbe.calendar.command.mapper.TodayScheduleCommandMapper;
+import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.notification.command.application.dto.response.NotificationPipeLineResponse;
 import be15fintomatokatchupbe.notification.command.domain.aggregate.Notification;
 import be15fintomatokatchupbe.notification.command.domain.repository.NotificationRepository;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -54,10 +56,19 @@ public class NotificationSchedulerService {
             notificationRepository.save(notification);
 
             sseEmitterRepository.get(userId).ifPresent(emitter -> {
+                long unreadCount = notificationRepository.countByUserIdAndIsReadAndIsDeleted(
+                        userId, StatusType.N, StatusType.N
+                );
                 try {
                     emitter.send(SseEmitter.event()
                             .name("new-notification")
-                            .data(notificationContent));
+                            .data(Map.of(
+                                    "id", notification.getNotificationId(),
+                                    "message", notification.getNotificationContent(),
+                                    "typeId", notification.getNotificationTypeId(),
+                                    "unreadCount", unreadCount
+                            ))
+                    );
                 } catch (IOException e) {
                     sseEmitterRepository.delete(userId);
                 }
@@ -82,10 +93,17 @@ public class NotificationSchedulerService {
             }
 
             sseEmitterRepository.get(userId).ifPresent(emitter -> {
+                long unreadCount = notificationRepository.countByUserIdAndIsReadAndIsDeleted(
+                        userId, StatusType.N, StatusType.N
+                );
                 try {
                     emitter.send(SseEmitter.event()
                             .name("new-notification")
-                            .data(content));
+                            .data(Map.of(
+                                    "message", content,
+                                    "unreadCount", unreadCount
+                            ))
+                    );
                 } catch (IOException e) {
                     sseEmitterRepository.delete(userId);
                 }
@@ -96,24 +114,49 @@ public class NotificationSchedulerService {
     @Transactional
     public void sendTodayPipeLineNotifications() {
         for (NotificationPipeLineResponse pipeline : getPipeLineList()) {
+            StringBuilder sb = new StringBuilder();
             Long userId = pipeline.getUserId();
+            Long pipelineStepId = pipeline.getPipeLineId();
+            String targetUrl = "";
 
             String notificationContent = "파이프라인 " + pipeline.getName() + " 발표일입니다.";
 
+            if(pipelineStepId == 3L) {
+                targetUrl = "/sales/proposal/";
+            } else if (pipelineStepId == 4L) {
+                targetUrl = "/sales/quotation/";
+            } else if (pipelineStepId == 6L) {
+                targetUrl = "/sales/contract/";
+            } else if (pipelineStepId == 7L) {
+                targetUrl = "/sales/revenue/";
+            }
+            sb.append(targetUrl).append(pipelineStepId);
+
             Notification notification = Notification.builder()
                     .userId(userId)
-                    .notificationTypeId(4L)
+                    .notificationTypeId(2L)
                     .getTime(LocalDateTime.now())
                     .notificationContent(notificationContent)
+                    .targetId(sb.toString())
                     .build();
 
             notificationRepository.save(notification);
 
             sseEmitterRepository.get(userId).ifPresent(emitter -> {
+                long unreadCount = notificationRepository.countByUserIdAndIsReadAndIsDeleted(
+                        userId, StatusType.N, StatusType.N
+                );
                 try {
                     emitter.send(SseEmitter.event()
                             .name("new-notification")
-                            .data(notificationContent));
+                            .data(Map.of(
+                                    "id", notification.getNotificationId(),
+                                    "message", notification.getNotificationContent(),
+                                    "typeId", notification.getNotificationTypeId(),
+                                    "targetId", notification.getTargetId(),
+                                    "unreadCount", unreadCount
+                            ))
+                    );
                 } catch (IOException e) {
                     sseEmitterRepository.delete(userId);
                 }
@@ -135,10 +178,17 @@ public class NotificationSchedulerService {
             }
 
             sseEmitterRepository.get(userId).ifPresent(emitter -> {
+                long unreadCount = notificationRepository.countByUserIdAndIsReadAndIsDeleted(
+                        userId, StatusType.N, StatusType.N
+                );
                 try {
                     emitter.send(SseEmitter.event()
                             .name("new-notification")
-                            .data(content));
+                            .data(Map.of(
+                                    "message", content,
+                                    "unreadCount", unreadCount
+                            ))
+                    );
                 } catch (IOException e) {
                     sseEmitterRepository.delete(userId);
                 }

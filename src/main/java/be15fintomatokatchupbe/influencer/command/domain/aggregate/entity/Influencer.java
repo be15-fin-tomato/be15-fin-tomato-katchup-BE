@@ -48,6 +48,9 @@ public class Influencer {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @OneToOne(mappedBy = "influencer")
+    private Youtube youtube;
+
     @Column(name = "instagram_is_connected", nullable = false)
     @Enumerated(EnumType.STRING)
     @Builder.Default

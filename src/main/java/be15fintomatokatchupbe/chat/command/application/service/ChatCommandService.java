@@ -47,7 +47,6 @@ public class ChatCommandService {
         }
 
 
-        // 채팅방 이름 지정
         String chatName = request.getChatName();
         if (chatName == null || chatName.isBlank()) {
             List<UserSimpleDto> users = userQueryMapper.findUserNamesByIds(participants);
@@ -75,25 +74,19 @@ public class ChatCommandService {
 
 
     @Transactional
-    public ExitChatRoomResponse exitRoom(Long userId, Long chatId)
-    {
-        userChatRepository.findAll().forEach(uc -> {
-        });
+    public ExitChatRoomResponse exitRoom(Long userId, Long chatId) {
 
-        UserChat userChat = userChatRepository.findByUserIdAndChatId(userId, chatId)
+        UserChat userChat = userChatRepository.findByUserIdAndChatIdAndIsDeleted(userId, chatId, StatusType.N)
                 .orElseThrow(() -> {
                     return new BusinessException(ChatErrorCode.CHAT_ROOM_NOT_FOUND);
                 });
-
-        if (userChat.getIsDeleted() == StatusType.Y) {
-            throw new BusinessException(ChatErrorCode.ALREADY_EXITED_CHAT);
-        }
 
         userChat.setIsDeleted(StatusType.Y);
         userChatRepository.save(userChat);
 
         return new ExitChatRoomResponse("채팅방에서 나갔습니다.");
     }
+
     @Transactional
     public void inviteChatMembers(Long chatRoomId, ChatInviteRequest request) {
         Long inviterId = request.getUserId();
@@ -111,22 +104,30 @@ public class ChatCommandService {
             throw new BusinessException(ChatErrorCode.USER_NOT_FOUND);
         }
 
-        List<Long> alreadyMembers = userChatRepository.findUserIdsByChatId(chatRoomId);
-        List<Long> duplicated = foundUserIds.stream()
-                .filter(alreadyMembers::contains)
-                .toList();
-
-        if (!duplicated.isEmpty()) {
-            throw new BusinessException(ChatErrorCode.ALREADY_JOINED_CHAT);
-        }
-
         for (Long inviteeId : foundUserIds) {
-            UserChat userChat = UserChat.builder()
-                    .chatId(chatRoomId)
-                    .userId(inviteeId)
-                    .isDeleted(StatusType.N)
-                    .build();
-            userChatRepository.save(userChat);
+            Optional<UserChat> existingUserChatOptional = userChatRepository.findByUserIdAndChatId(inviteeId, chatRoomId);
+
+            if (existingUserChatOptional.isPresent()) {
+                UserChat existingUserChat = existingUserChatOptional.get();
+
+                if (existingUserChat.getIsDeleted() == StatusType.Y) {
+                    existingUserChat.setIsDeleted(StatusType.N);
+                    userChatRepository.save(existingUserChat);
+                } else {
+                    // This block means the user is already an active member (isDeleted = 'N')
+                    // You can choose to:
+                    // 1. Do nothing (current behavior in this code)
+                    // 2. Throw an exception (e.g., throw new BusinessException(ChatErrorCode.ALREADY_JOINED_CHAT);)
+                    //    If throwing, make sure to consider if inviting multiple users should fail for all if one is a duplicate.
+                }
+            } else {
+                UserChat newUserChat = UserChat.builder()
+                        .chatId(chatRoomId)
+                        .userId(inviteeId)
+                        .isDeleted(StatusType.N)
+                        .build();
+                userChatRepository.save(newUserChat);
+            }
         }
     }
 }

@@ -43,30 +43,30 @@ public class InfluencerCommandServiceImpl implements InfluencerCommandService {
                 .price(dto.getPrice())
                 .national(Influencer.National.valueOf(dto.getNational()))
                 .userId(dto.getUserId())
-                .youtubeIsConnected(dto.isYoutubeConnected() ? StatusType.Y : StatusType.N)
-                .instagramIsConnected(dto.isInstagramConnected() ? StatusType.Y : StatusType.N)
+                .youtubeIsConnected(StatusType.N) // N으로 초기값 설정
+                .instagramIsConnected(StatusType.N) // N으로 초기값 설정
                 .build();
 
         influencerRepository.save(influencer);
 
-        // 유튜브 연동된 경우만 저장
-        if (dto.isYoutubeConnected()) {
-            Youtube youtube = Youtube.builder()
-                    .influencerId(influencer.getId())
-                    .channelId(dto.getYoutubeAccountId())
-                    .build();
-            youtubeRepository.save(youtube);
-        }
+        // 유튜브 연동 부분 제거
+//        if (dto.isYoutubeConnected()) {
+//            Youtube youtube = Youtube.builder()
+//                    .influencerId(influencer.getId())
+//                    .channelId(dto.getYoutubeAccountId())
+//                    .build();
+//            youtubeRepository.save(youtube);
+//        }
 
-        // 인스타그램 연동된 경우만 저장
-        if (dto.isInstagramConnected()) {
-            Instagram instagram = Instagram.builder()
-                    .influencerId(influencer.getId())
-                    .accountId(dto.getInstagramAccountId())
-                    .follower(dto.getInstagramFollower())
-                    .build();
-            instagramRepository.save(instagram);
-        }
+        // 인스타그램 연동 부분 제거
+//        if (dto.isInstagramConnected()) {
+//            Instagram instagram = Instagram.builder()
+//                    .influencerId(influencer.getId())
+//                    .accountId(dto.getInstagramAccountId())
+//                    .follower(dto.getInstagramFollower())
+//                    .build();
+//            instagramRepository.save(instagram);
+//        }
 
         List<Category> categories = categoryRepository.findAllById(dto.getCategoryIds());
         for (Category category : categories) {

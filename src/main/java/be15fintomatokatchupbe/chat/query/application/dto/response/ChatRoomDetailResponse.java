@@ -10,5 +10,6 @@ import java.util.List;
 public class ChatRoomDetailResponse {
     private Long chatId;
     private List<MessageResponse> messages;
+    private Long unreadCount;
 }
 

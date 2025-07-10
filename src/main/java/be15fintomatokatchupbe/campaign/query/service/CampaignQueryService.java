@@ -3,11 +3,15 @@ package be15fintomatokatchupbe.campaign.query.service;
 
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
 import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
+import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
+import be15fintomatokatchupbe.campaign.query.dto.request.ContractListRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
-import be15fintomatokatchupbe.campaign.query.mapper.PipelineStepMapper;
+import be15fintomatokatchupbe.campaign.query.dto.mapper.ListupFormDTO;
 import be15fintomatokatchupbe.common.dto.Pagination;
+import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
+import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,51 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CampaignQueryService {
     private final CampaignQueryMapper campaignQueryMapper;
+
+    public ListupSearchResponse getListupList(Long userId, PipelineSearchRequest request) {
+        int offset = (request.getPage() - 1) * request.getSize();
+        int size = request.getSize();
+
+        List<ListupCardDTO> listupList = campaignQueryMapper.findListupList(request, offset, size, PipelineStepConstants.LIST_UP);
+
+        List<ListupCardResponse> response = new ArrayList<>();
+
+        for(ListupCardDTO dto: listupList){
+            List<String> influencerNameList = Optional.ofNullable(dto.getInfluencerNameInfo())
+                    .map(s -> Arrays.stream(s.split(","))
+                            .map(String::trim)
+                            .toList())
+                    .orElse(List.of());
+            ListupCardResponse listupCardResponse = ListupCardResponse.builder()
+                    .pipelineId(dto.getPipelineId())
+                    .name(dto.getName())
+                    .campaignName(dto.getCampaignName())
+                    .clientCompanyName(dto.getClientCompanyName())
+//                    .clientManagerName(dto.getClientManagerName())
+                    .productName(dto.getProductName())
+                    .userName(Collections.singletonList(dto.getUserName()))
+                    .influencerList(influencerNameList)
+                    .build();
+            response.add(listupCardResponse);
+        }
+
+
+
+        int totalCount = campaignQueryMapper.countListup(request, PipelineStepConstants.LIST_UP);
+        log.info("총 개수: {}", totalCount);
+
+        Pagination pagination = Pagination.builder()
+                .currentPage(request.getPage())
+                .size(size)
+                .totalPage((int) Math.ceil((double) totalCount /size))
+                .totalCount(totalCount)
+                .build();
+
+        return ListupSearchResponse.builder()
+                .response(response)
+                .pagination(pagination)
+                .build();
+    }
 
     public ProposalSearchResponse getProposalList(Long userId, PipelineSearchRequest request) {
         int offset = (request.getPage() - 1) * request.getSize();
@@ -82,7 +131,6 @@ public class CampaignQueryService {
                 campaignQueryMapper.findQuotationList(request, offset, size, PipelineStepConstants.QUOTATION);
 
         List<QuotationCardResponse> response = new ArrayList<>();
-        // 2. 해쉬 셋에 {pipelineId}: {DTO} 형태로 저장하기
         for(QuotationCardDTO dto: quotationList){
             List<String> userNameList = Optional.ofNullable(dto.getUserNameInfo())
                     .map(s -> Arrays.stream(s.split(","))
@@ -140,6 +188,7 @@ public class CampaignQueryService {
             ContractCardResponse contractCardResponse = ContractCardResponse.builder()
                     .pipelineId(dto.getPipelineId())
                     .name(dto.getName())
+//                    .campaignName()
                     .statusName(dto.getStatusName())
                     .clientCompanyName(dto.getClientCompanyName())
                     .clientManagerName(dto.getClientManagerName())
@@ -176,8 +225,9 @@ public class CampaignQueryService {
         List<RevenueCardDTO> quotationList =
                 campaignQueryMapper.findRevenueList(request, offset, size, PipelineStepConstants.REVENUE);
 
+        // 광고 단가 합 가져오기
+
         List<RevenueCardResponse> response = new ArrayList<>();
-        // 2. 해쉬 셋에 {pipelineId}: {DTO} 형태로 저장하기
         for(RevenueCardDTO dto: quotationList){
             List<String> userNameList = Optional.ofNullable(dto.getUserNameInfo())
                     .map(s -> Arrays.stream(s.split(","))
@@ -185,6 +235,7 @@ public class CampaignQueryService {
                             .toList())
                     .orElse(List.of());
 
+            Long totalAdPrice = campaignQueryMapper.findTotalAdPrice(dto.getPipelineId());
             RevenueCardResponse revenueCardResponse = RevenueCardResponse.builder()
                     .pipelineId(dto.getPipelineId())
                     .name(dto.getName())
@@ -192,7 +243,7 @@ public class CampaignQueryService {
                     .clientCompanyName(dto.getClientCompanyName())
                     .clientManagerName(dto.getClientManagerName())
                     .productName(dto.getProductName())
-                    .expectedRevenue(dto.getExpectedRevenue())
+                    .totalAdPrice(totalAdPrice)
                     .userName(userNameList)
                     .build();
 
@@ -308,6 +359,7 @@ public class CampaignQueryService {
                 .expectedRevenue(contractFormDto.getExpectedRevenue())
                 .availableQuantity(contractFormDto.getAvailableQuantity())
                 .expectedProfit(contractFormDto.getExpectedProfit())
+                .productPrice(contractFormDto.getProductPrice())
                 .build();
 
         /* 응답하기 */
@@ -336,7 +388,7 @@ public class CampaignQueryService {
 
         /* 파일 목록 가져오기 */
         List<FileInfo> fileDto = campaignQueryMapper.findPipeFile(pipelineId);
-
+        log.info("판매 수량: {}", revenueFormDto.getSalesQuantity());
         /* 조합하기 */
         RevenueFormResponse form = RevenueFormResponse.builder()
                 .name(revenueFormDto.getName())
@@ -378,24 +430,8 @@ public class CampaignQueryService {
         // 날짜 포맷터 선언
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        // startedAt/endedAt Timestamp → yyyy-MM-dd String 포맷으로 변환
-        if (detail.getStartedAtRaw() != null) {
-            LocalDateTime startedAt = detail.getStartedAtRaw()
-                    .toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-            detail.setStartedAt(startedAt.format(formatter));
-        }
-        if (detail.getEndedAtRaw() != null) {
-            LocalDateTime endedAt = detail.getEndedAtRaw()
-                    .toInstant()
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-            detail.setEndedAt(endedAt.format(formatter));
-        }
-
         // 2. 캠페인 유저 리스트 조회
-        List<Long> userList = campaignQueryMapper.selectCampaignUserList(detail.getClientCompanyId());
+        List<User> userList = campaignQueryMapper.selectCampaignUserList(detail.getClientCompanyId());
         detail.setUserList(userList);
 
         // 3. 캠페인 카테고리 리스트 조회
@@ -428,21 +464,110 @@ public class CampaignQueryService {
 
     }
 
-    public CampaignSearchResponse findCampaignList(String keyword) {
-        List<CampaignSimpleDto> campaignList = campaignQueryMapper.findCampaignList(keyword);
+    public CampaignSearchResponse findCampaignList(String keyword, Long clientCompanyId) {
+        List<CampaignSimpleDto> campaignList = campaignQueryMapper.findCampaignList(keyword, clientCompanyId);
 
         return CampaignSearchResponse.builder()
                 .campaignList(campaignList)
                 .build();
     }
 
-    public List<CampaignListResponse> getPagedCampaigns(int page, int size) {
+    public List<CampaignListResponse> getPagedCampaigns(int page, int size, ContractListRequest request) {
         int offset = (page - 1) * size;
 
-        List<CampaignListResponse> campaigns = campaignQueryMapper.findPagedCampaigns(size, offset);
+        List<CampaignListResponse> campaigns = campaignQueryMapper.findPagedCampaigns(size, offset, request);
         List<Long> campaignIds = campaigns.stream()
                 .map(CampaignListResponse::getCampaignId)
                 .distinct()
+                .toList();
+
+        if (!campaignIds.isEmpty()) {
+            List<PipelineStepStatusDto> steps = campaignQueryMapper.findPipelineStepsByCampaignIdsList(campaignIds, request);
+
+            Map<Long, List<PipelineStepDto>> stepMap = steps.stream()
+                    .collect(Collectors.groupingBy(
+                            PipelineStepStatusDto::getCampaignId,
+                            Collectors.mapping(
+                                    s -> new PipelineStepDto(s.getStepType(), s.getStartedAt()),
+                                    Collectors.toList()
+                            )
+                    ));
+
+            for (CampaignListResponse dto : campaigns) {
+                List<PipelineStepDto> stepList = stepMap.getOrDefault(dto.getCampaignId(), Collections.emptyList());
+                dto.setPipelineSteps(stepList);
+
+                // 사후관리는 제외 (총 7단계만 계산)
+                long completed = stepList.stream().filter(s -> s.getStartedAt() != null).count();
+                dto.setSuccessProbability((int) ((completed / 7.0) * 100));
+            }
+        }
+
+        return campaigns;
+    }
+
+    public QuotationReferenceListResponse getQuotationReferenceList(Long campaignId) {
+        List<ReferenceDto> contractReferenceList = campaignQueryMapper.getReferenceList(campaignId, PipelineStepConstants.QUOTATION);
+
+        return QuotationReferenceListResponse.builder()
+                .referenceList(contractReferenceList)
+                .build();
+    }
+
+    public ContractReferenceListResponse getContractReferenceList(Long campaignId) {
+        List<ReferenceDto> contractReferenceList = campaignQueryMapper.getReferenceList(campaignId, PipelineStepConstants.CONTRACT);
+
+        return ContractReferenceListResponse.builder()
+                .referenceList(contractReferenceList)
+                .build();
+    }
+
+    public CampaignResultListResponse findCampaignResultList(CampaignResultRequest request) {
+        int page = request.getPage() != null ? request.getPage() : 1;
+        int size = request.getSize() != null ? request.getSize() : 6;
+
+        int offset = (page - 1) * size;
+
+        int total = campaignQueryMapper.countCampaignResultList(request);
+
+        List<CampaignResultResponse> rawResultList =
+                campaignQueryMapper.findCampaignResultList(
+                        request,    // @Param("request")로 매퍼에 전달
+                        offset,     // @Param("offset")로 매퍼에 전달
+                        size,       // @Param("size")로 매퍼에 전달
+                        request.getSortBy(),
+                        request.getSortOrder()
+                );
+
+        List<CampaignResultResponse> finalResultList = rawResultList;
+
+        return CampaignResultListResponse.builder()
+                .data(finalResultList)
+                .total(total)
+                .build();
+    }
+
+    public ListupDetailResponse getListupDetail(Long userId, Long pipelineId) {
+        /* 인플루언서 가져오기 */
+        List<InfluencerInfo> influencerList = campaignQueryMapper.findPipelineInfluencer(pipelineId);
+
+        /* 폼 가져오기 */
+        ListupFormDTO listupFormDto = campaignQueryMapper.findListupDetail(pipelineId, PipelineStepConstants.LIST_UP);
+
+        return ListupDetailResponse.builder()
+                .campaignId(listupFormDto.getCampaignId())
+                .campaignName(listupFormDto.getCampaignName())
+                .clientCompanyId(listupFormDto.getClientCompanyId())
+                .clientCompanyName(listupFormDto.getClientCompanyName())
+                .influencerList(influencerList)
+                .build();
+    }
+
+    // 고객사 별 캠페인 목록 조회
+    public List<CampaignListResponse> getCampaignsByClientCompanyId(Long clientCompanyId) {
+        List<CampaignListResponse> campaigns = campaignQueryMapper.findCampaignsByClientCompanyId(clientCompanyId);
+        List<Long> campaignIds = campaigns.stream()
+                .map(CampaignListResponse::getCampaignId)
                 .toList();
 
         if (!campaignIds.isEmpty()) {
@@ -460,14 +585,27 @@ public class CampaignQueryService {
             for (CampaignListResponse dto : campaigns) {
                 List<PipelineStepDto> stepList = stepMap.getOrDefault(dto.getCampaignId(), Collections.emptyList());
                 dto.setPipelineSteps(stepList);
-
-                // 사후관리는 제외 (총 6단계만 계산)
                 long completed = stepList.stream().filter(s -> s.getStartedAt() != null).count();
-                dto.setSuccessProbability((int) ((completed / 6.0) * 100));
+                dto.setSuccessProbability((int) ((completed / 7.0) * 100));
             }
         }
 
         return campaigns;
     }
 
+
+    public CampaignAiResponse getCampaignWithCategory(Long clientCompanyId, String campaignName, List<Long> tags) {
+        log.info("받은 쿼리 : "+ campaignName + clientCompanyId);
+
+        List<CampaignWithCategoryDTO> responseDto = campaignQueryMapper.findCampaignWithCategory(clientCompanyId, campaignName, tags);
+
+        for (CampaignWithCategoryDTO dto : responseDto) {
+            List<CategoryDto> categoryList = campaignQueryMapper.findCategoryByCampaignId(dto.getCampaignId());
+            dto.setCategoryList(categoryList);
+        }
+
+        return CampaignAiResponse.builder().campaignList(responseDto).build();
+    }
 }
+
+

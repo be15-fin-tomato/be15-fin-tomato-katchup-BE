@@ -75,6 +75,7 @@ public class EmailCommendService {
         emailUtil.sendEmail(content, title, manager.getEmail());
 
         satisfaction.setEmailStatus(StatusType.Y);
+        satisfaction.setSentDate(new Date());
         satisfactionRepository.save(satisfaction);
 
     }
@@ -103,7 +104,9 @@ public class EmailCommendService {
                     .orElseThrow(() -> new BusinessException(EmailErrorCode.NOT_FOUND_SATISFACTION));
 
             entity.setScore(sum);
-            entity.setResponseDate(new Date());
+            if(entity.getResponseDate() == null) {
+                entity.setResponseDate(new Date());
+            }
             entity.setNotes(notes);
             entity.setIsReacted(StatusType.Y);
 

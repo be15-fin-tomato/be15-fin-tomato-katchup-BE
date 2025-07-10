@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -21,7 +23,7 @@ public class EmailUtils {
         sendEmail(content, title, targetEmail, null); // 새로운 메서드로 위임
     }
 
-    public void sendEmail(String content, String title, String targetEmail, MultipartFile file) {
+    public void sendEmail(String content, String title, String targetEmail, List<MultipartFile> files) {
         MimeMessage message = javaMailSender.createMimeMessage();
         try {
             MimeMessageHelper messageHelper = new MimeMessageHelper(
@@ -35,10 +37,15 @@ public class EmailUtils {
             messageHelper.setText(content, true);
 
             // 파일이 있는 경우 첨부
-            if (file != null && !file.isEmpty()) {
-                messageHelper.addAttachment(file.getOriginalFilename(), file);
+            if (files != null && !files.isEmpty()) {
+                for (MultipartFile file : files) {
+                    if (file != null && !file.isEmpty()) {
+                        String filename = Optional.ofNullable(file.getOriginalFilename())
+                                .orElse("첨부파일");
+                        messageHelper.addAttachment(filename, file);
+                    }
+                }
             }
-
             javaMailSender.send(message);
         } catch (MessagingException e) {
             throw new BusinessException(GlobalErrorCode.SEND_EMAIL_FAILED);

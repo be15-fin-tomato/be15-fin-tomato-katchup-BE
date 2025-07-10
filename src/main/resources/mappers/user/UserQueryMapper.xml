@@ -11,7 +11,10 @@
             , a.email
             , a.file_id
             , b.file_name
+            , b.file_route
+            , a.name
             , a.birth
+            , a.gender
           FROM user a
           LEFT JOIN pic_file b ON (a.file_id = b.file_id)
             WHERE a.user_id = #{ userId }
@@ -39,10 +42,12 @@
     <select id="findUserNamesByIds" resultType="be15fintomatokatchupbe.chat.query.application.dto.response.UserSimpleDto">
         SELECT user_id AS senderId, name AS senderName
         FROM user
-        WHERE user_id IN
-        <foreach item="id" collection="senderIds" open="(" separator="," close=")">
-            #{id}
-        </foreach>
+        <if test="senderIds != null and senderIds.size > 0">
+            WHERE user_id IN
+            <foreach item="id" collection="senderIds" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
     </select>
 
     <select id="findUserIdsByIds" parameterType="list" resultType="long">
@@ -59,9 +64,23 @@
             name AS name
         FROM user
         <where>
+            is_deleted = 'N'
             <if test="keyword != null and keyword != ''">
-                name LIKE CONCAT('%', #{keyword}, '%')
+                AND name LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
+    </select>
+
+    <select id="getSimpleMyAccount" resultType="be15fintomatokatchupbe.user.query.dto.response.UserHeaderAccountResponse">
+        SELECT
+              a.user_id
+            , a.name
+            , a.position
+            , a.file_id
+            , b.file_name
+            , b.file_route
+          FROM user a
+          LEFT JOIN pic_file b ON a.file_id = b.file_id
+        WHERE user_id = #{ userId }
     </select>
 </mapper>

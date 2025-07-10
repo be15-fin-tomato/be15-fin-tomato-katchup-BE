@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import be15fintomatokatchupbe.user.query.dto.response.UserListResponse;
 import be15fintomatokatchupbe.user.query.dto.response.UserAccountQueryResponse;
+import be15fintomatokatchupbe.user.query.dto.response.UserHeaderAccountResponse;
 import be15fintomatokatchupbe.user.query.dto.response.UserInfluencerListResponse;
 import be15fintomatokatchupbe.user.query.service.UserQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,6 +59,18 @@ public class UserQueryController {
             @RequestParam(required = false) String keyword
     ){
         UserListResponse response = userQueryService.getUserList(keyword);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /* 헤더에서 내 정보 조회 */
+    @GetMapping("/simple/me")
+    @Operation(summary = "헤더에서 내 정보 조회",description = "사용자는 헤더에서 본인의 정보를 조회할 수 있다.")
+    public  ResponseEntity<ApiResponse<UserHeaderAccountResponse>> getSimpleMyAccount(
+            @AuthenticationPrincipal CustomUserDetail userDetail
+    ) {
+        Long userId = userDetail.getUserId();
+        UserHeaderAccountResponse response = userQueryService.getSimpleMyAccount(userId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

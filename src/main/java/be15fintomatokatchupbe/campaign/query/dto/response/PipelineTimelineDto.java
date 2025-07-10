@@ -9,6 +9,8 @@ import java.time.LocalDate;
 @Getter
 @NoArgsConstructor
 public class PipelineTimelineDto {
+    private Long pipelineId;
+    private Long pipelineStepId;
     private String stepType;
     private String pipelineTitle;
     private String clientCompanyName;
@@ -17,4 +19,5 @@ public class PipelineTimelineDto {
     private Integer influencerCount;
     private LocalDate startedAt;
     private LocalDate endedAt;
+    private String createdAt;
 }

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.oauth.query.mapper.YoutubeQueryMapper">
+    <select id="findYoutubeStats" resultType="be15fintomatokatchupbe.oauth.query.dto.YoutubeStatsSnapshot">
+        SELECT
+            total_videos        AS totalVideos,
+            avg_views           AS avgViews,
+            avg_likes           AS avgLikes,
+            avg_comments        AS avgComments,
+            daily_avg_views     AS dailyAvgViews,
+            monthly_avg_views   AS monthlyAvgViews,
+
+            age1317             AS 'subscriberAgeRatio.age13-17',
+            age1824             AS 'subscriberAgeRatio.age18-24',
+            age2534             AS 'subscriberAgeRatio.age25-34',
+            age3544             AS 'subscriberAgeRatio.age35-44',
+            age4554             AS 'subscriberAgeRatio.age45-54',
+            age5564             AS 'subscriberAgeRatio.age55-64',
+            age65plus           AS 'subscriberAgeRatio.age65+',
+
+            gender_male         AS 'subscriberGenderRatio.male',
+            gender_female       AS 'subscriberGenderRatio.female',
+
+            subscriber_change_daily   AS 'subscriberChange.daily',
+            subscriber_change_weekly  AS 'subscriberChange.weekly',
+            subscriber_change_monthly AS 'subscriberChange.monthly',
+
+            subscribed_ratio          AS 'subscribedVsNot.subscribed',
+            not_subscribed_ratio      AS 'subscribedVsNot.notSubscribed'
+        FROM youtube_stats_snapshot
+        WHERE influencer_id = #{influencerId}
+        ORDER BY created_at DESC
+        LIMIT 1
+    </select>
+
+    <select id="findTopVideos" resultType="be15fintomatokatchupbe.oauth.query.dto.YoutubeVideoInfo">
+        SELECT
+            influencer_id,
+            title,
+            video_id,
+            views,
+            likes,
+            comments,
+            thumbnail_url
+        FROM youtube_video_snapshot
+        WHERE influencer_id = #{influencerId}
+        ORDER BY created_at DESC
+        LIMIT 5
+    </select>
+
+</mapper>

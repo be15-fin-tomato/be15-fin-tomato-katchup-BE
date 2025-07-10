@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 
@@ -36,8 +38,28 @@ public class FileController {
     public ResponseEntity<byte[]> streamFile(@RequestParam String key) {
         FileDownloadResult result = fileService.downloadFile(key);
 
+        String encodedFilename = URLEncoder.encode(result.getOriginalFilename(), StandardCharsets.UTF_8)
+                .replaceAll("\\+", "%20");
+
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=\"" + result.getOriginalFilename() + "\"")
+                .header("Content-Disposition",
+                        "attachment; filename*=UTF-8''" + encodedFilename)
+                .header("Content-Type", result.getMimeType())
+                .contentLength(result.getFileBytes().length)
+                .body(result.getFileBytes());
+    }
+
+    @Operation(summary = " 계약서 다운로드", description = "사용자는 파일을 업로드된 계약서를 다운로드 할 수 있다.")
+    @GetMapping("/download/contract")
+    public ResponseEntity<byte[]> streamContractFile(@RequestParam String key) {
+        FileDownloadResult result = fileService.downloadContractFile(key);
+
+        String encodedFilename = URLEncoder.encode(result.getOriginalFilename(), StandardCharsets.UTF_8)
+                .replaceAll("\\+", "%20");
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition",
+                        "attachment; filename*=UTF-8''" + encodedFilename)
                 .header("Content-Type", result.getMimeType())
                 .contentLength(result.getFileBytes().length)
                 .body(result.getFileBytes());
