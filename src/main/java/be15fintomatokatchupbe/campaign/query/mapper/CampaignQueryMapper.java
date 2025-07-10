@@ -108,4 +108,8 @@ public interface CampaignQueryMapper {
     int countCampaignResultList(
             @Param("request") CampaignResultRequest request // count 쿼리도 request 객체 명시
     );
+
+    // 고객사 ID로 캠페인 목록 조회
+    List<CampaignListResponse> findCampaignsByClientCompanyId(@Param("clientCompanyId") Long clientCompanyId);
+
 }
