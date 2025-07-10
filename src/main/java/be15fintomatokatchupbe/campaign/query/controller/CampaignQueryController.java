@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.campaign.query.controller;
 
+import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Campaign;
 import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
@@ -174,6 +175,19 @@ public class CampaignQueryController {
     ) {
         List<CampaignListResponse> result = campaignQueryService.getPagedCampaigns(page, size);
         return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
+    // AI 캠페인 조회
+    @GetMapping("/ai/search")
+    @Operation(summary = "AI 페이지 에서 사용할 캠페인 목록 조회", description = "캠페인을 검색합니다.")
+    public ResponseEntity<ApiResponse<CampaignAiResponse>> getCampaignWithCategoryList(
+            @RequestParam(required = false) Long clientCompanyId,
+            @RequestParam(required = false) String campaignName,
+            @RequestParam(required = false) List<Long> tags
+    ){
+        CampaignAiResponse response = campaignQueryService.getCampaignWithCategory(clientCompanyId, campaignName, tags);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @GetMapping("/search")
