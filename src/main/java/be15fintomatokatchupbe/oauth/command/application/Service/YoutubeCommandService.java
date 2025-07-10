@@ -103,7 +103,7 @@ public class YoutubeCommandService {
                         .thumbnailUrl(video.getThumbnailUrl())
                         .snapshot(saved)
                         .influencer(influencer)
-                        .createdAt(LocalDateTime.now())
+                        .publishedAt(video.getPublishedAt())
                         .build())
                 .toList();
 
