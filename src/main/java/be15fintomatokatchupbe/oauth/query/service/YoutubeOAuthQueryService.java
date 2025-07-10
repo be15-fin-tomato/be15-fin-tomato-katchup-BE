@@ -138,7 +138,7 @@ public class YoutubeOAuthQueryService {
 
     public AnalyticsResponse getChannelAnalytics(String accessToken, String channelId, String startDate, String endDate,
                                                  String metrics, String dimensions, String filters) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl("https://youtubeanalytics.googleapis.com/v2/reports")
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("https://youtubeanalytics.googleapis.com/v2/reports")
                 .queryParam("ids", "channel==" + channelId)
                 .queryParam("startDate", startDate)
                 .queryParam("endDate", endDate)
@@ -444,17 +444,6 @@ public class YoutubeOAuthQueryService {
         form.add("refresh_token", refreshToken);
         form.add("grant_type", "refresh_token");
         return postForm("https://oauth2.googleapis.com/token", form, GoogleTokenResponse.class);
-    }
-
-    //	access/refreshToken Redis에 저장
-    public void saveRefreshToken(String channelId , GoogleTokenResponse tokenResponse){
-        String accessToken = tokenResponse.accessToken;
-        String refreshToken = tokenResponse.refreshToken;
-        int ttl = tokenResponse.getExpiresIn(); // expiresIn이 초 단위라고 가정
-        Duration duration = Duration.ofSeconds(ttl);
-
-        youtubeTokenRepository.save(channelId, refreshToken);
-        youtubeTokenRepository.saveAccessToken(channelId, accessToken, duration);
     }
 
     @Getter
