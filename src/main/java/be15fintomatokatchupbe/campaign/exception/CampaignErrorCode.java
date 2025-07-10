@@ -27,7 +27,8 @@ public enum CampaignErrorCode implements ErrorCode {
     IDEA_NOT_FOUND("40015", "존재하지 않는 의견입니다.", HttpStatus.NOT_FOUND),
     IDEA_IS_BLANK("40016", "의견 내용을 입력해 주세요.", HttpStatus.BAD_REQUEST),
     APPROVED_PIPELINE_CANNOT_BE_DELETED("40017", "승인된 파이프라인은 삭제할 수 없습니다.", HttpStatus.BAD_REQUEST),
-    INVALID_ACCESS("40018", "잘못된 접근입니다.", HttpStatus.BAD_REQUEST);
+    INVALID_ACCESS("40018", "잘못된 접근입니다.", HttpStatus.BAD_REQUEST),
+    FINISHED_CAMPAIGN("40019", "이미 종료된 캠페인입니다.", HttpStatus.BAD_REQUEST);
 
 
     private final String code;
