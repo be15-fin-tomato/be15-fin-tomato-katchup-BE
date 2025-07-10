@@ -970,7 +970,7 @@
         </if>
     </select>
 
-    // 고객사 별 캠페인 목록 조회
+    <!-- 고객사 별 캠페인 목록 조회 -->
     <select id="findCampaignsByClientCompanyId" resultType="be15fintomatokatchupbe.campaign.query.dto.response.CampaignListResponse">
         SELECT
         c.campaign_id AS campaignId,
