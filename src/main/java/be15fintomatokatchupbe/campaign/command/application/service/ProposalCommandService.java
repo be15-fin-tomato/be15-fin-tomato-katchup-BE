@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.campaign.command.application.service;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateProposalRequest;
 import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelperService;
+import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.CampaignStatusConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStatusConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.*;
@@ -64,6 +65,11 @@ public class ProposalCommandService {
         // 캠페인 가져오기
         Campaign campaign =
                 campaignHelperService.findValidCampaign(request.getCampaignId());
+
+        /* 이미 완료된 캠페인인 경우 수정 불가 */
+        if(Objects.equals(campaign.getCampaignStatus().getCampaignStatusId(), CampaignStatusConstants.FINISHED)){
+            throw new BusinessException(CampaignErrorCode.FINISHED_CAMPAIGN);
+        }
 
         // 파이프라인 단계 가져오기
         PipelineStep pipelineStep =

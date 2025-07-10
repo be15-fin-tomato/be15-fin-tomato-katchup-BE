@@ -20,7 +20,7 @@
         <association property="youtube" javaType="be15fintomatokatchupbe.influencer.query.dto.response.YoutubeInfoResponse">
             <result property="accountId" column="channel_id"/>
             <result property="subscriber" column="subscriber"/>
-            <result property="name" column="name"/>
+            <result property="name" column="youtube_name"/>
             <result property="thumbnailUrl" column="image_url"/>
         </association>
 
@@ -30,14 +30,112 @@
             <result property="name" column="instagram_name"/>
         </association>
 
-        <collection property="tags" ofType="be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto">
-            <result property="categoryId" column="category_id"/>
-            <result property="categoryName" column="category_name"/>
-        </collection>
+        <!-- collection 매핑은 getTagsForInfluencer 쿼리를 사용하도록 유지 -->
+        <collection property="tags" ofType="be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto"
+                    column="influencer_id" select="getTagsForInfluencer"/>
     </resultMap>
 
-    <!-- 먼저 influencer_id만 추출 -> 22명 추출
-    태그로 인해서 중복 row 발생한 것을 서브쿼리 사용으로 해결 -->
+    <!-- 인플루언서 ID에 해당하는 태그 목록을 가져오는 서브 쿼리 (collection 매핑용) -->
+    <select id="getTagsForInfluencer" resultType="be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto">
+        SELECT
+        c.category_id,
+        c.category_name
+        FROM hashtag_influencer_campaign h
+        JOIN category c ON h.category_id = c.category_id
+        WHERE h.influencer_id = #{influencer_id}
+    </select>
+
+    <!-- 메인 쿼리 및 서브쿼리에서 사용될 공통 조인 SQL (태그 관련 조인 제외) -->
+    <sql id="influencerBaseJoins">
+        FROM influencer i
+        LEFT JOIN user u ON i.user_id = u.user_id
+        LEFT JOIN youtube y ON i.influencer_id = y.influencer_id
+        LEFT JOIN instagram ig ON i.influencer_id = ig.influencer_id
+        LEFT JOIN influencer_age_distribution ad ON i.age_distribution_id = ad.age_distribution_id
+    </sql>
+
+    <!-- 동적 필터링 SQL (메인 쿼리용) - 카테고리 필터 제거 -->
+    <sql id="dynamicFilters">
+        WHERE i.is_deleted = 'N'
+        <if test="influencerName != null and influencerName != ''">
+            AND i.name LIKE CONCAT('%', #{influencerName}, '%')
+        </if>
+        <!-- 카테고리 필터링 조건 제거 -->
+        <!--
+        <if test="categories != null and categories.size > 0">
+            AND EXISTS (
+            SELECT 1
+            FROM hashtag_influencer_campaign h_cat
+            JOIN category c_cat ON h_cat.category_id = c_cat.category_id
+            WHERE h_cat.influencer_id = i.influencer_id
+            AND c_cat.category_name IN
+            <foreach item="categoryName" collection="categories" open="(" separator="," close=")">
+                #{categoryName}
+            </foreach>
+            )
+        </if>
+        -->
+        <if test="minSubscriber != null">
+            AND y.subscriber &gt;= #{minSubscriber}
+        </if>
+        <if test="maxSubscriber != null">
+            AND y.subscriber &lt;= #{maxSubscriber}
+        </if>
+        <if test="minFollower != null">
+            AND ig.follower &gt;= #{minFollower}
+        </if>
+        <if test="maxFollower != null">
+            AND ig.follower &lt;= #{maxFollower}
+        </if>
+        <if test="minPrice != null">
+            AND i.price &gt;= #{minPrice}
+        </if>
+        <if test="maxPrice != null">
+            AND i.price &lt;= #{maxPrice}
+        </if>
+    </sql>
+
+    <!-- 파생 테이블(서브쿼리) 내에서 사용될 동적 필터링 SQL (별칭 사용) - 카테고리 필터 제거 -->
+    <sql id="dynamicFiltersForDerivedTable">
+        WHERE i_sub.is_deleted = 'N'
+        <if test="influencerName != null and influencerName != ''">
+            AND i_sub.name LIKE CONCAT('%', #{influencerName}, '%')
+        </if>
+        <!-- 카테고리 필터링 조건 제거 -->
+        <!--
+        <if test="categories != null and categories.size > 0">
+            AND EXISTS (
+            SELECT 1
+            FROM hashtag_influencer_campaign h_cat_sub
+            JOIN category c_cat_sub ON h_cat_sub.category_id = c_cat_sub.category_id
+            WHERE h_cat_sub.influencer_id = i_sub.influencer_id
+            AND c_cat_sub.category_name IN
+            <foreach item="categoryName" collection="categories" open="(" separator="," close=")">
+                #{categoryName}
+            </foreach>
+            )
+        </if>
+        -->
+        <if test="minSubscriber != null">
+            AND y_sub.subscriber &gt;= #{minSubscriber}
+        </if>
+        <if test="maxSubscriber != null">
+            AND y_sub.subscriber &lt;= #{maxSubscriber}
+        </if>
+        <if test="minFollower != null">
+            AND ig_sub.follower &gt;= #{minFollower}
+        </if>
+        <if test="maxFollower != null">
+            AND ig_sub.follower &lt;= #{maxFollower}
+        </if>
+        <if test="minPrice != null">
+            AND i_sub.price &gt;= #{minPrice}
+        </if>
+        <if test="maxPrice != null">
+            AND i_sub.price &lt;= #{maxPrice}
+        </if>
+    </sql>
+
     <select id="findInfluencers" resultMap="InfluencerCardMap">
         SELECT
         i.influencer_id,
@@ -50,46 +148,74 @@
         i.instagram_is_connected,
         i.youtube_is_connected,
         u.name AS manager,
-
-        c.category_id,
-        c.category_name,
-
-        y.channel_id AS channel_id,
+        y.subscriber,
+        y.channel_id,
         y.name AS youtube_name,
-
+        y.image_url,
         ig.account_id AS instagram_account_id,
         ig.follower AS instagram_follower,
         ig.name AS instagram_name
-
-        FROM (
-        SELECT influencer_id
-        FROM influencer
-        WHERE is_deleted = 'N'
-        ORDER BY influencer_id ASC
-        LIMIT #{size} OFFSET #{offset}
-        ) sub
-
-        JOIN influencer i ON sub.influencer_id = i.influencer_id
+        FROM influencer i
         LEFT JOIN user u ON i.user_id = u.user_id
         LEFT JOIN youtube y ON i.influencer_id = y.influencer_id
         LEFT JOIN instagram ig ON i.influencer_id = ig.influencer_id
-        LEFT JOIN hashtag_influencer_campaign h ON i.influencer_id = h.influencer_id
-        LEFT JOIN category c ON h.category_id = c.category_id
         LEFT JOIN influencer_age_distribution ad ON i.age_distribution_id = ad.age_distribution_id
+        JOIN (
+        SELECT i_sub.influencer_id
+        FROM influencer i_sub
+        LEFT JOIN youtube y_sub ON i_sub.influencer_id = y_sub.influencer_id
+        LEFT JOIN instagram ig_sub ON i_sub.influencer_id = ig_sub.influencer_id
+        <!-- 카테고리 관련 조인 제거 -->
+        <!-- LEFT JOIN hashtag_influencer_campaign h_sub ON i_sub.influencer_id = h_sub.influencer_id -->
+        <!-- LEFT JOIN category c_sub ON h_sub.category_id = c_sub.category_id -->
+        <include refid="dynamicFiltersForDerivedTable"/>
+        GROUP BY i_sub.influencer_id
+        <choose>
+            <when test="sortBy == 'price' and sortOrder == 'asc'">
+                ORDER BY i_sub.price ASC
+            </when>
+            <when test="sortBy == 'price' and sortOrder == 'desc'">
+                ORDER BY i_sub.price DESC
+            </when>
+            <otherwise>
+                ORDER BY i_sub.influencer_id ASC
+            </otherwise>
+        </choose>
+        LIMIT #{size} OFFSET #{offset}
+        ) AS sub_influencers ON i.influencer_id = sub_influencers.influencer_id
+        <choose>
+            <when test="sortBy == 'price' and sortOrder == 'asc'">
+                ORDER BY i.price ASC
+            </when>
+            <when test="sortBy == 'price' and sortOrder == 'desc'">
+                ORDER BY i.price DESC
+            </when>
+            <otherwise>
+                ORDER BY i.influencer_id ASC
+            </otherwise>
+        </choose>
     </select>
 
-    <select id="countInfluencers" resultType="int">
+    <!-- 필터링된 인플루언서의 총 개수를 세는 쿼리 -->
+    <select id="findInfluencersCount" resultType="int">
         SELECT COUNT(DISTINCT i.influencer_id)
         FROM influencer i
-        WHERE i.is_deleted = 'N'
+        LEFT JOIN user u ON i.user_id = u.user_id
+        LEFT JOIN youtube y ON i.influencer_id = y.influencer_id
+        LEFT JOIN instagram ig ON i.influencer_id = ig.influencer_id
+        LEFT JOIN influencer_age_distribution ad ON i.age_distribution_id = ad.age_distribution_id
+        <!-- 카테고리 관련 조인 제거 -->
+        <!-- LEFT JOIN hashtag_influencer_campaign h ON i.influencer_id = h.influencer_id -->
+        <!-- LEFT JOIN category c ON h.category_id = c.category_id -->
+        <include refid="dynamicFilters"/>
     </select>
 
     <select id="findInfluencerList" resultType="be15fintomatokatchupbe.influencer.query.dto.response.InfluencerSearchDto">
         SELECT
-              influencer_id AS id
-            , name as name
+        influencer_id AS id
+        , name as name
         FROM
-            influencer
+        influencer
         <where>
             is_deleted = 'N'
             <if test="keyword != null and keyword != ''">
@@ -105,29 +231,25 @@
 
     <select id="findInfluencerById" resultMap="InfluencerCardMap">
         SELECT
-            i.influencer_id,
-            i.name,
-            i.gender,
-            i.target_gender,
-            ad.age_range,
-            i.national,
-            i.price,
-            i.instagram_is_connected,
-            i.youtube_is_connected,
-            u.name AS manager,
-
-            c.category_id,
-            c.category_name,
-
-            y.channel_id,
-            y.name,
-            y.image_url,
-            y.subscriber,
-
-            ig.account_id AS instagram_account_id,
-            ig.follower AS instagram_follower,
-            ig.name AS instagram_name
-
+        i.influencer_id,
+        i.name,
+        i.gender,
+        i.target_gender,
+        ad.age_range,
+        i.national,
+        i.price,
+        i.instagram_is_connected,
+        i.youtube_is_connected,
+        u.name AS manager,
+        y.subscriber,
+        y.channel_id,
+        y.name AS youtube_name,
+        y.image_url,
+        ig.account_id AS instagram_account_id,
+        ig.follower AS instagram_follower,
+        ig.name AS instagram_name,
+        c.category_id,
+        c.category_name
         FROM influencer i
         LEFT JOIN user u ON i.user_id = u.user_id
         LEFT JOIN youtube y ON i.influencer_id = y.influencer_id
