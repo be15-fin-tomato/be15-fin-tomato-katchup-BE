@@ -16,6 +16,8 @@ public class CampaignListResponse {
     private String campaignStatusName;
 
     private String clientCompanyName;
+    private Long clientCompanyId;
+
     private String clientManagerName;
     private String clientManagerPosition;
     private Long expectedRevenue;
