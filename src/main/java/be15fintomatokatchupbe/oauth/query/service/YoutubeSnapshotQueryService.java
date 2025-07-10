@@ -13,7 +13,6 @@ public class YoutubeSnapshotQueryService {
     private final YoutubeQueryMapper youtubeQueryMapper;
 
     public List<YoutubeStatsSnapshot> getStatsByInfluencer(Long influencerId) {
-        List<YoutubeStatsSnapshot> stats = youtubeQueryMapper.findYoutubeStats(influencerId);
-        return stats;
+        return youtubeQueryMapper.findYoutubeStats(influencerId);
     }
 }
