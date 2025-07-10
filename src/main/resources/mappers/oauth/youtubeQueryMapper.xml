@@ -36,4 +36,19 @@
         LIMIT 1
     </select>
 
+    <select id="findTopVideos" resultType="be15fintomatokatchupbe.oauth.query.dto.YoutubeVideoInfo">
+        SELECT
+            influencer_id,
+            title,
+            video_id,
+            views,
+            likes,
+            comments,
+            thumbnail_url
+        FROM youtube_video_snapshot
+        WHERE influencer_id = #{influencerId}
+        ORDER BY created_at DESC
+        LIMIT 5
+    </select>
+
 </mapper>
