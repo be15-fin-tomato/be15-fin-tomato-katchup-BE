@@ -969,4 +969,34 @@
             </choose>
         </if>
     </select>
+
+    // 고객사 별 캠페인 목록 조회
+    <select id="findCampaignsByClientCompanyId" resultType="be15fintomatokatchupbe.campaign.query.dto.response.CampaignListResponse">
+        SELECT
+        c.campaign_id AS campaignId,
+        c.campaign_name AS campaignName,
+        cs.campaign_status_id AS campaignStatusId,
+        cs.status_name AS campaignStatusName,
+        cc.client_company_id AS clientCompanyId,
+        cc.client_company_name AS clientCompanyName,
+        cm.name AS clientManagerName,
+        cm.position AS clientManagerPosition,
+        c.product_name AS productName,
+        p.expected_revenue AS expectedRevenue,
+        DATE_FORMAT(p.started_at, '%Y-%m-%d') AS startedAt,
+        DATE_FORMAT(p.ended_at, '%Y-%m-%d') AS endedAt,
+        u.name AS pipelineUserName,
+        u.position AS pipelineUserPosition
+        FROM campaign c
+        JOIN campaign_status cs ON c.campaign_status_id = cs.campaign_status_id
+        JOIN client_company cc ON c.client_company_id = cc.client_company_id
+        JOIN client_manager cm ON cm.client_company_id = cc.client_company_id AND cm.is_deleted = 'N'
+        JOIN pipeline p ON p.campaign_id = c.campaign_id
+        JOIN pipeline_user pu ON pu.pipeline_id = p.pipeline_id
+        JOIN user u ON pu.user_id = u.user_id AND u.is_deleted = 'N'
+        WHERE c.client_company_id = #{clientCompanyId}
+        GROUP BY c.campaign_id
+        ORDER BY p.started_at DESC
+    </select>
+
 </mapper>
