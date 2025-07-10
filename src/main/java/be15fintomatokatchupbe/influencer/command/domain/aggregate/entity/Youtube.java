@@ -31,6 +31,9 @@ public class Youtube {
     @Column(name = "refresh_token")
     private String refreshToken;
 
-
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "influencer_id")
+    private Influencer influencer;
 
 }

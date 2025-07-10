@@ -104,7 +104,9 @@ public class EmailCommendService {
                     .orElseThrow(() -> new BusinessException(EmailErrorCode.NOT_FOUND_SATISFACTION));
 
             entity.setScore(sum);
-            entity.setResponseDate(new Date());
+            if(entity.getResponseDate() == null) {
+                entity.setResponseDate(new Date());
+            }
             entity.setNotes(notes);
             entity.setIsReacted(StatusType.Y);
 

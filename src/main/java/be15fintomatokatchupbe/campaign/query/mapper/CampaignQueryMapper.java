@@ -1,8 +1,11 @@
 package be15fintomatokatchupbe.campaign.query.mapper;
 
 import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
+import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
+import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
+import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -18,12 +21,21 @@ public interface CampaignQueryMapper {
             @Param("pipelineStepId") Long pipelineStepId
     );
 
+    List<ListupCardDTO> findListupList(
+            @Param("req") PipelineSearchRequest req,
+            @Param("offset") int offset,
+            @Param("size") int size,
+            @Param("pipelineStepId") Long pipelineStepId
+    );
+
     List<QuotationCardDTO> findQuotationList(
             @Param("req") PipelineSearchRequest req,
             @Param("offset") int offset,
             @Param("size") int size,
             @Param("pipelineStepId") Long pipelineStepId
     );
+
+    int countListup(@Param("req")PipelineSearchRequest request, @Param("pipelineStepId") Long pipelineStepId);
 
     int countPipeline(@Param("req")PipelineSearchRequest request, @Param("pipelineStepId") Long pipelineStepId);
 
@@ -40,6 +52,8 @@ public interface CampaignQueryMapper {
             @Param("size") int size,
             @Param("pipelineStepId") Long pipelineStepId
     );
+
+    ListupFormDTO findListupDetail(Long pipelineId, Long pipelineStepId);
 
     QuotationFormDTO findQuotationDetail(Long pipelineId, Long pipelineStepId);
 
@@ -66,7 +80,7 @@ public interface CampaignQueryMapper {
 
     String selectCampaignNotes(Long campaignId);
 
-    List<Long> selectCampaignUserList(@Param("clientCompanyId") Long clientCompanyId);
+    List<User> selectCampaignUserList(@Param("clientCompanyId") Long clientCompanyId);
 
     List<Long> selectCampaignCategoryList(@Param("campaignId") Long campaignId);
 
@@ -83,4 +97,20 @@ public interface CampaignQueryMapper {
     Long findTotalAdPrice(Long pipelineId);
 
     List<ReferenceDto> getReferenceList(Long campaignId, Long pipelineStepId);
+
+    List<CampaignResultResponse> findCampaignResultList(
+            @Param("request") CampaignResultRequest request, // request 객체도 명시
+            @Param("offset") int offset,                     // offset 파라미터 추가 및 @Param
+            @Param("size") int size,                         // size 파라미터 추가 및 @Param
+            @Param("sortBy") String sortBy,
+            @Param("sortOrder") String sortOrder
+    );
+
+    int countCampaignResultList(
+            @Param("request") CampaignResultRequest request // count 쿼리도 request 객체 명시
+    );
+
+    List<CampaignWithCategoryDTO> findCampaignWithCategory(Long clientCompanyId, String campaignName, List<Long> tags);
+
+    List<CategoryDto> findCategoryByCampaignId(Long campaignId);
 }

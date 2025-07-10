@@ -5,9 +5,10 @@ import be15fintomatokatchupbe.influencer.command.application.support.YoutubeHelp
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Youtube;
 import be15fintomatokatchupbe.infra.redis.YoutubeTokenRepository;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
+import be15fintomatokatchupbe.oauth.query.dto.YoutubeVideoInfo;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeChannelInfoResponse;
-import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeStatsResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -22,6 +23,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -36,6 +38,8 @@ public class YoutubeOAuthQueryService {
     private final YoutubeHelperService youtubeHelperService;
 
     private final WebClient webClient;
+    @Value("${youtube.api.key}")
+    private String apiKey;
 
     @Value("${youtube.client-id}")
     private String clientId;
@@ -48,7 +52,8 @@ public class YoutubeOAuthQueryService {
 
     // 유튜브 인증 URL 생성
     public String buildAuthorizationUrl() {
-        return UriComponentsBuilder.fromHttpUrl("https://accounts.google.com/o/oauth2/v2/auth")
+        return UriComponentsBuilder
+                .fromUriString("https://accounts.google.com/o/oauth2/v2/auth")
                 .queryParam("client_id", clientId)
                 .queryParam("redirect_uri", redirectUri)
                 .queryParam("response_type", "code")
@@ -58,6 +63,7 @@ public class YoutubeOAuthQueryService {
                 )))
                 .queryParam("access_type", "offline")
                 .queryParam("prompt", "consent")
+                .build()
                 .toUriString();
     }
 
@@ -148,7 +154,7 @@ public class YoutubeOAuthQueryService {
         log.info("[YT API] {}", uri);
 
         try {
-            return getWithAuth(uri,channelId, AnalyticsResponse.class);
+            return getWithAuth(uri,accessToken, AnalyticsResponse.class);
         } catch (WebClientResponseException e) {
             log.error("🔥 YouTube API 오류: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString());
             throw e;
@@ -157,7 +163,7 @@ public class YoutubeOAuthQueryService {
 
     public int getTotalVideoCount(String accessToken, String channelId) {
         String url = "https://www.googleapis.com/youtube/v3/channels?part=statistics&id=" + channelId;
-        ChannelStatsResponse response = getWithAuth(url,channelId, ChannelStatsResponse.class);
+        ChannelStatsResponse response = getWithAuth(url,accessToken, ChannelStatsResponse.class);
         return response.getItems().get(0).getStatistics().getVideoCount();
     }
 
@@ -215,20 +221,45 @@ public class YoutubeOAuthQueryService {
 
     public Map<String, Double> getSubscribedStatusRatio(String accessToken, String channelId, String startDate, String endDate) {
         try {
-            AnalyticsResponse response = getChannelAnalytics(accessToken, channelId, startDate, endDate,
-                    "views", "subscribedStatus", null);
-            long totalViews = response.getRows().stream().mapToLong(r -> ((Number) r.get(1)).longValue()).sum();
-            if (totalViews == 0) return Map.of("subscribed", 0.0, "notSubscribed", 0.0);
+            AnalyticsResponse response = getChannelAnalytics(
+                    accessToken,
+                    channelId,
+                    startDate,
+                    endDate,
+                    "views",
+                    "subscribedStatus",
+                    null
+            );
 
-            return response.getRows().stream().collect(Collectors.toMap(
-                    row -> row.get(0).toString().equals("SUBSCRIBED") ? "subscribed" : "notSubscribed",
-                    row -> ((Number) row.get(1)).doubleValue() * 100 / totalViews
-            ));
+            long totalViews = response.getRows().stream()
+                    .mapToLong(row -> ((Number) row.get(1)).longValue())
+                    .sum();
+
+            if (totalViews == 0) {
+                return Map.of("subscribed", 0.0, "notSubscribed", 0.0);
+            }
+
+            return response.getRows().stream()
+                    .collect(Collectors.toMap(
+                            row -> {
+                                String key = String.valueOf(row.get(0));
+                                return switch (key) {
+                                    case "SUBSCRIBED" -> "subscribed";
+                                    case "UNSUBSCRIBED" -> "notSubscribed";
+                                    default -> "unknown";
+                                };
+                            },
+                            row -> ((Number) row.get(1)).doubleValue() * 100 / totalViews,
+                            (v1, v2) -> v1 // ⚠ 중복 key 있을 경우 첫 번째 값 유지
+                    ));
+
         } catch (WebClientResponseException e) {
-            log.warn("⚠️ subscribedStatus 불가 - fallback to empty result: {}", e.getResponseBodyAsString());
+            log.warn("⚠️ subscribedStatus 오류 - channelId={}, startDate={}, endDate={}, msg={}",
+                    channelId, startDate, endDate, e.getMessage());
             return Map.of("subscribed", 0.0, "notSubscribed", 0.0);
         }
     }
+
 
     public Map<String, Double> getAgeGroupRatio(String accessToken, String channelId, String startDate, String endDate) {
         return getRatioByDimension(accessToken, channelId, startDate, endDate, "ageGroup");
@@ -250,28 +281,88 @@ public class YoutubeOAuthQueryService {
         return getMetricSum(accessToken, channelId, startDate, endDate, "comments");
     }
 
-    public List<YoutubeStatsResponse.VideoInfo> getTopVideos(String accessToken, String channelId, String startDate, String endDate) {
+    public List<YoutubeVideoInfo> getTopVideos(String accessToken, String channelId, String startDate, String endDate) {
         try {
-            AnalyticsResponse response = getChannelAnalytics(accessToken, channelId, startDate, endDate, "views", "video", null);
-            return response.getRows().stream()
-                    .sorted(Comparator.comparingLong(row -> -((Number) row.get(1)).longValue()))
+            // 1. 최신 영상 20개 조회
+            URI searchUri = UriComponentsBuilder
+                    .fromUriString("https://www.googleapis.com/youtube/v3/search")
+                    .queryParam("part", "snippet")
+                    .queryParam("channelId", channelId)
+                    .queryParam("maxResults", 20)
+                    .queryParam("order", "date")
+                    .queryParam("type", "video")
+                    .build()
+                    .encode()
+                    .toUri();
+
+            JsonNode searchRoot = webClient.get()
+                    .uri(searchUri)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .block();
+
+            List<String> videoIds = new ArrayList<>();
+            Map<String, JsonNode> snippetMap = new HashMap<>();
+            for (JsonNode item : searchRoot.get("items")) {
+                String videoId = item.get("id").get("videoId").asText();
+                JsonNode snippet = item.get("snippet");
+                videoIds.add(videoId);
+                snippetMap.put(videoId, snippet);
+            }
+
+            if (videoIds.isEmpty()) return List.of();
+
+            // 2. 영상 통계 조회 (v3/videos)
+            URI statsUri = UriComponentsBuilder
+                    .fromUriString("https://www.googleapis.com/youtube/v3/videos")
+                    .queryParam("part", "statistics")
+                    .queryParam("id", String.join(",", videoIds))
+                    .queryParam("key", apiKey)
+                    .build()
+                    .encode()
+                    .toUri();
+
+            JsonNode statsRoot = webClient.get()
+                    .uri(statsUri)
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .block();
+
+            List<YoutubeVideoInfo> videoInfos = new ArrayList<>();
+            for (JsonNode item : Objects.requireNonNull(statsRoot).get("items")) {
+                String videoId = item.get("id").asText();
+                JsonNode statistics = item.get("statistics");
+                JsonNode snippet = snippetMap.get(videoId);
+
+                long views = statistics.has("viewCount") ? statistics.get("viewCount").asLong() : 0;
+
+                videoInfos.add(YoutubeVideoInfo.builder()
+                        .videoId(videoId)
+                        .views(views)
+                        .title(snippet != null ? snippet.get("title").asText() : "(제목 없음)")
+                        .thumbnailUrl(snippet != null ? snippet.get("thumbnails").get("default").get("url").asText() : null)
+                        .build());
+            }
+
+            return videoInfos.stream()
+                    .sorted(Comparator.comparingLong(YoutubeVideoInfo::getViews).reversed())
                     .limit(5)
-                    .map(row -> YoutubeStatsResponse.VideoInfo.builder()
-                            .videoId(row.get(0).toString())
-                            .views(((Number) row.get(1)).longValue())
-                            .title("(제목 조회 필요)")
-                            .thumbnailUrl("(썸네일 조회 필요)")
-                            .build())
                     .toList();
+
         } catch (Exception e) {
             log.warn("⚠️ getTopVideos 실패 - fallback: {}", e.getMessage());
             return List.of();
         }
     }
 
-    public List<YoutubeStatsResponse.VideoInfo> getTopShorts(String accessToken, String channelId, String startDate, String endDate) {
+
+    public List<YoutubeVideoInfo> getTopShorts(String accessToken, String channelId, String startDate, String endDate) {
         return getTopVideos(accessToken, channelId, startDate, endDate).stream()
-                .filter(v -> v.getTitle().toLowerCase().contains("short") || v.getTitle().contains("쇼츠"))
+                .filter(v -> {
+                    String title = v.getTitle().toLowerCase();
+                    return title.contains("short") || title.contains("쇼츠") || title.contains("#shorts");
+                })
                 .toList();
     }
 
@@ -297,6 +388,19 @@ public class YoutubeOAuthQueryService {
                 .block();
     }
 
+    public String getValidAccessToken(String channelId) {
+        // 1. Redis에서 accessToken 조회
+        String accessToken = youtubeTokenRepository.findAccessToken(channelId);
+
+        // 2. 없으면 refresh_token으로 accessToken 재발급
+        if (accessToken == null || accessToken.isBlank()) {
+            log.info("🔄 Redis에 accessToken 없음 → refresh token으로 재발급 시도");
+            accessToken = refreshAndGetAccessToken(channelId);
+        }
+
+        return accessToken;
+    }
+
     public String refreshAndGetAccessToken(String channelId) {
         String refreshToken = youtubeTokenRepository.find(channelId);
         if (refreshToken == null) {
@@ -307,16 +411,6 @@ public class YoutubeOAuthQueryService {
         Duration duration = Duration.ofSeconds(newToken.getExpiresIn());
         youtubeTokenRepository.saveAccessToken(channelId, newToken.getAccessToken(), duration);
         return newToken.getAccessToken();
-    }
-
-    private <T> T requestWithToken(String url, String accessToken, Class<T> responseType) {
-        String token = accessToken.startsWith("Bearer ") ? accessToken : "Bearer " + accessToken;
-        return webClient.get()
-                .uri(url)
-                .header(HttpHeaders.AUTHORIZATION, token)
-                .retrieve()
-                .bodyToMono(responseType)
-                .block();
     }
 
     private <T> T postForm(String url, MultiValueMap<String, String> body, Class<T> responseType) {

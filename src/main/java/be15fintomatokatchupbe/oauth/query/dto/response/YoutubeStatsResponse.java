@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.oauth.query.dto.response;
 
+import be15fintomatokatchupbe.oauth.query.dto.YoutubeVideoInfo;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -19,16 +20,8 @@ public class YoutubeStatsResponse {
     private Map<String, Double> subscriberGenderRatio;
     private Map<String, Integer> subscriberChange;
     private Map<String, Double> subscribedVsNot;
-    private List<VideoInfo> topVideos;
-    private List<VideoInfo> topShorts;
-
-    @Getter
-    @Builder
-    public static class VideoInfo {
-        private String title;
-        private String videoId;
-        private long views;
-        private String thumbnailUrl;
-    }
+    private List<YoutubeVideoInfo> topVideos;
+    private List<YoutubeVideoInfo> topShorts;
 }
+
 
