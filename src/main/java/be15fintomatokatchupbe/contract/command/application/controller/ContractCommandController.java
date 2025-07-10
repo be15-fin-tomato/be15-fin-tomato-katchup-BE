@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.contract.command.application.dto.request.*;
 import be15fintomatokatchupbe.contract.command.application.service.ContractObjectCommandService;
 import be15fintomatokatchupbe.contract.command.application.service.DetailCommandService;
+import be15fintomatokatchupbe.contract.command.application.service.EmailSendingService;
 import be15fintomatokatchupbe.utils.EmailUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,6 +27,7 @@ public class ContractCommandController {
     private final DetailCommandService detailCommandService;
     private final ContractObjectCommandService contractObjectCommandService;
     private final EmailUtils emailUtils;
+    private final EmailSendingService emailSendingService;
 
     @Operation(summary= "조건 생성" , description = "사용자는 계약서의 종류를 추가할 수 있다.")
     @PostMapping("/object/create")
@@ -55,12 +57,8 @@ public class ContractCommandController {
             @RequestPart("data") SendEmailRequest request,
             @RequestPart(value = "files", required = false) List<MultipartFile> files
     ) {
-        String content = request.getContent();
-        String title = request.getTitle();
-        String email = request.getTargetEmail();
-
-        // 파일 포함 여부에 따라 메서드 분기 없이 하나로 처리 가능
-        emailUtils.sendEmail(content, title, email, files);
+        // 모든 비즈니스 로직을 EmailSendingService로 위임
+        emailSendingService.sendContractEmail(request, files);
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }
