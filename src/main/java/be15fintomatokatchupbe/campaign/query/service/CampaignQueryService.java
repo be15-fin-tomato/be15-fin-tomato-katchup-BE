@@ -9,6 +9,7 @@ import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
 import be15fintomatokatchupbe.campaign.query.dto.mapper.ListupFormDTO;
 import be15fintomatokatchupbe.common.dto.Pagination;
+import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -591,6 +592,19 @@ public class CampaignQueryService {
         return campaigns;
     }
 
+
+    public CampaignAiResponse getCampaignWithCategory(Long clientCompanyId, String campaignName, List<Long> tags) {
+        log.info("받은 쿼리 : "+ campaignName + clientCompanyId);
+
+        List<CampaignWithCategoryDTO> responseDto = campaignQueryMapper.findCampaignWithCategory(clientCompanyId, campaignName, tags);
+
+        for (CampaignWithCategoryDTO dto : responseDto) {
+            List<CategoryDto> categoryList = campaignQueryMapper.findCategoryByCampaignId(dto.getCampaignId());
+            dto.setCategoryList(categoryList);
+        }
+
+        return CampaignAiResponse.builder().campaignList(responseDto).build();
+    }
 }
 
 
