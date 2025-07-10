@@ -18,7 +18,7 @@ public class YoutubeStatsResponse {
     private double monthlyAvgViews;
     private Map<String, Double> subscriberAgeRatio;
     private Map<String, Double> subscriberGenderRatio;
-    private SubscriberChangeResponse subscriberChange;
+    private Map<String, Integer> subscriberChange;
     private Map<String, Double> subscribedVsNot;
     private List<YoutubeVideoInfo> topVideos;
     private List<YoutubeVideoInfo> topShorts;
