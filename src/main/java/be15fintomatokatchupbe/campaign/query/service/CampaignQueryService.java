@@ -4,6 +4,7 @@ package be15fintomatokatchupbe.campaign.query.service;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
 import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
+import be15fintomatokatchupbe.campaign.query.dto.request.ContractListRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
@@ -471,17 +472,17 @@ public class CampaignQueryService {
                 .build();
     }
 
-    public List<CampaignListResponse> getPagedCampaigns(int page, int size) {
+    public List<CampaignListResponse> getPagedCampaigns(int page, int size, ContractListRequest request) {
         int offset = (page - 1) * size;
 
-        List<CampaignListResponse> campaigns = campaignQueryMapper.findPagedCampaigns(size, offset);
+        List<CampaignListResponse> campaigns = campaignQueryMapper.findPagedCampaigns(size, offset, request);
         List<Long> campaignIds = campaigns.stream()
                 .map(CampaignListResponse::getCampaignId)
                 .distinct()
                 .toList();
 
         if (!campaignIds.isEmpty()) {
-            List<PipelineStepStatusDto> steps = campaignQueryMapper.findPipelineStepsByCampaignIds(campaignIds);
+            List<PipelineStepStatusDto> steps = campaignQueryMapper.findPipelineStepsByCampaignIdsList(campaignIds, request);
 
             Map<Long, List<PipelineStepDto>> stepMap = steps.stream()
                     .collect(Collectors.groupingBy(

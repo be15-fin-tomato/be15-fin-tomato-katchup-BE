@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.campaign.query.controller;
 
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Campaign;
 import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
+import be15fintomatokatchupbe.campaign.query.dto.request.ContractListRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.service.CampaignQueryService;
@@ -171,9 +172,10 @@ public class CampaignQueryController {
     @Operation(summary = "캠페인 목록 조회", description = "캠페인을 페이징 형태로 조회합니다.")
     public ResponseEntity<ApiResponse<List<CampaignListResponse>>> getCampaignList(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @ModelAttribute ContractListRequest request
     ) {
-        List<CampaignListResponse> result = campaignQueryService.getPagedCampaigns(page, size);
+        List<CampaignListResponse> result = campaignQueryService.getPagedCampaigns(page, size, request);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 

@@ -60,6 +60,7 @@
                 AND f.name LIKE CONCAT('%', #{userName}, '%')
             </if>
         </where>
+        GROUP BY a.satisfaction_id
         ORDER BY a.satisfaction_id DESC
         LIMIT #{ limit } OFFSET #{ offset };
     </select>

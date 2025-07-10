@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.campaign.query.mapper;
 
 import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
+import be15fintomatokatchupbe.campaign.query.dto.request.ContractListRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
@@ -88,7 +89,7 @@ public interface CampaignQueryMapper {
 
     Long selectTotalExpectedRevenue(Long campaignId);
 
-    List<CampaignListResponse> findPagedCampaigns(@Param("limit") int limit, @Param("offset") int offset);
+    List<CampaignListResponse> findPagedCampaigns(@Param("limit") int limit, @Param("offset") int offset, ContractListRequest request);
 
     List<PipelineStepStatusDto> findPipelineStepsByCampaignIds(@Param("campaignIds") List<Long> campaignIds);
 
@@ -117,4 +118,6 @@ public interface CampaignQueryMapper {
     List<CampaignWithCategoryDTO> findCampaignWithCategory(Long clientCompanyId, String campaignName, List<Long> tags);
 
     List<CategoryDto> findCategoryByCampaignId(Long campaignId);
+
+    List<PipelineStepStatusDto> findPipelineStepsByCampaignIdsList(List<Long> campaignIds, ContractListRequest request);
 }
