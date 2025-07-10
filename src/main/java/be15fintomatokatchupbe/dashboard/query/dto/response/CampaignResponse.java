@@ -7,6 +7,7 @@ import lombok.Getter;
 @Builder
 public class CampaignResponse {
     private String clientCompanyName;
+    private Long campaignId;
     private String campaignName;
     private String productName;
     private String youtubeLink;
