@@ -2,7 +2,8 @@ package be15fintomatokatchupbe.influencer.query.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;
-// import java.util.List; // List 타입은 더 이상 필요 없습니다.
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -12,8 +13,6 @@ public class InfluencerListRequestDTO {
 
     private String influencerName;
 
-    // 카테고리 필드 제거
-    // private String categories;
 
     private Long minSubscriber;
     private Long maxSubscriber;
@@ -26,6 +25,7 @@ public class InfluencerListRequestDTO {
 
     private String sortBy;
     private String sortOrder;
+    private List<Long> categoryIds;
 
     public Integer getOffset() {
         if (this.page != null && this.size != null) {
