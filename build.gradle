@@ -85,6 +85,7 @@ dependencies {
 
     //openAI
     implementation 'com.theokanning.openai-gpt3-java:service:0.18.2'
+    implementation 'org.springframework:spring-test'
 
 }
 
