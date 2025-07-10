@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
+import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -108,4 +109,8 @@ public interface CampaignQueryMapper {
     int countCampaignResultList(
             @Param("request") CampaignResultRequest request // count 쿼리도 request 객체 명시
     );
+
+    List<CampaignWithCategoryDTO> findCampaignWithCategory(Long clientCompanyId, String campaignName, List<Long> tags);
+
+    List<CategoryDto> findCategoryByCampaignId(Long campaignId);
 }
