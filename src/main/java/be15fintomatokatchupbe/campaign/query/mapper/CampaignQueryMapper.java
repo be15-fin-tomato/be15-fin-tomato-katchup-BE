@@ -5,6 +5,7 @@ import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.ContractListRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
+import be15fintomatokatchupbe.influencer.query.dto.response.CampaignRecord;
 import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import org.apache.ibatis.annotations.Mapper;
@@ -100,13 +101,7 @@ public interface CampaignQueryMapper {
 
     List<ReferenceDto> getReferenceList(Long campaignId, Long pipelineStepId);
 
-    List<CampaignResultResponse> findCampaignResultList(
-            @Param("request") CampaignResultRequest request, // request 객체도 명시
-            @Param("offset") int offset,                     // offset 파라미터 추가 및 @Param
-            @Param("size") int size,                         // size 파라미터 추가 및 @Param
-            @Param("sortBy") String sortBy,
-            @Param("sortOrder") String sortOrder
-    );
+    List<CampaignResultResponse> findCampaignResultList(@Param("request") CampaignResultRequest request);
 
     int countCampaignResultList(
             @Param("request") CampaignResultRequest request // count 쿼리도 request 객체 명시
@@ -121,5 +116,14 @@ public interface CampaignQueryMapper {
 
     List<PipelineStepsDto> findPipelineStepsGroupedByCampaignIds(List<Long> campaignIds);
 
+    List<CampaignInfluencerInfo> findInfluencerInfoByPipelineIds(@Param("pipelineIds") List<Long> pipelineIds);
+
+
     int getTotalSize(@Param("request")ContractListRequest request);
+
+    ProposalFormDTO findProposalDetail(Long pipelineId);
+
+    List<InfluencerProposalInfo> findPipelineProposalInfluencer(Long pipelineId);
+
+    List<CampaignRecord> findCampaignByInfluencerId(Long id);
 }
