@@ -464,7 +464,7 @@
             <if test="req.category == 'title'">
                 AND p.name LIKE CONCAT('%', #{req.keyword}, '%')
             </if>
-            <if test="req.category == 'company'">
+            <if test="req.category == 'clientCompany'">
                 AND cc.client_company_name LIKE CONCAT('%', #{req.keyword}, '%')
             </if>
             <if test="req.category == 'user'">
