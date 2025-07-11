@@ -10,6 +10,7 @@ public class CampaignResponse {
     private Long campaignId;
     private String campaignName;
     private String productName;
+    private Long pipelineInfluencerId;
     private String youtubeLink;
     private String instagramLink;
 }
