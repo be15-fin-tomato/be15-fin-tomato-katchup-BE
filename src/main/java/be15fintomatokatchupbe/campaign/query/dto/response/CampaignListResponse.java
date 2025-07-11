@@ -9,6 +9,6 @@ import java.util.List;
 @Getter
 @Builder
 public class CampaignListResponse {
-    List<CampaignListDTO> campaignList;
+    List<CampaignListsDTO> campaignList;
     Pagination pagination;
 }
