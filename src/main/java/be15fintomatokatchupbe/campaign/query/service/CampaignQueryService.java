@@ -14,6 +14,7 @@ import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -536,29 +538,70 @@ public class CampaignQueryService {
                 .referenceList(contractReferenceList)
                 .build();
     }
-
     public CampaignResultListResponse findCampaignResultList(CampaignResultRequest request) {
-        int page = request.getPage() != null ? request.getPage() : 1;
-        int size = request.getSize() != null ? request.getSize() : 6;
+        int clientPage = request.getPage() != null ? request.getPage() : 1;
+        int clientSize = request.getSize() != null ? request.getSize() : 10; // 프론트 size와 통일
+        int clientOffset = (clientPage - 1) * clientSize;
 
-        int offset = (page - 1) * size;
+        // 1. 전체 필터링 조건에 맞는 "베이스 파이프라인" 데이터 조회
+        // 이 쿼리에는 LIMIT/OFFSET이 없어야 합니다 (XML에서 제거했으므로).
+        // 백엔드에서 모든 조건을 만족하는 파이프라인 기본 정보를 가져옵니다.
+        request.setOffset(0);
+        request.setSize(Integer.MAX_VALUE); // 모든 데이터를 가져오도록 유지
 
-        int total = campaignQueryMapper.countCampaignResultList(request);
+        List<CampaignResultResponse> baseList =
+                campaignQueryMapper.findCampaignResultList(request);
 
-        List<CampaignResultResponse> rawResultList =
-                campaignQueryMapper.findCampaignResultList(
-                        request,    // @Param("request")로 매퍼에 전달
-                        offset,     // @Param("offset")로 매퍼에 전달
-                        size,       // @Param("size")로 매퍼에 전달
-                        request.getSortBy(),
-                        request.getSortOrder()
-                );
+        // 2. pipelineId 모으기
+        List<Long> pipelineIds = baseList.stream()
+                .map(CampaignResultResponse::getPipelineId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
 
-        List<CampaignResultResponse> finalResultList = rawResultList;
+        // 3. 최종 카드 리스트 만들기 (인플루언서 정보 병합)
+        List<CampaignResultResponse> finalList = new ArrayList<>();
 
+        if (!pipelineIds.isEmpty()) {
+            List<CampaignInfluencerInfo> infList =
+                    campaignQueryMapper.findInfluencerInfoByPipelineIds(pipelineIds);
+
+            Map<Long, List<CampaignInfluencerInfo>> infMap = infList.stream()
+                    .collect(Collectors.groupingBy(CampaignInfluencerInfo::getPipelineId));
+
+            for (CampaignResultResponse base : baseList) {
+                List<CampaignInfluencerInfo> matched = infMap.get(base.getPipelineId());
+
+                if (matched == null || matched.isEmpty()) {
+                    // 인플루언서 정보가 없는 경우에도 추가
+                    finalList.add(base);
+                } else {
+                    for (CampaignInfluencerInfo inf : matched) {
+                        CampaignResultResponse card = new CampaignResultResponse();
+                        BeanUtils.copyProperties(base, card);
+                        card.setInfluencerName(inf.getInfluencerName());
+                        card.setPipelineInfluencerId(inf.getPipelineInfluencerId());
+                        finalList.add(card);
+                    }
+                }
+            }
+        } else {
+            finalList = baseList; // baseList가 비어있지 않은 경우만 해당
+        }
+
+        // 4. 인플루언서 정보 병합된 최종 리스트에 대한 페이징 적용
+        int fromIndex = Math.min(clientOffset, finalList.size());
+        int toIndex = Math.min(clientOffset + clientSize, finalList.size());
+
+        List<CampaignResultResponse> pagedList = new ArrayList<>();
+        if (fromIndex < toIndex) {
+            pagedList = finalList.subList(fromIndex, toIndex);
+        }
+
+        // 5. 응답 반환: total을 finalList의 실제 크기로 설정
         return CampaignResultListResponse.builder()
-                .data(finalResultList)
-                .total(total)
+                .data(pagedList)
+                .total(finalList.size()) // <-- 여기서 total을 finalList의 크기로 설정합니다.
                 .build();
     }
 

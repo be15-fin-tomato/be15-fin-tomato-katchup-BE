@@ -18,4 +18,5 @@ public class CampaignResultResponse {
     private String influencerName;
     private String productName;
     private LocalDateTime registrationDate;
+    private Long pipelineInfluencerId;
 }
