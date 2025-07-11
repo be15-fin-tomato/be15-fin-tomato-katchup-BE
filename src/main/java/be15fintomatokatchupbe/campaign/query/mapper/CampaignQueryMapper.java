@@ -99,13 +99,7 @@ public interface CampaignQueryMapper {
 
     List<ReferenceDto> getReferenceList(Long campaignId, Long pipelineStepId);
 
-    List<CampaignResultResponse> findCampaignResultList(
-            @Param("request") CampaignResultRequest request, // request 객체도 명시
-            @Param("offset") int offset,                     // offset 파라미터 추가 및 @Param
-            @Param("size") int size,                         // size 파라미터 추가 및 @Param
-            @Param("sortBy") String sortBy,
-            @Param("sortOrder") String sortOrder
-    );
+    List<CampaignResultResponse> findCampaignResultList(@Param("request") CampaignResultRequest request);
 
     int countCampaignResultList(
             @Param("request") CampaignResultRequest request // count 쿼리도 request 객체 명시
@@ -120,4 +114,7 @@ public interface CampaignQueryMapper {
     List<CategoryDto> findCategoryByCampaignId(Long campaignId);
 
     List<PipelineStepStatusDto> findPipelineStepsByCampaignIdsList(List<Long> campaignIds, ContractListRequest request);
+
+    List<CampaignInfluencerInfo> findInfluencerInfoByPipelineIds(@Param("pipelineIds") List<Long> pipelineIds);
+
 }
