@@ -5,6 +5,7 @@ import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.ContractListRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
+import be15fintomatokatchupbe.influencer.query.dto.response.CampaignRecord;
 import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import org.apache.ibatis.annotations.Mapper;
@@ -122,4 +123,10 @@ public interface CampaignQueryMapper {
     List<PipelineStepStatusDto> findPipelineStepsByCampaignIdsList(List<Long> campaignIds, ContractListRequest request);
 
     int getTotalSize(ContractListRequest request);
+
+    ProposalFormDTO findProposalDetail(Long pipelineId);
+
+    List<InfluencerProposalInfo> findPipelineProposalInfluencer(Long pipelineId);
+
+    List<CampaignRecord> findCampaignByInfluencerId(Long id);
 }

@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.campaign.query.service;
 
 
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
+import be15fintomatokatchupbe.campaign.query.controller.ProposalReferenceListResponse;
 import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.ContractListRequest;
@@ -10,6 +11,7 @@ import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
 import be15fintomatokatchupbe.campaign.query.dto.mapper.ListupFormDTO;
 import be15fintomatokatchupbe.common.dto.Pagination;
+import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
 import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.AllArgsConstructor;
@@ -279,7 +281,7 @@ public class CampaignQueryService {
         List<UserInfo> userDto = campaignQueryMapper.findPipelineUser(pipelineId);
 
         /* 참고 목록 가져오기 */
-        List<ReferenceInfo> referenceDto = campaignQueryMapper.findPipeReference(pipelineId, PipelineStepConstants.PROPOSAL);
+        List<ReferenceDto> referenceDto = campaignQueryMapper.getReferenceList(quotationFormDto.getCampaignId(), PipelineStepConstants.PROPOSAL);
 
         /* 의견 가져오기 */
         List<IdeaInfo> ideaDto = campaignQueryMapper.findPipeIdea(pipelineId);
@@ -329,7 +331,7 @@ public class CampaignQueryService {
         List<UserInfo> userDto = campaignQueryMapper.findPipelineUser(pipelineId);
 
         /* 참고 목록 가져오기 */
-        List<ReferenceInfo> referenceDto = campaignQueryMapper.findPipeReference(pipelineId, PipelineStepConstants.QUOTATION);
+        List<ReferenceDto> referenceDto = campaignQueryMapper.getReferenceList(contractFormDto.getCampaignId(), PipelineStepConstants.QUOTATION);
 
         /* 의견 가져오기 */
         List<IdeaInfo> ideaDto = campaignQueryMapper.findPipeIdea(pipelineId);
@@ -381,7 +383,7 @@ public class CampaignQueryService {
         List<InfluencerRevenueInfo> influencerDto = campaignQueryMapper.findPipelineRevenueInfluencer(pipelineId);
 
         /* 참고 목록 가져오기 */
-        List<ReferenceInfo> referenceDto = campaignQueryMapper.findPipeReference(pipelineId, PipelineStepConstants.CONTRACT);
+        List<ReferenceDto> referenceDto = campaignQueryMapper.getReferenceList(revenueFormDto.getCampaignId(), PipelineStepConstants.CONTRACT);
 
         /* 의견 가져오기 */
         List<IdeaInfo> ideaDto = campaignQueryMapper.findPipeIdea(pipelineId);
@@ -620,6 +622,68 @@ public class CampaignQueryService {
         }
 
         return CampaignAiResponse.builder().campaignList(responseDto).build();
+    }
+
+    public ProposalReferenceListResponse getProposalReferenceList(Long campaignId) {
+        List<ReferenceDto> proposalReferenceList = campaignQueryMapper.getReferenceList(campaignId, PipelineStepConstants.PROPOSAL);
+
+        return ProposalReferenceListResponse.builder()
+                .referenceList(proposalReferenceList)
+                .build();
+    }
+
+    public ProposalDetailResponse getProposalDetail(Long pipelineId) {
+        /* 폼 정보 가져오기 */
+        /* 폼 가져오기 */
+        ProposalFormDTO proposalFormDTO = campaignQueryMapper.findProposalDetail(pipelineId);
+
+        /* 인풀루언서 가져오기 */
+        List<InfluencerProposalInfo> influencerDto = campaignQueryMapper.findPipelineProposalInfluencer(pipelineId);
+
+        /* 담당자 가져오기 */
+        List<UserInfo> userDto = campaignQueryMapper.findPipelineUser(pipelineId);
+
+        /* 참고 목록 가져오기 */
+        List<ReferenceDto> referenceDto = campaignQueryMapper.getReferenceList(proposalFormDTO.getCampaignId(), PipelineStepConstants.LIST_UP);
+
+        /* 의견 가져오기 */
+        List<IdeaInfo> ideaDto = campaignQueryMapper.findPipeIdea(pipelineId);
+
+        /* 조합하기 */
+        ProposalFormResponse form = ProposalFormResponse.builder()
+                .name(proposalFormDTO.getName())
+                .clientCompanyId(proposalFormDTO.getClientCompanyId())
+                .clientCompanyName(proposalFormDTO.getClientCompanyName())
+                .clientManagerId(proposalFormDTO.getClientManagerId())
+                .clientManagerName(proposalFormDTO.getClientManagerName())
+                .pipelineStatusId(proposalFormDTO.getPipelineStatusId())
+                .pipelineStatusName(proposalFormDTO.getPipelineStatusName())
+                .userList(userDto)
+                .campaignId(proposalFormDTO.getCampaignId())
+                .campaignName(proposalFormDTO.getCampaignName())
+                .requestAt(proposalFormDTO.getRequestAt())
+                .presentAt(proposalFormDTO.getPresentAt())
+                .startedAt(proposalFormDTO.getStartedAt())
+                .endedAt(proposalFormDTO.getEndedAt())
+                .influencerList(influencerDto)
+                .content(proposalFormDTO.getContent())
+                .notes(proposalFormDTO.getNotes())
+                .build();
+
+        /* 응답하기 */
+        return ProposalDetailResponse
+                .builder()
+                .form(form)
+                .referenceList(referenceDto)
+                .ideaList(ideaDto)
+                .build();
+    }
+
+    public ListupReferenceResponse getListupReferenceList(Long campaignId) {
+        List<ReferenceDto> referenceDto = campaignQueryMapper.getReferenceList(campaignId, PipelineStepConstants.LIST_UP);
+
+        return ListupReferenceResponse.builder()
+                .referenceList(referenceDto).build();
     }
 }
 
