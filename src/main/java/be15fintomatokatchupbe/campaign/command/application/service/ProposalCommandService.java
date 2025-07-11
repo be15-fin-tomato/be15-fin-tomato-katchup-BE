@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.campaign.command.application.service;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateProposalRequest;
+import be15fintomatokatchupbe.campaign.command.application.dto.request.UpdateProposalRequest;
 import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelperService;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.CampaignStatusConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStatusConstants;
@@ -44,6 +45,7 @@ public class ProposalCommandService {
     private final PipelineStatusRepository pipelineStatusRepository;
     private final IdeaRepository ideaRepository;
 
+
     @Transactional
     public void createProposal(Long userId, CreateProposalRequest request) {
         Pipeline existPipeline = pipelineRepository.findApprovePipeline(
@@ -57,7 +59,7 @@ public class ProposalCommandService {
         }
         /* 외부 엔티티 가져오기
          * : 광고 담당자, 캠페인, 파이프라인 단계 */
-
+        log.info("광고 담당자 ID : {}", request.getClientManagerId());
         //. 광고 담당자 가져오기
         ClientManager clientManager =
                 clientHelperService.findValidClientManager(request.getClientManagerId());
@@ -127,6 +129,56 @@ public class ProposalCommandService {
 
         /* 담당자*/
         pipeUserService.saveUserList(request.getUserId(), pipeline);
+    }
+
+    @Transactional
+    public void updateProposal(Long userId, UpdateProposalRequest request) {
+        /* 요청이 승인일 경우 승인 된게 있는지 체크 해주기 */
+        if(Objects.equals(request.getPipelineStatusId(), PipelineStatusConstants.APPROVED)){
+            Pipeline existPipeline = pipelineRepository.findApprovePipeline(
+                    request.getCampaignId(),
+                    PipelineStepConstants.PROPOSAL,
+                    PipelineStatusConstants.APPROVED
+            );
+
+            if(existPipeline != null && !Objects.equals(existPipeline.getPipelineId(), request.getPipelineId())){
+                throw new BusinessException(CampaignErrorCode.APPROVED_REVENUE_ALREADY_EXISTS);
+            }
+        }
+        Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
+        /* 이미 완료된 캠페인인 경우 수정 불가 */
+        if(Objects.equals(campaign.getCampaignStatus().getCampaignStatusId(), CampaignStatusConstants.FINISHED)){
+            throw new BusinessException(CampaignErrorCode.FINISHED_CAMPAIGN);
+        }
+
+        ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
+        PipelineStatus pipelineStatus = pipelineStatusRepository.findById(request.getPipelineStatusId())
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STATUS_NOT_FOUND));
+        User writer = userHelperService.findValidUser(userId);
+
+        /* 수정할 파이프라인 찾아주기 */
+        Pipeline foundPipeline = campaignHelperService.findValidPipeline(request.getPipelineId());
+
+        /* 연관 테이블 지워주기 */
+        campaignHelperService.deleteRelationTable(foundPipeline);
+
+        foundPipeline.updateProposal(
+                pipelineStatus,
+                campaign,
+                request.getName(),
+                request.getRequestAt(),
+                request.getStartedAt(),
+                request.getEndedAt(),
+                request.getPresentedAt(),
+                request.getContent(),
+                request.getNotes(),
+                writer
+        );
+
+        pipeInfClientManagerService.saveClientManager(clientManager, foundPipeline);
+        pipeInfClientManagerService.saveProposalInfluencer(request.getInfluencerList(), foundPipeline);
+        pipeUserService.saveUserList(request.getUserId(), foundPipeline);
+        log.info("{} 번 파이프라인 수정 완료", request.getPipelineId());
     }
 
     public void deleteProposal(Long pipelineId) {

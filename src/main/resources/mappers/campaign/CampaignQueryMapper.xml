@@ -94,7 +94,7 @@
             <if test="req.category == 'title'">
                 AND p.name LIKE CONCAT('%', #{req.keyword}, '%')
             </if>
-            <if test="req.category == 'company'">
+            <if test="req.category == 'clientCompany'">
                 AND cc.client_company_name LIKE CONCAT('%', #{req.keyword}, '%')
             </if>
             <if test="req.category == 'user'">
@@ -103,6 +103,9 @@
         </if>
         <if test="req.userId != null">
             AND u.user_id = #{req.userId}
+        </if>
+        <if test="req.filter != null">
+            AND p.pipeline_status_id = #{req.filter}
         </if>
 
         GROUP BY
@@ -290,7 +293,7 @@
             <if test="req.category == 'title'">
                 AND p.name LIKE CONCAT('%', #{req.keyword}, '%')
             </if>
-            <if test="req.category == 'company'">
+            <if test="req.category == 'clientCompany'">
                 AND cc.client_company_name LIKE CONCAT('%', #{req.keyword}, '%')
             </if>
             <if test="req.category == 'user'">
@@ -357,7 +360,7 @@
             <if test="req.category == 'title'">
                 AND p.name LIKE CONCAT('%', #{req.keyword}, '%')
             </if>
-            <if test="req.category == 'company'">
+            <if test="req.category == 'clientCompany'">
                 AND cc.client_company_name LIKE CONCAT('%', #{req.keyword}, '%')
             </if>
             <if test="req.category == 'user'">
@@ -461,7 +464,7 @@
             <if test="req.category == 'title'">
                 AND p.name LIKE CONCAT('%', #{req.keyword}, '%')
             </if>
-            <if test="req.category == 'company'">
+            <if test="req.category == 'clientCompany'">
                 AND cc.client_company_name LIKE CONCAT('%', #{req.keyword}, '%')
             </if>
             <if test="req.category == 'user'">
@@ -470,6 +473,9 @@
         </if>
         <if test="req.userId != null">
             AND u.user_id = #{req.userId}
+        </if>
+        <if test="req.filter != null">
+            AND p.pipeline_status_id = #{req.filter}
         </if>
     </select>
 
@@ -492,6 +498,44 @@
             p.pipeline_id = #{pipelineId}
         AND
             p.is_deleted = 'N'
+    </select>
+
+    <select id="findProposalDetail" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.ProposalFormDTO">
+        SELECT
+        p.name AS name
+        , cc.client_company_id AS clientCompanyId
+        , cc.client_company_name AS clientCompanyName
+        , cm.client_manager_id AS clientManagerId
+        , cm.name AS clientManagerName
+        , c.campaign_id AS campaignId
+        , c.campaign_name AS campaignName
+        , ps.pipeline_status_id AS pipelineStatusId
+        , ps.status_name AS pipelineStatusName
+        , p.request_at AS requestAt
+        , p.presented_at AS presentAt
+        , p.started_at AS startedAt
+        , p.ended_at
+        , p.notes AS notes
+        , p.content AS content
+        FROM
+        pipeline p
+        JOIN
+        campaign c ON p.campaign_id = c.campaign_id
+        JOIN
+        pipeline_status ps ON p.pipeline_status_id = ps.pipeline_status_id
+        JOIN
+        client_company cc ON c.client_company_id = cc.client_company_id
+        LEFT JOIN
+        pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id AND picm.client_manager_id IS NOT NULL
+        LEFT JOIN
+        client_manager cm ON cm.client_manager_id = picm.client_manager_id
+
+        WHERE
+        p.is_deleted = 'N'
+        AND
+        p.pipeline_id = #{pipelineId}
+<!--        AND-->
+<!--        p.pipeline_step_id = #{pipelineStepId}-->
     </select>
 
     <select id="findQuotationDetail" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.QuotationFormDTO">
@@ -630,6 +674,20 @@
             picm.pipeline_id = #{pipelineId}
     </select>
 
+    <select id="findPipelineProposalInfluencer" resultType="be15fintomatokatchupbe.campaign.query.dto.response.InfluencerProposalInfo">
+        SELECT
+        i.influencer_id AS influencerId
+        , i.name AS influencerName
+        , picm.strength AS strength
+        , picm.notes AS notes
+        FROM
+        influencer i
+        JOIN
+        pipeline_influencer_client_manager picm ON picm.influencer_id = i.influencer_id AND picm.influencer_id IS NOT NULL
+        WHERE
+        picm.pipeline_id = #{pipelineId}
+    </select>
+
     <select id="findPipelineRevenueInfluencer" resultType="be15fintomatokatchupbe.campaign.query.dto.response.InfluencerRevenueInfo">
         SELECT
               i.influencer_id AS influencerId
@@ -669,6 +727,8 @@
             p.is_deleted = 'N'
         AND
             p.pipeline_step_id = #{pipelineStepId}
+<!--        AND-->
+<!--            p.pipeline-->
     </select>
 
     <select id="findPipeIdea" resultType="be15fintomatokatchupbe.campaign.query.dto.response.IdeaInfo">
@@ -1006,8 +1066,9 @@
                 pipeline_step_id = #{pipelineStepId}
             AND
                 is_deleted = 'N'
-            AND
-                pipeline_status_id = 2
+            <if test="pipelineStepId != 2">
+                AND pipeline_status_id = 2
+            </if>
             <if test="campaignId != null">
                 AND campaign_id = #{campaignId}
             </if>
@@ -1116,6 +1177,24 @@
         <if test="request.stepType != null">
             AND ps.step_name = #{request.stepType}
         </if>
+    </select>
+
+    <select id="findCampaignByInfluencerId" resultType="be15fintomatokatchupbe.influencer.query.dto.response.CampaignRecord">
+        SELECT
+            p.pipeline_id
+            , c.campaign_name
+        FROM
+            pipeline p
+        JOIN
+            campaign c ON c.campaign_id = p.campaign_id
+        JOIN
+            pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
+        WHERE
+            picm.influencer_id = #{id}
+        AND
+            p.pipeline_step_id = 7
+        AND
+            c.campaign_status_id = 5
     </select>
 
 </mapper>

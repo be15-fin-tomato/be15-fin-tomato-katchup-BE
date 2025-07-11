@@ -138,6 +138,17 @@ public class CampaignCommandController {
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+    @PutMapping("/proposal")
+    public ResponseEntity<ApiResponse<Void>> updateProposal(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestBody UpdateProposalRequest request
+    ){
+        Long userId = user.getUserId();
+
+        proposalCommandService.updateProposal(userId, request);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 
     @PutMapping("/quotation")
     public ResponseEntity<ApiResponse<Void>> updateQuotation(

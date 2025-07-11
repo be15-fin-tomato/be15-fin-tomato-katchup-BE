@@ -160,4 +160,28 @@ public class Pipeline {
     public void softDelete(){
         this.isDeleted = StatusType.Y;
     }
+
+    public void updateProposal(
+            PipelineStatus pipelineStatus,
+            Campaign campaign,
+            String name,
+            LocalDate requestAt,
+            LocalDate startedAt,
+            LocalDate endedAt,
+            LocalDate presentedAt,
+            String content,
+            String notes,
+            User writer
+    ) {
+        this.pipelineStatus = pipelineStatus;
+        this.writer = writer;
+        this.name = name;
+        this.requestAt = requestAt;
+        this.startedAt = startedAt;
+        this.endedAt = endedAt;
+        this.presentedAt = presentedAt;
+        this.campaign = campaign;
+        this.content = content;
+        this.notes = notes;
+    }
 }
