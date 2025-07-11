@@ -11,6 +11,7 @@
             c.campaign_id                   AS campaignId,
             c.campaign_name                 AS campaignName,
             c.product_name                  AS productName,
+            picm.pipeline_influencer_id     AS pipelineInfluencerId,
             picm.youtube_link               AS youtubeLink,
             picm.instagram_link             AS instagramLink
         FROM pipeline_influencer_client_manager picm
