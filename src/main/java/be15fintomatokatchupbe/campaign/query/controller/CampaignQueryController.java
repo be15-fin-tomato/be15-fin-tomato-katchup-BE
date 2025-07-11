@@ -170,21 +170,21 @@ public class CampaignQueryController {
     // 캠페인 목록 조회
     @GetMapping
     @Operation(summary = "캠페인 목록 조회", description = "캠페인을 페이징 형태로 조회합니다.")
-    public ResponseEntity<ApiResponse<List<CampaignListResponse>>> getCampaignList(
+    public ResponseEntity<ApiResponse<CampaignListResponse>> getCampaignList(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @ModelAttribute ContractListRequest request
     ) {
-        List<CampaignListResponse> result = campaignQueryService.getPagedCampaigns(page, size, request);
+        CampaignListResponse result = campaignQueryService.getPagedCampaigns(page, size, request);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 
     @GetMapping("/by-client-company/{clientCompanyId}")
     @Operation(summary = "고객사 ID로 캠페인 목록 조회", description = "해당 고객사 ID로 진행된 캠페인 목록을 조회합니다.")
-    public ResponseEntity<ApiResponse<List<CampaignListResponse>>> getCampaignsByClientCompanyId(
+    public ResponseEntity<ApiResponse<List<CampaignListDTO>>> getCampaignsByClientCompanyId(
             @PathVariable Long clientCompanyId
     ) {
-        List<CampaignListResponse> result = campaignQueryService.getCampaignsByClientCompanyId(clientCompanyId);
+        List<CampaignListDTO> result = campaignQueryService.getCampaignsByClientCompanyId(clientCompanyId);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
 

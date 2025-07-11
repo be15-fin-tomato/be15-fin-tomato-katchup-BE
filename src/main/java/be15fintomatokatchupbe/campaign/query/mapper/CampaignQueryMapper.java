@@ -106,7 +106,7 @@ public interface CampaignQueryMapper {
     );
 
     // 고객사 ID로 캠페인 목록 조회
-    List<CampaignListResponse> findCampaignsByClientCompanyId(@Param("clientCompanyId") Long clientCompanyId);
+    List<CampaignListDTO> findCampaignsByClientCompanyId(@Param("clientCompanyId") Long clientCompanyId);
 
 
     List<CampaignWithCategoryDTO> findCampaignWithCategory(Long clientCompanyId, String campaignName, List<Long> tags);
@@ -117,4 +117,6 @@ public interface CampaignQueryMapper {
 
     List<CampaignInfluencerInfo> findInfluencerInfoByPipelineIds(@Param("pipelineIds") List<Long> pipelineIds);
 
+
+    int getTotalSize(ContractListRequest request);
 }

@@ -474,12 +474,12 @@ public class CampaignQueryService {
                 .build();
     }
 
-    public List<CampaignListResponse> getPagedCampaigns(int page, int size, ContractListRequest request) {
+    public CampaignListResponse getPagedCampaigns(int page, int size, ContractListRequest request) {
         int offset = (page - 1) * size;
 
-        List<CampaignListResponse> campaigns = campaignQueryMapper.findPagedCampaigns(size, offset, request);
+        List<CampaignListDTO> campaigns = campaignQueryMapper.findPagedCampaigns(size, offset, request);
         List<Long> campaignIds = campaigns.stream()
-                .map(CampaignListResponse::getCampaignId)
+                .map(CampaignListDTO::getCampaignId)
                 .distinct()
                 .toList();
 
@@ -495,7 +495,7 @@ public class CampaignQueryService {
                             )
                     ));
 
-            for (CampaignListResponse dto : campaigns) {
+            for (CampaignListDTO dto : campaigns) {
                 List<PipelineStepDto> stepList = stepMap.getOrDefault(dto.getCampaignId(), Collections.emptyList());
                 dto.setPipelineSteps(stepList);
 
@@ -505,7 +505,22 @@ public class CampaignQueryService {
             }
         }
 
-        return campaigns;
+        int totalCount = campaignQueryMapper.getTotalSize(request);
+        log.info("totalcount : {}",totalCount);
+
+        Pagination pagination = Pagination.builder()
+                .currentPage(page)
+                .size(size)
+                .totalPage((int) Math.ceil((double) totalCount /size))
+                .totalCount(totalCount)
+                .build();
+
+
+
+        return CampaignListResponse.builder()
+                .campaignList(campaigns)
+                .pagination(pagination)
+                .build();
     }
 
     public QuotationReferenceListResponse getQuotationReferenceList(Long campaignId) {
@@ -607,10 +622,10 @@ public class CampaignQueryService {
     }
 
     // 고객사 별 캠페인 목록 조회
-    public List<CampaignListResponse> getCampaignsByClientCompanyId(Long clientCompanyId) {
-        List<CampaignListResponse> campaigns = campaignQueryMapper.findCampaignsByClientCompanyId(clientCompanyId);
+    public List<CampaignListDTO> getCampaignsByClientCompanyId(Long clientCompanyId) {
+        List<CampaignListDTO> campaigns = campaignQueryMapper.findCampaignsByClientCompanyId(clientCompanyId);
         List<Long> campaignIds = campaigns.stream()
-                .map(CampaignListResponse::getCampaignId)
+                .map(CampaignListDTO::getCampaignId)
                 .toList();
 
         if (!campaignIds.isEmpty()) {
@@ -625,7 +640,7 @@ public class CampaignQueryService {
                             )
                     ));
 
-            for (CampaignListResponse dto : campaigns) {
+            for (CampaignListDTO dto : campaigns) {
                 List<PipelineStepDto> stepList = stepMap.getOrDefault(dto.getCampaignId(), Collections.emptyList());
                 dto.setPipelineSteps(stepList);
                 long completed = stepList.stream().filter(s -> s.getStartedAt() != null).count();
