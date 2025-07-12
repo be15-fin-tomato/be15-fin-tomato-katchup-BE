@@ -159,6 +159,13 @@ public class Pipeline {
 
     public void softDelete(){
         this.isDeleted = StatusType.Y;
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    public void update(BigDecimal expectedProfitMargin, Long expectedRevenue, String notes) {
+        this.expectedProfitMargin = expectedProfitMargin;
+        this.expectedRevenue = expectedRevenue;
+        this.notes = notes;
     }
 
     public void updateProposal(

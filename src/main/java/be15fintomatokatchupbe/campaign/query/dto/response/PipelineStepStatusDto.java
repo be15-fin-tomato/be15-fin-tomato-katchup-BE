@@ -9,5 +9,5 @@ public class PipelineStepStatusDto {
     private Long campaignId;
     private Long pipeLineStepId;
     private String stepType;
-    private String startedAt;
+    private String createdAt;
 }

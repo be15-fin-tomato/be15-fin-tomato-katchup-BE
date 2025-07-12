@@ -94,4 +94,15 @@ public class ListupCommandService {
 
         campaignHelperService.deleteRelationTable(foundPipeline);
     }
+
+    public void deleteAllListup(Long pipelineId) {
+        Pipeline foundPipeline = campaignHelperService.findValidAllPipeline(pipelineId);
+
+        if(!Objects.equals(foundPipeline.getPipelineStep().getPipelineStepId(), PipelineStepConstants.LIST_UP)){
+            throw new BusinessException(CampaignErrorCode.INVALID_ACCESS);
+        }
+        foundPipeline.softDelete();
+
+        campaignHelperService.deleteRelationTable(foundPipeline);
+    }
 }

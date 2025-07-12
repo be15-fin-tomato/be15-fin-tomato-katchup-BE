@@ -778,9 +778,7 @@
             JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
             WHERE p.campaign_id = c.campaign_id
                 AND p.is_deleted = 'N'
-<!--                AND cm.is_deleted = 'N'-->
-            ORDER BY p.presented_at ASC
-            LIMIT 1
+                AND p.pipeline_step_id = 1
         ) AS clientManagerId,
 
         (
@@ -790,9 +788,7 @@
             JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
             WHERE p.campaign_id = c.campaign_id
                 AND p.is_deleted = 'N'
-<!--                AND cm.is_deleted = 'N'-->
-            ORDER BY p.presented_at ASC
-            LIMIT 1
+                AND p.pipeline_step_id = 1
         ) AS clientManagerName,
 
         c.awareness_path AS awarenessPath,
@@ -800,13 +796,13 @@
         c.product_price AS productPrice,
 
         (
-            SELECT DATE_FORMAT(MIN(p.presented_at), '%Y.%m.%d')
+            SELECT DATE_FORMAT(MIN(p.started_at), '%Y.%m.%d')
             FROM pipeline p
             WHERE p.campaign_id = c.campaign_id
             AND p.is_deleted = 'N'
         ) AS startedAt,
         (
-            SELECT DATE_FORMAT(MAX(p.presented_at), '%Y.%m.%d')
+            SELECT DATE_FORMAT(MAX(p.ended_at), '%Y.%m.%d')
             FROM pipeline p
             WHERE p.campaign_id = c.campaign_id
                 AND p.is_deleted = 'N'
@@ -820,27 +816,28 @@
 
     <!-- pipeline 테이블 기반 파생 정보들 -->
     <select id="selectTotalExpectedRevenue" resultType="long">
-        SELECT IFNULL(SUM(p.expected_revenue), 0)
+        SELECT IFNULL(p.expected_revenue, 0)
         FROM pipeline p
         WHERE p.campaign_id = #{campaignId}
+        AND p.pipeline_step_id = 1
         AND p.is_deleted = 'N'
     </select>
 
-    <select id="selectAverageExpectedProfitMargin" resultType="java.math.BigDecimal">
-        SELECT ROUND(AVG(p.expected_profit_margin), 2)
+    <select id="selectAverageExpectedProfitMargin" resultType="float">
+        SELECT IFNULL(p.expected_profit_margin, 1)
         FROM pipeline p
         WHERE p.campaign_id = #{campaignId}
+        AND p.pipeline_step_id = 1
         AND p.is_deleted = 'N'
     </select>
 
-    <!-- 파이프라인 중 하나의 notes 가져오기 (가장 이른 presented_at 기준) -->
+    <!-- 기회인지거 가져오기 -->
     <select id="selectCampaignNotes" resultType="string">
         SELECT p.notes
         FROM pipeline p
         WHERE p.campaign_id = #{campaignId}
         AND p.is_deleted = 'N'
-        ORDER BY p.presented_at ASC
-        LIMIT 1
+        AND p.pipeline_step_id = 1
     </select>
 
     <!-- 캠페인 유저 리스트 조회 -->
@@ -895,61 +892,131 @@
         ORDER BY p.presented_at ASC
     </select>
 
-    <select id="findPagedCampaigns" resultType="be15fintomatokatchupbe.campaign.query.dto.response.CampaignListDTO">
+    <select id="findPagedCampaigns" resultType="be15fintomatokatchupbe.campaign.query.dto.response.CampaignListsDTO">
         SELECT
-        c.campaign_id AS campaignId,
-        c.campaign_name AS campaignName,
-        cs.campaign_status_id AS campaignStatusId,
-        cs.status_name AS campaignStatusName,
-        c.client_company_id,
-        cc.client_company_name AS clientCompanyName,
-        cm.name AS clientManagerName,
-        cm.position AS clientManagerPosition,
-        c.product_name AS productName,
-        p.expected_revenue AS expectedRevenue,
-        DATE_FORMAT(p.started_at, '%Y-%m-%d') AS startedAt,
-        DATE_FORMAT(p.ended_at, '%Y-%m-%d') AS endedAt,
-        u.name AS pipelineUserName,
-        u.position AS pipelineUserPosition
-        FROM campaign c
-        JOIN campaign_status cs ON c.campaign_status_id = cs.campaign_status_id
-        JOIN client_company cc ON c.client_company_id = cc.client_company_id
-        JOIN client_manager cm ON cm.client_company_id = cc.client_company_id AND cm.is_deleted = 'N'
-        JOIN pipeline p ON p.campaign_id = c.campaign_id
-        JOIN client_company_user pu ON pu.client_company_id = cc.client_company_id        JOIN user u ON pu.user_id = u.user_id AND u.is_deleted = 'N'
+            c.campaign_id AS campaignId,
+            c.campaign_name AS campaignName,
+            c.campaign_status_id AS campaignStatusId,
+            d.status_name AS campaignStatusName,
+            cc.client_company_name AS clientCompanyName,
+            (
+                SELECT cm.name
+                  FROM pipeline p
+                  JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
+                  JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
+                 WHERE p.campaign_id = c.campaign_id
+                  AND p.is_deleted = 'N'
+                  AND p.pipeline_step_id = 1
+            ) AS clientManagerName,
+            (
+                SELECT cm.position
+                  FROM pipeline p
+                  JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
+                  JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
+                 WHERE p.campaign_id = c.campaign_id
+                  AND p.is_deleted = 'N'
+                  AND p.pipeline_step_id = 1
+            ) AS clientManagerPosition,
+            (
+                SELECT p.expected_revenue
+                  FROM pipeline p
+                 WHERE p.campaign_id = c.campaign_id
+                   AND p.pipeline_step_id = 1
+                   AND p.is_deleted = 'N'
+            ) AS expectedRevenue,
+            c.product_name AS productName,
+            (
+                SELECT DATE_FORMAT(MIN(p.started_at), '%Y.%m.%d')
+                  FROM pipeline p
+                WHERE p.campaign_id = c.campaign_id
+                  AND p.is_deleted = 'N'
+            ) AS startedAt,
+            (
+                SELECT DATE_FORMAT(MAX(p.ended_at), '%Y.%m.%d')
+                  FROM pipeline p
+                WHERE p.campaign_id = c.campaign_id
+                  AND p.is_deleted = 'N'
+            ) AS endedAt,
+            u.name as pipelineUserName,
+            u.position as pipelineUserPosition,
+            (
+                SELECT
+                    CEIL(
+                        CASE
+                            WHEN MAX(p.pipeline_step_id) > 7 THEN 7
+                            ELSE MAX(p.pipeline_step_id)
+                         END * 100.0 / 7
+                    )
+                  FROM pipeline p
+                 WHERE p.campaign_id = c.campaign_id
+                   AND p.pipeline_step_id != 7
+                   AND p.is_deleted = 'N'
+            ) AS successProbability,
+            (
+                SELECT p.created_at
+                  FROM pipeline p
+                 WHERE p.campaign_id = c.campaign_id
+                   AND p.pipeline_step_id = 1
+                   AND p.is_deleted = 'N'
+                 ORDER BY p.created_at DESC
+            ) AS firstCreatedAt
+          FROM campaign c
+          JOIN campaign_status d ON d.campaign_status_id = c.campaign_status_id
+          JOIN client_company cc ON c.client_company_id = cc.client_company_id
+          JOIN client_company_user ccu ON ccu.client_company_id = c.client_company_id
+          JOIN user u ON u.user_id = ccu.user_id
         <where>
+            AND c.is_deleted = 'N'
             <if test="request.campaignStatus != null and request.campaignStatus != ''">
-                AND cs.campaign_status_id = #{request.campaignStatus}
+                AND c.campaign_status_id = #{request.campaignStatus}
             </if>
 
             <if test="request.expectedRevenueRange != null">
+                AND EXISTS (
+                    SELECT 1
+                      FROM pipeline p
+                     WHERE p.campaign_id = c.campaign_id
+                       AND p.pipeline_step_id = 1
+                       AND p.is_deleted = 'N'
                 <choose>
-                    <when test="request.expectedRevenueRange == 10000000">
-                        AND p.expected_revenue &lt;= 10000000
+                    <when test="request.expectedRevenueRange == 1000000L">
+                        AND p.expected_revenue &lt;= 1000000
                     </when>
-                    <when test="request.expectedRevenueRange == 30000000">
-                        AND p.expected_revenue &gt;= 10000001 AND p.expected_revenue &lt;= 30000000
+                    <when test="request.expectedRevenueRange == 3000000L">
+                        AND p.expected_revenue BETWEEN 1000001 AND 3000000
                     </when>
-                    <when test="request.expectedRevenueRange == 50000000">
-                        AND p.expected_revenue &gt;= 30000001 AND p.expected_revenue &lt;= 50000000
+                    <when test="request.expectedRevenueRange == 5000000L">
+                        AND p.expected_revenue BETWEEN 3000001 AND 5000000
                     </when>
-                    <when test="request.expectedRevenueRange == 70000000">
-                        AND p.expected_revenue &gt;= 50000001 AND p.expected_revenue &lt;= 70000000
+                    <when test="request.expectedRevenueRange == 7000000L">
+                        AND p.expected_revenue BETWEEN 5000001 AND 7000000
                     </when>
-                    <when test="request.expectedRevenueRange == 100000000">
-                        AND p.expected_revenue &gt;= 70000001 AND p.expected_revenue &lt;= 100000000
+                    <when test="request.expectedRevenueRange == 10000000L">
+                        AND p.expected_revenue BETWEEN 7000001 AND 10000000
                     </when>
-                    <when test="request.expectedRevenueRange == 100000001">
-                        AND p.expected_revenue &gt;= 100000001
+                    <when test="request.expectedRevenueRange == 10000001L">
+                        AND p.expected_revenue &gt;= 10000001
                     </when>
                 </choose>
+                )
             </if>
 
             <if test="request.startedDate != null">
-                AND p.started_at &gt;= #{request.startedDate}
+                AND (
+                    SELECT MIN(p.started_at)
+                      FROM pipeline p
+                     WHERE p.campaign_id = c.campaign_id
+                       AND p.is_deleted = 'N'
+                ) &gt;= #{request.startedDate}
             </if>
+
             <if test="request.endedDate != null">
-                AND p.ended_at &lt;= #{request.endedDate}
+                AND (
+                SELECT MAX(p.ended_at)
+                FROM pipeline p
+                WHERE p.campaign_id = c.campaign_id
+                AND p.is_deleted = 'N'
+                ) &lt;= #{request.endedDate}
             </if>
 
             <if test="request.clientCompanyName != null and request.clientCompanyName != ''">
@@ -957,67 +1024,144 @@
             </if>
 
             <if test="request.clientManagerName != null and request.clientManagerName != ''">
-                AND cm.name LIKE CONCAT('%', #{request.clientManagerName}, '%')
+                AND EXISTS (
+                    SELECT 1
+                      FROM pipeline p
+                      JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
+                      JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
+                     WHERE p.campaign_id = c.campaign_id
+                       AND p.pipeline_step_id = 1
+                       AND p.is_deleted = 'N'
+                       AND cm.name LIKE CONCAT('%', #{request.clientManagerName}, '%')
+                )
+            </if>
+
+            <if test="request.stepType != null and request.stepType != ''">
+                AND EXISTS (
+                    SELECT 1
+                      FROM pipeline pp
+                     WHERE pp.campaign_id = c.campaign_id
+                       AND pp.pipeline_step_id &gt;=
+                        (
+                            SELECT ps_inner.pipeline_step_id
+                              FROM pipeline_step ps_inner
+                             WHERE ps_inner.step_name = #{request.stepType}
+                        )
+                )
+            </if>
+
+            <if test="request.campaignName != null and request.campaignName != ''">
+                AND c.campaign_name LIKE CONCAT('%', #{request.campaignName}, '%')
+            </if>
+
+            <if test="request.productName != null and request.productName != ''">
+                AND c.product_name LIKE CONCAT('%', #{request.productName}, '%')
             </if>
         </where>
-        GROUP BY c.campaign_id
-        ORDER BY p.created_at DESC, c.campaign_id DESC
+        ORDER BY firstCreatedAt DESC, c.campaign_id DESC
         LIMIT #{limit}
         OFFSET #{offset}
     </select>
 
     <!-- 파이프라인 개수 세기-->
     <select id="getTotalSize" resultType="Integer">
-        SELECT
-        COUNT(DISTINCT c.campaign_id)
+        SELECT COUNT(*)
         FROM campaign c
-        JOIN campaign_status cs ON c.campaign_status_id = cs.campaign_status_id
+        JOIN campaign_status d ON d.campaign_status_id = c.campaign_status_id
         JOIN client_company cc ON c.client_company_id = cc.client_company_id
-        JOIN client_manager cm ON cm.client_company_id = cc.client_company_id AND cm.is_deleted = 'N'
-        JOIN pipeline p ON p.campaign_id = c.campaign_id
-        JOIN client_company_user pu ON pu.client_company_id = cc.client_company_id
-        JOIN user u ON pu.user_id = u.user_id AND u.is_deleted = 'N'
+        JOIN client_company_user ccu ON ccu.client_company_id = c.client_company_id
+        JOIN user u ON u.user_id = ccu.user_id
         <where>
-            <if test="campaignStatus != null and campaignStatus != ''">
-                AND cs.campaign_status_id = #{request.campaignStatus}
+            AND c.is_deleted = 'N'
+
+            <if test="request.campaignStatus != null and request.campaignStatus != ''">
+                AND c.campaign_status_id = #{request.campaignStatus}
             </if>
 
-            <if test="expectedRevenueRange != null">
+            <if test="request.expectedRevenueRange != null">
+                AND EXISTS (
+                SELECT 1
+                FROM pipeline p
+                WHERE p.campaign_id = c.campaign_id
+                AND p.pipeline_step_id = 1
+                AND p.is_deleted = 'N'
                 <choose>
-                    <when test="expectedRevenueRange == 10000000">
-                        AND p.expected_revenue &lt;= 10000000
+                    <when test="request.expectedRevenueRange == 1000000">
+                        AND p.expected_revenue &lt;= 1000000
                     </when>
-                    <when test="expectedRevenueRange == 30000000">
-                        AND p.expected_revenue &gt;= 10000001 AND p.expected_revenue &lt;= 30000000
+                    <when test="request.expectedRevenueRange == 3000000">
+                        AND p.expected_revenue BETWEEN 1000001 AND 3000000
                     </when>
-                    <when test="expectedRevenueRange == 50000000">
-                        AND p.expected_revenue &gt;= 30000001 AND p.expected_revenue &lt;= 50000000
+                    <when test="request.expectedRevenueRange == 5000000">
+                        AND p.expected_revenue BETWEEN 3000001 AND 5000000
                     </when>
-                    <when test="expectedRevenueRange == 70000000">
-                        AND p.expected_revenue &gt;= 50000001 AND p.expected_revenue &lt;= 70000000
+                    <when test="request.expectedRevenueRange == 7000000">
+                        AND p.expected_revenue BETWEEN 5000001 AND 7000000
                     </when>
-                    <when test="expectedRevenueRange == 100000000">
-                        AND p.expected_revenue &gt;= 70000001 AND p.expected_revenue &lt;= 100000000
+                    <when test="request.expectedRevenueRange == 10000000">
+                        AND p.expected_revenue BETWEEN 7000001 AND 10000000
                     </when>
-                    <when test="expectedRevenueRange == 100000001">
-                        AND p.expected_revenue &gt;= 100000001
+                    <when test="request.expectedRevenueRange == 10000001">
+                        AND p.expected_revenue &gt;= 10000001
                     </when>
                 </choose>
+                )
             </if>
 
-            <if test="startedDate != null">
-                AND p.started_at &gt;= #{request.startedDate}
-            </if>
-            <if test="endedDate != null">
-                AND p.ended_at &lt;= #{request.endedDate}
+            <if test="request.startedDate != null">
+                AND (
+                SELECT MIN(p.started_at)
+                FROM pipeline p
+                WHERE p.campaign_id = c.campaign_id
+                AND p.is_deleted = 'N'
+                ) &gt;= #{request.startedDate}
             </if>
 
-            <if test="clientCompanyName != null and clientCompanyName != ''">
+            <if test="request.endedDate != null">
+                AND (
+                SELECT MAX(p.ended_at)
+                FROM pipeline p
+                WHERE p.campaign_id = c.campaign_id
+                AND p.is_deleted = 'N'
+                ) &lt;= #{request.endedDate}
+            </if>
+
+            <if test="request.clientCompanyName != null and request.clientCompanyName != ''">
                 AND cc.client_company_name LIKE CONCAT('%', #{request.clientCompanyName}, '%')
             </if>
 
-            <if test="clientManagerName != null and clientManagerName != ''">
-                AND cm.name LIKE CONCAT('%', #{clientManagerName}, '%')
+            <if test="request.clientManagerName != null and request.clientManagerName != ''">
+                AND EXISTS (
+                SELECT 1
+                FROM pipeline p
+                JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
+                JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
+                WHERE p.campaign_id = c.campaign_id
+                AND p.pipeline_step_id = 1
+                AND p.is_deleted = 'N'
+                AND cm.name LIKE CONCAT('%', #{request.clientManagerName}, '%')
+                )
+            </if>
+
+            <if test="request.stepType != null and request.stepType != ''">
+                AND EXISTS (
+                SELECT 1
+                FROM pipeline pp
+                WHERE pp.campaign_id = c.campaign_id
+                AND pp.pipeline_step_id &gt;= (
+                SELECT ps_inner.pipeline_step_id
+                FROM pipeline_step ps_inner
+                WHERE ps_inner.step_name = #{request.stepType}
+                )
+                )
+            </if>
+
+            <if test="request.campaignName != null and request.campaignName != ''">
+                AND c.campaign_name LIKE CONCAT('%', #{request.campaignName}, '%')
+            </if>
+
+            <if test="request.productName != null and request.productName != ''">
+                AND c.product_name LIKE CONCAT('%', #{request.productName}, '%')
             </if>
         </where>
     </select>
@@ -1027,7 +1171,7 @@
         SELECT
         p.campaign_id,
         ps.step_name AS stepType,
-        DATE_FORMAT(p.started_at, '%Y-%m-%d') AS startedAt
+        DATE_FORMAT(p.created_At, '%Y-%m-%d') AS createdAt
         FROM pipeline p
         JOIN pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
         WHERE p.campaign_id IN
@@ -1163,20 +1307,18 @@
     </select>
 
     <!-- pipelineSteps 가져오기 -->
-    <select id="findPipelineStepsByCampaignIdsList" resultType="be15fintomatokatchupbe.campaign.query.dto.response.PipelineStepStatusDto">
+    <select id="findPipelineStepsGroupedByCampaignIds" resultType="be15fintomatokatchupbe.campaign.query.dto.response.PipelineStepsDto">
         SELECT
-        p.campaign_id,
-        ps.step_name AS stepType,
-        DATE_FORMAT(p.started_at, '%Y-%m-%d') AS startedAt
-        FROM pipeline p
-        JOIN pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
-        WHERE p.campaign_id IN
+            p.campaign_id AS campaignId,
+            ps.step_name AS stepType,
+            DATE_FORMAT(p.created_at, '%Y-%m-%d') AS createdAt
+          FROM pipeline p
+          JOIN pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
+         WHERE p.campaign_id IN
         <foreach item="id" collection="campaignIds" open="(" separator="," close=")">
             #{id}
         </foreach>
-        <if test="request.stepType != null">
-            AND ps.step_name = #{request.stepType}
-        </if>
+        AND p.is_deleted = 'N'
     </select>
 
     <select id="findCampaignByInfluencerId" resultType="be15fintomatokatchupbe.influencer.query.dto.response.CampaignRecord">

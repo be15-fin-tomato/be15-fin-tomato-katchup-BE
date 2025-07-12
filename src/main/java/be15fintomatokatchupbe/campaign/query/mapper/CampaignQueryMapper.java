@@ -13,6 +13,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface CampaignQueryMapper {
@@ -78,7 +79,7 @@ public interface CampaignQueryMapper {
     // 캠페인 상세
     CampaignDetailDto selectCampaignDetail(@Param("campaignId") Long campaignId);
 
-    BigDecimal selectAverageExpectedProfitMargin(Long campaignId);
+    float selectAverageExpectedProfitMargin(Long campaignId);
 
     String selectCampaignNotes(Long campaignId);
 
@@ -90,7 +91,7 @@ public interface CampaignQueryMapper {
 
     Long selectTotalExpectedRevenue(Long campaignId);
 
-    List<CampaignListDTO> findPagedCampaigns(@Param("limit") int limit, @Param("offset") int offset, ContractListRequest request);
+    List<CampaignListsDTO> findPagedCampaigns(@Param("limit") int limit, @Param("offset") int offset, @Param("request") ContractListRequest request);
 
     List<PipelineStepStatusDto> findPipelineStepsByCampaignIds(@Param("campaignIds") List<Long> campaignIds);
 
@@ -109,17 +110,16 @@ public interface CampaignQueryMapper {
     // 고객사 ID로 캠페인 목록 조회
     List<CampaignListDTO> findCampaignsByClientCompanyId(@Param("clientCompanyId") Long clientCompanyId);
 
-
     List<CampaignWithCategoryDTO> findCampaignWithCategory(Long clientCompanyId, String campaignName, List<Long> tags);
 
     List<CategoryDto> findCategoryByCampaignId(Long campaignId);
 
-    List<PipelineStepStatusDto> findPipelineStepsByCampaignIdsList(List<Long> campaignIds, ContractListRequest request);
+    List<PipelineStepsDto> findPipelineStepsGroupedByCampaignIds(List<Long> campaignIds);
 
     List<CampaignInfluencerInfo> findInfluencerInfoByPipelineIds(@Param("pipelineIds") List<Long> pipelineIds);
 
 
-    int getTotalSize(ContractListRequest request);
+    int getTotalSize(@Param("request")ContractListRequest request);
 
     ProposalFormDTO findProposalDetail(Long pipelineId);
 
