@@ -725,6 +725,13 @@ public class CampaignQueryService {
         return ListupReferenceResponse.builder()
                 .referenceList(referenceDto).build();
     }
+
+    public List<CommunicationHistoryResponse> getCommunicationHistoriesByClientCompany(Long clientCompanyId) {
+        log.info("고객사 ID {}의 커뮤니케이션 이력 조회 시작", clientCompanyId);
+        List<CommunicationHistoryResponse> histories = campaignQueryMapper.findCommunicationHistoriesByClientCompanyId(clientCompanyId);
+        log.info("고객사 ID {}의 커뮤니케이션 이력 조회 완료. {}개 이력 발견", clientCompanyId, histories.size());
+        return histories;
+    }
 }
 
 
