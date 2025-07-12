@@ -65,29 +65,34 @@ public class SecurityConfig {
 
                                 /* 일반 권한 */
                                 /* TODO : 필요 할 때 주석 풀고 작성 해 주세요!*/
-                                .requestMatchers(HttpMethod.POST,
-                                        "/**"
-                                ).permitAll()
+//                                .requestMatchers(HttpMethod.POST,
+//                                        "/**"
+//                                ).permitAll()
 
                                 .requestMatchers(HttpMethod.GET,
                                         "/auth/find/password"
                                 ).permitAll()
                                 /* 유저 권한 */
+//                                .requestMatchers(HttpMethod.POST,
+//                                        "/**"
+//                                ).authenticated()
+//                                .requestMatchers(HttpMethod.GET,
+//                                        "/**"
+//                                ).authenticated()
+//                                .requestMatchers(HttpMethod.PUT,
+//                                        "/**"
+//                                ).authenticated()
+//                                .requestMatchers(HttpMethod.PATCH,
+//                                        "/**"
+//                                ).authenticated()
+//                                .requestMatchers(HttpMethod.DELETE,
+//                                        "/**"
+//                                ).authenticated()
                                 .requestMatchers(HttpMethod.POST,
-                                        "/**"
-                                ).authenticated()
-                                .requestMatchers(HttpMethod.GET,
-                                        "/**"
-                                ).authenticated()
-                                .requestMatchers(HttpMethod.PUT,
-                                        "/**"
-                                ).authenticated()
-                                .requestMatchers(HttpMethod.PATCH,
-                                        "/**"
-                                ).authenticated()
-                                .requestMatchers(HttpMethod.DELETE,
-                                        "/**"
-                                ).authenticated()
+                                        "/auth/reissue"
+                                        , "/auth/login")
+                                .permitAll()
+                                .anyRequest().authenticated()
                 ).addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         /* CORS 설정 */
         http
