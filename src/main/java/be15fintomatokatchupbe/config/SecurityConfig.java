@@ -3,6 +3,7 @@ package be15fintomatokatchupbe.config;
 import be15fintomatokatchupbe.config.security.CustomAccessDeniedHandler;
 import be15fintomatokatchupbe.config.security.CustomAuthenticationEntryPoint;
 import be15fintomatokatchupbe.config.security.JwtAuthenticationFilter;
+import be15fintomatokatchupbe.utils.jwt.JwtErrorResponse;
 import be15fintomatokatchupbe.utils.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +30,7 @@ public class SecurityConfig {
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtErrorResponse jwtErrorResponse;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -96,7 +98,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtTokenProvider);
+        return new JwtAuthenticationFilter(jwtTokenProvider ,jwtErrorResponse);
     }
 
     @Bean
