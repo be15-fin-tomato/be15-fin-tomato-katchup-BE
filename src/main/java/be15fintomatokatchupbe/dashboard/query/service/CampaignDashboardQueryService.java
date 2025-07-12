@@ -9,6 +9,7 @@ import be15fintomatokatchupbe.dashboard.query.mapper.CampaignDashboardQueryMappe
 import be15fintomatokatchupbe.influencer.query.service.YoutubeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -43,9 +44,9 @@ public class CampaignDashboardQueryService {
         return new CampaignContentResponse(metrics);
     }
 
-    public CampaignGetRevenueResponse getRevenue(Long campaignId, Long influencerId) {
-
-        List<CampaignGetRevenueDTO> response = mapper.getRevenue(campaignId, influencerId);
+    @Transactional // 트랜잭션 경고 해결을 위해 추가
+    public CampaignGetRevenueResponse getRevenue(Long pipelineInfluencerId) { // <-- 파라미터 변경
+        List<CampaignGetRevenueDTO> response = mapper.getRevenue(pipelineInfluencerId); // <-- Mapper 메서드 호출 변경
 
         return CampaignGetRevenueResponse.builder()
                 .campaignGetRevenue(response)

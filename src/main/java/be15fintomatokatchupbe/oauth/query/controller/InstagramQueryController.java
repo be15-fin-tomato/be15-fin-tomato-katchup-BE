@@ -1,11 +1,9 @@
 package be15fintomatokatchupbe.oauth.query.controller;
 
 import be15fintomatokatchupbe.common.dto.ApiResponse;
-import be15fintomatokatchupbe.oauth.query.dto.FollowerTrend;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramPostInsightResponse;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramStatsResponse;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramTokenResponse;
-import be15fintomatokatchupbe.oauth.query.service.InstagramAccountSnapshotService;
 import be15fintomatokatchupbe.oauth.query.service.InstagramPostQueryService;
 import be15fintomatokatchupbe.oauth.query.service.InstagramAccountQueryService;
 import be15fintomatokatchupbe.oauth.query.service.InstagramTokenService;
@@ -16,9 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.util.List;
-
 @Tag(name = "Instagram OAuth", description = "인스타그램 OAuth 인증 및 통계 API")
 @RestController
 @RequestMapping("/oauth2/instagram")
@@ -26,7 +21,6 @@ import java.util.List;
 @Slf4j
 public class
 InstagramQueryController {
-    private final InstagramAccountSnapshotService instagramAccountSnapshotService;
     private final InstagramPostQueryService instagramPostQueryService;
     private final InstagramAccountQueryService instagramAccountQueryService;
     private final InstagramTokenService instagramTokenService;
@@ -61,17 +55,6 @@ InstagramQueryController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    @Operation(summary = "인스타그램 팔로워수 조회", description = "사용자는 날짜를 지정하여 인플루언서의 팔로워수를 조회할 수 있다.")
-    @GetMapping("/follower-trend")
-    public ResponseEntity<ApiResponse<List<FollowerTrend>>> getTrend(
-            @RequestParam Long influencerId,
-            @RequestParam LocalDate from,
-            @RequestParam LocalDate to
-    ) {
-        List<FollowerTrend> trendList = instagramAccountSnapshotService.getFollowerTrend(influencerId, from, to);
-        return ResponseEntity.ok(ApiResponse.success(trendList));
-    }
-
     @Operation(summary = "인스타그램 댓글 요약", description = "사용자는 해당 게시물의 요약된 댓글을 조회할 수 있다.")
     @GetMapping("/summary")
     public ResponseEntity<ApiResponse<String>> getInstagramCommentSummary(
@@ -80,11 +63,5 @@ InstagramQueryController {
         String summary = instagramPostQueryService.summarizeInstagramCommentsByPipelineInfluencerId(pipelineInfluencerId);
         return ResponseEntity.ok(ApiResponse.success(summary));
     }
-
-//    @PostMapping("/force-save-token")
-//    public ResponseEntity<String> saveToken(@RequestParam Long influencerId, @RequestParam String token) {
-//        instagramPostQueryService.forceSaveToken(influencerId, token);
-//        return ResponseEntity.ok("토큰 저장 완료");
-//    }
 
 }

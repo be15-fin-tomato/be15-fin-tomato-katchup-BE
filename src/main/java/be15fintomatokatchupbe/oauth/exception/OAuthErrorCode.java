@@ -21,7 +21,8 @@ public enum OAuthErrorCode implements ErrorCode {
     INSTAGRAM_ACCOUNT_INFO_ERROR("50008", "인스타그램 계정 정보를 불러올 수 없습니다.", HttpStatus.BAD_REQUEST),
     YOUTUBE_COMMENT_FETCH_FAILED("50009", "유튜브 댓글 조회에 실패했습니다.", HttpStatus.BAD_REQUEST),
     YOUTUBE_CHANNEL_NOT_FOUND("50010", "유튜브 채널을 찾을 수 없습니다.", HttpStatus.BAD_REQUEST),
-    INSTAGRAM_ACCOUNT_NOT_FOUND("50011", "인스타그램 계정을 찾을 수 없습니다.", HttpStatus.BAD_REQUEST);
+    INSTAGRAM_ACCOUNT_NOT_FOUND("50011", "인스타그램 계정을 찾을 수 없습니다.", HttpStatus.BAD_REQUEST),
+    INSTAGRAM_STATS_SNAPSHOT_NOT_FOUND("50012", "이미 저장된 스냅샷 입니다.", HttpStatus.BAD_REQUEST);
 
     private final String code;
     private final String message;
