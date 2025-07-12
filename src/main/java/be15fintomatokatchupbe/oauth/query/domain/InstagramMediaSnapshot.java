@@ -2,16 +2,14 @@ package be15fintomatokatchupbe.oauth.query.domain;
 
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
 @Entity
 @Builder
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "instagram_media_snapshot")
@@ -23,6 +21,9 @@ public class InstagramMediaSnapshot {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "influencer_id", nullable = false)
     private Influencer influencer;
+
+    @Transient
+    private Long influencerId;
 
     @Column(nullable = false)
     private String mediaId;
