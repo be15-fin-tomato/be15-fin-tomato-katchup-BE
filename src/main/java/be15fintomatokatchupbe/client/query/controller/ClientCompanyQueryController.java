@@ -1,8 +1,9 @@
 package be15fintomatokatchupbe.client.query.controller;
 
+import be15fintomatokatchupbe.campaign.query.dto.response.CommunicationHistoryResponse;
+import be15fintomatokatchupbe.campaign.query.service.CampaignQueryService;
 import be15fintomatokatchupbe.client.query.dto.*;
 import be15fintomatokatchupbe.client.query.service.ClientCompanyQueryService;
-import be15fintomatokatchupbe.client.query.service.ClientManagerQueryService;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,7 +20,7 @@ import java.util.List;
 public class ClientCompanyQueryController {
 
     private final ClientCompanyQueryService clientCompanyQueryService;
-    private final ClientManagerQueryService clientManagerQueryService;
+    private final CampaignQueryService campaignQueryService;
 
     @GetMapping("/{clientCompanyId}/detail")
     @Operation(summary = "고객사/사원 상세 조회", description = "고객사 정보 및 담당 매니저, 사원 목록을 함께 조회합니다.")
@@ -70,6 +71,15 @@ public class ClientCompanyQueryController {
         ClientCompanyContractResponse response = clientCompanyQueryService.getClientCompanyContract(clientCompanyId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/{clientCompanyId}/communication-histories")
+    @Operation(summary = "고객사 커뮤니케이션 이력 조회")
+    public ResponseEntity<ApiResponse<List<CommunicationHistoryResponse>>> getClientCompanyCommunicationHistories(
+            @PathVariable Long clientCompanyId
+    ) {
+        List<CommunicationHistoryResponse> histories = campaignQueryService.getCommunicationHistoriesByClientCompany(clientCompanyId);
+        return ResponseEntity.ok(ApiResponse.success(histories));
     }
 
 }

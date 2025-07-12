@@ -1339,4 +1339,55 @@
             c.campaign_status_id = 5
     </select>
 
+    <!-- 고객사의 커뮤니케이션 이력 -->
+    <resultMap id="communicationHistoryResultMap" type="be15fintomatokatchupbe.campaign.query.dto.response.CommunicationHistoryResponse">
+        <id property="id" column="pipeline_id"/>
+        <result property="campaignId" column="campaign_id"/>
+        <result property="campaignName" column="campaign_name"/>
+
+        <result property="pipelineStepName" column="step_name"/>
+        <result property="pipelineTitle" column="pipeline_title"/>
+        <result property="pipelineCreatedAt" column="pipeline_created_at"/>
+
+        <result property="managerName" column="manager_name"/>
+        <result property="managerDepartment" column="manager_department"/>
+
+        <result property="content" column="pipeline_content"/>
+        <result property="notes" column="pipeline_notes"/>
+        <result property="fileName" column="file_name"/> </resultMap>
+
+    <select id="findCommunicationHistoriesByClientCompanyId" resultMap="communicationHistoryResultMap">
+        SELECT
+        p.pipeline_id,
+        p.campaign_id,
+        c.campaign_name,
+        ps.step_name,
+        p.name AS pipeline_title,
+        DATE(p.created_at) AS pipeline_created_at,
+
+        cm.name AS manager_name,
+        cm.department AS manager_department,
+        p.content AS pipeline_content,
+        p.notes AS pipeline_notes,
+        f.file_name AS file_name
+        FROM
+        pipeline p
+        JOIN
+        pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
+        JOIN
+        campaign c ON p.campaign_id = c.campaign_id
+        LEFT JOIN
+        pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
+        LEFT JOIN
+        client_manager cm ON picm.client_manager_id = cm.client_manager_id
+        LEFT JOIN
+        file f ON p.pipeline_id = f.pipeline_id
+        WHERE
+        c.client_company_id = #{clientCompanyId}
+        AND
+        p.is_deleted = 'N'
+        ORDER BY
+        p.created_at DESC;
+    </select>
+
 </mapper>
