@@ -5,6 +5,44 @@
 
 <mapper namespace="be15fintomatokatchupbe.influencer.query.mapper.InfluencerMapper">
 
+    <resultMap id="InfluencerQuotationDetailMap" type="be15fintomatokatchupbe.influencer.query.dto.response.InfluencerQuotationDTO">
+        <id property="influencerId" column="influencerId"/>
+        <result property="name" column="name"/>
+        <result property="youtubeName" column="youtubeName"/>
+        <result property="imageUrl" column="imageUrl"/>
+        <result property="instagramName" column="instagramName"/>
+
+        <!-- YouTube 필드 -->
+        <result property="subscriber" column="subscriber"/>
+        <result property="youtubeAvgViews" column="youtubeAvgViews"/>
+        <result property="youtubeAvgLikes" column="youtubeAvgLikes"/>
+        <result property="youtubeAvgComments" column="youtubeAvgComments"/>
+        <result property="youtubeAge1317" column="youtubeAge1317"/>
+        <result property="youtubeAge1824" column="youtubeAge1824"/>
+        <result property="youtubeAge2534" column="youtubeAge2534"/>
+        <result property="youtubeAge3544" column="youtubeAge3544"/>
+        <result property="youtubeAge4554" column="youtubeAge4554"/>
+        <result property="youtubeAge5564" column="youtubeAge5564"/>
+        <result property="youtubeAge65Plus" column="youtubeAge65Plus"/>
+        <result property="youtubeGenderFemale" column="youtubeGenderFemale"/>
+        <result property="youtubeGenderMale" column="youtubeGenderMale"/>
+
+        <!-- Instagram 필드 -->
+        <result property="follower" column="follower"/>
+        <result property="instagramAvgViews" column="instagramAvgViews"/>
+        <result property="instagramAvgLikes" column="instagramAvgLikes"/>
+        <result property="instagramAvgComments" column="instagramAvgComments"/>
+        <result property="instagramAge1317" column="instagramAge1317"/>
+        <result property="instagramAge1824" column="instagramAge1824"/>
+        <result property="instagramAge2534" column="instagramAge2534"/>
+        <result property="instagramAge3544" column="instagramAge3544"/>
+        <result property="instagramAge4554" column="instagramAge4554"/>
+        <result property="instagramAge5564" column="instagramAge5564"/>
+        <result property="instagramAge65Plus" column="instagramAge65Plus"/>
+        <result property="instagramGenderFemale" column="instagramGenderFemale"/>
+        <result property="instagramGenderMale" column="instagramGenderMale"/>
+    </resultMap>
+
     <resultMap id="InfluencerCardMap" type="be15fintomatokatchupbe.influencer.query.dto.response.InfluencerCardResponse">
         <id property="influencerId" column="influencer_id"/>
         <result property="name" column="name"/>
@@ -244,6 +282,53 @@
         LEFT JOIN influencer_age_distribution ad ON i.age_distribution_id = ad.age_distribution_id
         WHERE i.is_deleted = 'N'
         AND i.influencer_id = #{influencerId}
+    </select>
+
+    <select id="findInfluencerQuotationDetail" resultMap="InfluencerQuotationDetailMap">
+        SELECT
+            i.influencer_id AS influencerId
+            , i.name AS name
+            , y.name AS youtubeName
+            , y.image_url AS imageUrl
+            , i.name AS instagramName
+            , y.subscriber AS subscriber
+            , yss.avg_views AS youtubeAvgViews
+            , yss.avg_likes AS youtubeAvgLikes
+            , yss.avg_comments AS youtubeAvgComments
+            , yss.age1317 AS youtubeAge1317
+            , yss.age1824 AS youtubeAge1824
+            , yss.age2534 AS youtubeAge2534
+            , yss.age3544 AS youtubeAge3544
+            , yss.age4554 AS youtubeAge4554
+            , yss.age5564 AS youtubeAge5564
+            , yss.age65plus AS youtubeAge65Plus
+            , yss.gender_female AS youtubeGenderFemale
+            , yss.gender_male AS youtubeGenderMale
+            , ins.follower AS follower
+            , iss.avg_views AS instagramAvgViews
+            , iss.avg_likes AS instagramAvgLikes
+            , iss.avg_comments AS instagramAvgComments
+            , iss.age1317 AS instagramAge1317
+            , iss.age1824 AS instagramAge1824
+            , iss.age2534 AS instagramAge2534
+            , iss.age3544 AS instagramAge3544
+            , iss.age4554 AS instagramAge4554
+            , iss.age5564 AS instagramAge5564
+            , iss.age65plus AS instagramAge65Plus
+            , iss.gender_female AS instagramGenderFemale
+            , iss.gender_male AS instagramGenderMale
+        FROM
+            influencer i
+        LEFT JOIN
+            youtube_stats_snapshot yss on yss.influencer_id = i.influencer_id
+        LEFT JOIN
+            instagram_stats_snapshot iss on iss.influencer_id = i.influencer_id
+        LEFT JOIN
+            youtube y ON i.influencer_id = y.influencer_id
+        LEFT JOIN
+            instagram ins on i.influencer_id = ins.influencer_id
+        WHERE
+            i.influencer_id = #{influencerId}
     </select>
 
 </mapper>

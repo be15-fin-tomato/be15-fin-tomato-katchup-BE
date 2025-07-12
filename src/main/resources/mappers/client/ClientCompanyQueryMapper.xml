@@ -250,7 +250,7 @@
             , b.campaign_name
             , b.product_name
             , c.name
-            , d.total_profit
+            , (b.sales_quantity * b.product_price) AS totalProfit
             , d.started_at
             , d.ended_at
           FROM contract a

@@ -107,12 +107,11 @@ public class CampaignCommandController {
     // 캠페인 상세 수정
     @PutMapping("/chance/update")
     public ResponseEntity<ApiResponse<Void>> updateChance(
-            @AuthenticationPrincipal CustomUserDetail user,
             @RequestBody UpdateChanceRequest request
     ) {
         log.info("[Controller] 캠페인 수정 요청 들어옴. campaignId = {}", request.getCampaignId());
 
-        campaignCommandService.updateChance(user.getUserId(), request);
+        campaignCommandService.updateChance(request);
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
@@ -135,6 +134,17 @@ public class CampaignCommandController {
         Long userId = user.getUserId();
 
         listupCommandService.updateListup(userId, request);
+
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+    @PutMapping("/proposal")
+    public ResponseEntity<ApiResponse<Void>> updateProposal(
+            @AuthenticationPrincipal CustomUserDetail user,
+            @RequestBody UpdateProposalRequest request
+    ){
+        Long userId = user.getUserId();
+
+        proposalCommandService.updateProposal(userId, request);
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }

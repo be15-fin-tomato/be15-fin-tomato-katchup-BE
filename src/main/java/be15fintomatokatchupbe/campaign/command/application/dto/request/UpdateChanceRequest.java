@@ -15,18 +15,15 @@ import java.util.List;
 @Builder
 public class UpdateChanceRequest {
     private Long campaignId;
-    private String campaignName;
-    private Long campaignStatusId;
-    private Long clientCompanyId;
-    private Long clientManagerId;
-    private LocalDate startedAt;
-    private LocalDate endedAt;
-    private List<Long> userList;
-    private String awarenessPath;
-    private String productName;
-    private Long productPrice;
-    private Long expectedRevenue;
-    private BigDecimal expectedProfitMargin;
-    private String notes;
-    private List<Long> categoryList;
+    private String campaignName; // 캠페인명
+    private Long campaignStatusId; // 캠페인 상태
+    private Long clientCompanyId; // 회사
+    private Long clientManagerId; // 사원
+    private String awarenessPath; // 인지경로
+    private String productName; // 상품명
+    private Long productPrice; // 상품가격
+    private Long expectedRevenue; // 예상매출
+    private BigDecimal expectedProfitMargin; // 예상이익률
+    private String notes; // 비고
+    private List<Long> categoryList; // 카테고리
 }

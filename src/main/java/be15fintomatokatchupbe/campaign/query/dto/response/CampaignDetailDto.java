@@ -30,7 +30,7 @@ public class CampaignDetailDto {
     private String productName;
     private Long productPrice;
     private Long expectedRevenue;                    // 예상 매출
-    private BigDecimal expectedProfitMargin;         // 예상 이익률 (%)
+    private float expectedProfitMargin;
     private String notes;
     private List<Long> categoryList;
 }

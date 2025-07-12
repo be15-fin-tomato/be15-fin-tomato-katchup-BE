@@ -37,6 +37,11 @@ public class CampaignHelperService {
                 .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_NOT_FOUND));
     }
 
+    public Pipeline findValidAllPipeline(Long pipelineId) {
+        return pipelineRepository.findById(pipelineId)
+                .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_NOT_FOUND));
+    }
+
     /* 퍼싸드 패턴 적용 */
     public void deleteRelationTable(Pipeline pipeline){
         pipeInfClientManagerService.deleteByPipeline(pipeline);
