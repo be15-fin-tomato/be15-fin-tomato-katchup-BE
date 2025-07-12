@@ -87,6 +87,8 @@ public class InstagramAccountQueryService {
                     .averageLikes(avgLikes)
                     .averageComments(avgComments)
                     .totalPosts(totalPosts)
+                    .genderFemale(genderDist.getOrDefault("female", 0.0))
+                    .genderMale(genderDist.getOrDefault("male", 0.0))
                     .build();
 
         } catch (Exception e) {
