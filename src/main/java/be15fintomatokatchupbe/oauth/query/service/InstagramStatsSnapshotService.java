@@ -5,7 +5,9 @@ import be15fintomatokatchupbe.oauth.command.application.repository.InstagramMedi
 import be15fintomatokatchupbe.oauth.command.application.repository.InstagramStatsSnapshotRepository;
 import be15fintomatokatchupbe.oauth.query.domain.InstagramMediaSnapshot;
 import be15fintomatokatchupbe.oauth.query.domain.InstagramStatsSnapshot;
+import be15fintomatokatchupbe.oauth.query.dto.InstagramFullSnapshot;
 import be15fintomatokatchupbe.oauth.query.dto.InstagramMediaStats;
+import be15fintomatokatchupbe.oauth.query.mapper.InstagramQueryMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -21,6 +24,7 @@ import java.util.stream.Collectors;
 public class InstagramStatsSnapshotService {
     private final InstagramStatsSnapshotRepository snapshotRepository;
     private final InstagramMediaSnapshotRepository mediaSnapshotRepository;
+    private final InstagramQueryMapper instagramQueryMapper;
 
     /* 계정 정보 일괄 저장 */
     public void saveAllSnapshots(List<InstagramStatsSnapshot> snapshotList) {
@@ -67,4 +71,18 @@ public class InstagramStatsSnapshotService {
         }
     }
 
+    // 스냅샷 조회
+    @Transactional(readOnly = true)
+    public Optional<InstagramFullSnapshot> getLatestInstagramFullSnapshotByInfluencer(Long influencerId) {
+        log.info("인플루언서 ID {}의 가장 최신 인스타그램 전체 스냅샷 조회 요청.", influencerId);
+
+        List<InstagramFullSnapshot> snapshots = instagramQueryMapper.findLatestFullSnapshotByInfluencerId(influencerId);
+
+        if (snapshots.isEmpty()) {
+            log.info("인플루언서 ID {}에 대한 최신 인스타그램 전체 스냅샷을 찾을 수 없습니다.", influencerId);
+            return Optional.empty();
+        }
+
+        return Optional.of(snapshots.get(0));
+    }
 }
