@@ -1376,18 +1376,26 @@
         pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
         JOIN
         campaign c ON p.campaign_id = c.campaign_id
-        LEFT JOIN
-        pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
-        LEFT JOIN
-        client_manager cm ON picm.client_manager_id = cm.client_manager_id
+        LEFT JOIN (
+        SELECT *
+        FROM (
+        SELECT picm.pipeline_id, cm.name, cm.department,
+        ROW_NUMBER() OVER (PARTITION BY picm.pipeline_id ORDER BY cm.created_at DESC) AS rn
+        FROM pipeline_influencer_client_manager picm
+        JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
+        WHERE cm.is_deleted = 'N'
+        ) sub
+        WHERE sub.rn = 1
+        ) cm ON p.pipeline_id = cm.pipeline_id
+
         LEFT JOIN
         file f ON p.pipeline_id = f.pipeline_id
+
         WHERE
         c.client_company_id = #{clientCompanyId}
-        AND
-        p.is_deleted = 'N'
-        ORDER BY
-        p.created_at DESC;
-    </select>
+        AND p.is_deleted = 'N'
 
+        ORDER BY
+        p.created_at DESC
+    </select>
 </mapper>
