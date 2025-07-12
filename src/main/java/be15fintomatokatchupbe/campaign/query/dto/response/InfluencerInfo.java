@@ -8,5 +8,20 @@ import lombok.Setter;
 @Setter
 public class InfluencerInfo {
     private Long influencerId;
-    private String influencerName;
+    private String name;
+    private Youtube youtube;
+    private Instagram instagram;
+
+    @Getter
+    @Setter
+    private static class Youtube{
+        private String thumbnailUrl;
+        private String name;
+    }
+
+    @Getter
+    @Setter
+    private static class Instagram{
+        private String name;
+    }
 }

@@ -10,6 +10,7 @@ import java.util.List;
 public class ListupDetailResponse {
     private final Long campaignId;
     private final String campaignName;
+    private final String name;
     private final Long clientCompanyId;
     private final String clientCompanyName;
     private final List<InfluencerInfo> influencerList;

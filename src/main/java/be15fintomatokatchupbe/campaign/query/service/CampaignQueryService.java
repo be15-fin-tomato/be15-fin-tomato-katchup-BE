@@ -605,6 +605,7 @@ public class CampaignQueryService {
         return ListupDetailResponse.builder()
                 .campaignId(listupFormDto.getCampaignId())
                 .campaignName(listupFormDto.getCampaignName())
+                .name(listupFormDto.getName())
                 .clientCompanyId(listupFormDto.getClientCompanyId())
                 .clientCompanyName(listupFormDto.getClientCompanyName())
                 .influencerList(influencerList)
