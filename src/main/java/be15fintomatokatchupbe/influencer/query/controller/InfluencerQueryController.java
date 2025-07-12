@@ -2,15 +2,14 @@ package be15fintomatokatchupbe.influencer.query.controller;
 
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
-import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
-import be15fintomatokatchupbe.influencer.query.dto.response.InfluencerCardResponse;
-import be15fintomatokatchupbe.influencer.query.dto.response.InfluencerSearchResponse;
+import be15fintomatokatchupbe.influencer.query.dto.response.*;
 import be15fintomatokatchupbe.influencer.query.dto.request.InfluencerListRequestDTO;
 import be15fintomatokatchupbe.influencer.query.service.InfluencerQueryService;
-import be15fintomatokatchupbe.influencer.query.dto.response.InfluencerListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -61,6 +60,17 @@ public class InfluencerQueryController {
             @AuthenticationPrincipal CustomUserDetail userDetail
     ){
         List<CategoryDto> response = influencerQueryService.getCategoryList();
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @Operation(summary = "인플루언서 이력 상세 조회", description = "사용자는 인플루언서의 상세 정보를 조회할 수 있다.")
+    @GetMapping("/proposal")
+    public ResponseEntity<ApiResponse<InfluencerQuotationResponse>> getInfluencerQuotationDetail(
+            @AuthenticationPrincipal CustomUserDetail customUserDetail,
+            @RequestParam List<Long> id
+    ){
+        InfluencerQuotationResponse response = influencerQueryService.getInfluencerQuotationDetail(id);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

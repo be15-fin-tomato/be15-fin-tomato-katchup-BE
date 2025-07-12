@@ -15,6 +15,10 @@ import be15fintomatokatchupbe.contract.command.domain.entity.Contract;
 import be15fintomatokatchupbe.contract.command.domain.repository.ContractRepository;
 import be15fintomatokatchupbe.email.command.domain.aggregate.Satisfaction;
 import be15fintomatokatchupbe.email.command.domain.repository.SatisfactionRepository;
+import be15fintomatokatchupbe.relation.domain.HashtagInfluencerCampaign;
+import be15fintomatokatchupbe.relation.domain.PipelineInfluencerClientManager;
+import be15fintomatokatchupbe.relation.repository.HashInfCampRepository;
+import be15fintomatokatchupbe.relation.repository.PipeInfClientManagerRepository;
 import be15fintomatokatchupbe.relation.service.HashInfCampService;
 import be15fintomatokatchupbe.relation.service.PipeInfClientManagerService;
 import be15fintomatokatchupbe.relation.service.PipeUserService;
@@ -46,8 +50,16 @@ public class CampaignCommandService {
     private final PipelineStepRepository pipelineStepRepository;
     private final SatisfactionRepository satisfactionRepository;
     private final ContractRepository contractRepository;
+    private final PipeInfClientManagerRepository pipeInfClientManagerRepository;
+    private final HashInfCampRepository hashInfCampRepository;
+    private final IdeaRepository ideaRepository;
 
     private final CampaignCommandMapper campaignCommandMapper;
+    private final ListupCommandService listupCommandService;
+    private final ProposalCommandService proposalCommandService;
+    private final QuotationCommandService quotationCommandService;
+    private final RevenueCommandService revenueCommandService;
+    private final ContractCommandService contractCommandService;
 
     @Transactional
     public void createChance(Long userId, CreateChanceRequest request) {
@@ -110,7 +122,7 @@ public class CampaignCommandService {
 
     // 캠페인 상세 수정
     @Transactional
-    public void updateChance(Long userId, UpdateChanceRequest request) {
+    public void updateChance(UpdateChanceRequest request) {
         // 로그 찍기
         log.info("[Service] updateChance 실행. campaignId = {}", request.getCampaignId());
 
@@ -132,12 +144,60 @@ public class CampaignCommandService {
                 request.getProductPrice(),
                 request.getAwarenessPath()
         );
-
         // 저장
         campaignRepository.save(campaign);
-
         // 태그 업데이트
         hashInfCampService.updateCampaignTags(campaign, request.getCategoryList());
+
+        // 파이프라인에서 해당 캠페인 id로 pipeline_step_id가 1인 파이프라인 id 찾기
+        Pipeline pipeline = pipelineRepository.findByPipelineId(request.getCampaignId());
+
+        pipeline.update(
+                request.getExpectedProfitMargin(),
+                request.getExpectedRevenue(),
+                request.getNotes()
+        );
+
+        // picm 테이블에서 해당 pipeline_id 를 가진 client_manager_id 찾기
+        PipelineInfluencerClientManager pipelineInfluencerClientManager =
+                pipeInfClientManagerRepository.findByPipelineInfluencerId(pipeline.getPipelineId());
+
+        Long Id = pipelineInfluencerClientManager.getClientManager().getClientManagerId();
+
+        /* 새로 들어오는 clientMangerId가 기존과 다를 때*/
+        if(!request.getClientManagerId().equals(Id)) {
+            // 그 값을 지움
+            pipeInfClientManagerRepository.deleteById(pipelineInfluencerClientManager.getPipelineInfluencerId());
+
+            // 사원 정보를 갖고옴
+            ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
+
+            PipelineInfluencerClientManager newPipeLine = PipelineInfluencerClientManager.builder()
+                    .clientManager(clientManager)
+                    .pipeline(pipeline)
+                    .build();
+            pipeInfClientManagerRepository.save(newPipeLine);
+        }
+
+        /* hashtag_influencer_campaign 테이블에서 요청한 캠페인 아이디 찾기 */
+        List<HashtagInfluencerCampaign> hashtagInfluencerCampaigns =
+                hashInfCampRepository.findByCampaignId(request.getCampaignId());
+
+        /* 위에서 찾은 리스트가 비어있지않으면 테이블에서 지워주기 */
+        if(!hashtagInfluencerCampaigns.isEmpty()) {
+            hashInfCampRepository.deleteAll(hashtagInfluencerCampaigns);
+        }
+
+        List<Long> categoryList = request.getCategoryList();
+
+        /* 요청값에서 받은 카테고리 넣기 */
+        for (Long l : categoryList) {
+            HashtagInfluencerCampaign newHash = HashtagInfluencerCampaign.builder()
+                    .categoryId(l)
+                    .campaignId(request.getCampaignId())
+                    .build();
+            hashInfCampRepository.save(newHash);
+        }
 
         /* 캠페인 ID가 5가 됐으면 */
         if(campaign.getCampaignStatus().getCampaignStatusId() == 5L){
@@ -157,10 +217,8 @@ public class CampaignCommandService {
                         .influencerId(influencer)
                         .build();
                 contractRepository.save(contract);
-
             }
         }
-
     }
 
     // 캠페인 상세 삭제
@@ -170,10 +228,50 @@ public class CampaignCommandService {
 
         // 존재하는 캠페인인지 확인
         Campaign campaign = campaignHelperService.findValidCampaign(campaignId);
-
+        // 캠페인 id 지우기
         campaign.softDelete();
+        /* 캠페인id에 해당하는 파이프라인 지우기 */
+        List<Pipeline> pipeline = pipelineRepository.findAllByCampaign_CampaignId(campaignId);
+        for (Pipeline pipeline1 : pipeline) {
+            log.info("[Service] 찾은 파이프라인 ID = {}", pipeline1.getPipelineId());
+        }
+        for (Pipeline pipeline1 : pipeline) {
+            Long pipelineStepId = pipeline1.getPipelineStep().getPipelineStepId();
+            log.info("[Service] 돌고있는 파이프라인 ID = {}", pipeline1.getPipelineId());
+            if(pipelineStepId == 1L) {
+                /* 기회인지 */
+                pipeline1.softDelete();
+            } else if (pipelineStepId == 2L) {
+                /* 리스트업 */
+                listupCommandService.deleteAllListup(pipeline1.getPipelineId());
+            } else if (pipelineStepId == 3L) {
+                /* 제안 */
+                proposalCommandService.deleteAllProposal(pipeline1.getPipelineId());
+            } else if (pipelineStepId == 4L) {
+                /* 견적 */
+                quotationCommandService.deleteAllQuotation(pipeline1.getPipelineId());
+            } else if (pipelineStepId == 5L) {
+                /* 협상: 어디에서 이걸 기록하는지 모름.. */
+                pipeline1.softDelete();
+            } else if (pipelineStepId == 6L) {
+                /* 계약 */
+                contractCommandService.deleteAllContract(pipeline1.getPipelineId());
+            } else if (pipelineStepId == 7L) {
+                /* 매출 */
+                revenueCommandService.deleteAllRevenue(pipeline1.getPipelineId());
+            } else if (pipelineStepId == 8L) {
+                /* 사후 관리 */
+                pipeline1.softDelete();
+            }
+            /* 파이프라인에서 갖고있던 의견도 다 지우기 */
+            /* 혹시 파이프라인 지울때 다 지우는지 확인 */
+            List<Idea> idea = ideaRepository.findAllByPipeline_PipelineId(pipeline1.getPipelineId());
+            for (Idea idea1 : idea) {
+                idea1.softDelete();
+            }
+        }
 
-        campaignRepository.save(campaign);
+
     }
 
 }

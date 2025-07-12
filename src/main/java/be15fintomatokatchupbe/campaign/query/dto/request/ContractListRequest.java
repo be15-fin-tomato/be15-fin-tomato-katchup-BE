@@ -2,8 +2,9 @@ package be15fintomatokatchupbe.campaign.query.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
-import java.sql.Date;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -14,9 +15,15 @@ public class ContractListRequest {
 
     private Long expectedRevenueRange ; // 예상금액 10000000, 10000001~30000000, 30000001~50000000, 50000001~70000000, 70000001~100000000, 100000001
 
-    private Date startedDate; // 시작날짜
-    private Date endedDate; // 끝날짜
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate startedDate;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate endedDate;
 
     private String clientCompanyName; // 회사명
     private String clientManagerName; // 사원명
+
+    private String campaignName;
+    private String productName;
 }
