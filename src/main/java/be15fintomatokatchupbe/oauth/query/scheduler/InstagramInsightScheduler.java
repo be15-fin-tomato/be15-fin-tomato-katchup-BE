@@ -14,6 +14,7 @@ import be15fintomatokatchupbe.oauth.query.service.InstagramPostQueryService;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramPostInsightResponse;
 import be15fintomatokatchupbe.oauth.query.service.InstagramAccountQueryService;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramStatsResponse;
+import be15fintomatokatchupbe.oauth.query.service.InstagramStatsSnapshotService;
 import be15fintomatokatchupbe.relation.domain.PipelineInfluencerClientManager;
 import be15fintomatokatchupbe.relation.repository.PipeInfClientManagerRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class InstagramInsightScheduler {
     private final PipeInfClientManagerRepository picmRepository;
     private final InstagramPostInsightRepository insightRepository;
     private final InstagramStatsSnapshotRepository snapshotRepository;
+    private final InstagramStatsSnapshotService snapshotService;
 
     @Transactional
     @Scheduled(cron = "0 0 3 * * *")
@@ -93,7 +95,7 @@ public class InstagramInsightScheduler {
     }
 
     @Transactional
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 5 3 * * *")
     public void collectInstagramStatsSnapshots() {
         log.info("[InstagramStatsSnapshotScheduler] 계정 통계 스냅샷 수집 시작");
 
@@ -138,7 +140,7 @@ public class InstagramInsightScheduler {
         }
 
         if (!snapshotsToSave.isEmpty()) {
-            saveAllSnapshots(snapshotsToSave);
+            snapshotService.saveAllSnapshots(snapshotsToSave);
             log.info("✅ 전체 스냅샷 저장 완료: 총 {}건", snapshotsToSave.size());
         } else {
             log.warn("⚠️ 저장할 스냅샷이 없습니다.");
@@ -147,8 +149,43 @@ public class InstagramInsightScheduler {
         log.info("[InstagramStatsSnapshotScheduler] 계정 통계 스냅샷 수집 완료");
     }
 
-    /* 일괄 저장 */
-    public void saveAllSnapshots(List<InstagramStatsSnapshot> snapshotList) {
-        snapshotRepository.saveAll(snapshotList);
+    @Scheduled(cron = "0 10 3 * * *")
+    public void collectInstagramMediaSnapshots() {
+        log.info("[InstagramMediaSnapshotScheduler] 미디어 통계 스냅샷 수집 시작.");
+
+        List<Instagram> allInstagramAccounts = instagramRepository.findAll();
+
+        if (allInstagramAccounts.isEmpty()) {
+            log.info("저장된 인스타그램 계정이 없습니다. 미디어 스냅샷을 생성할 수 없습니다.");
+            return;
+        }
+
+        for (Instagram instagram : allInstagramAccounts) {
+            Long influencerId = instagram.getInfluencerId();
+            try {
+                Influencer influencer = influencerRepository.findById(influencerId)
+                        .orElseThrow(() -> new BusinessException(InfluencerErrorCode.INFLUENCER_NOT_FOUND)); // 적절한 예외 처리
+
+                InstagramStatsResponse statsResponse = instagramAccountQueryService.fetchStats(influencerId);
+
+                LocalDate today = LocalDate.now();
+
+                snapshotService.saveInstagramMediaSnapshots(
+                        influencer, today, statsResponse.getTopPosts(), "topPosts" // ✨ influencer 객체 전달
+                );
+
+                snapshotService.saveInstagramMediaSnapshots(
+                        influencer, today, statsResponse.getTopVideos(), "topVideos" // ✨ influencer 객체 전달
+                );
+
+                log.info("✅ 인플루언서 ID {}의 미디어 통계 스냅샷 저장 완료.", influencerId);
+            } catch (BusinessException e) {
+                log.warn("❌ 인플루언서 ID {}의 미디어 통계 스냅샷 수집 및 저장 실패: {}", influencerId, e.getMessage());
+            } catch (Exception e) {
+                log.error("❌ 인플루언서 ID {}의 미디어 통계 스냅샷 수집 및 저장 중 예상치 못한 오류 발생: {}", influencerId, e.getMessage(), e);
+            }
+        }
+        log.info("[InstagramMediaSnapshotScheduler] 미디어 통계 스냅샷 수집 완료.");
     }
+
 }
