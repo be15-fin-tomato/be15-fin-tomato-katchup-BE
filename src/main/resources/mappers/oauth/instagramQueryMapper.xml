@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.oauth.query.mapper.InstagramQueryMapper">
+
+    <resultMap id="InstagramFullSnapshotDtoResultMap" type="be15fintomatokatchupbe.oauth.query.dto.InstagramFullSnapshot">
+        <id property="id" column="iss_id"/>
+        <result property="influencerId" column="iss_influencer_id"/>
+        <result property="totalPosts" column="iss_total_posts"/>
+        <result property="avgLikes" column="iss_avg_likes"/>
+        <result property="avgViews" column="iss_avg_views"/>
+        <result property="avgComments" column="iss_avg_comments"/>
+        <result property="dailyAvgViews" column="iss_daily_avg_views"/>
+        <result property="monthlyAvgViews" column="iss_monthly_avg_views"/>
+        <result property="totalFollowers" column="iss_total_followers"/>
+        <result property="age1317" column="iss_age1317"/>
+        <result property="age1824" column="iss_age1824"/>
+        <result property="age2534" column="iss_age2534"/>
+        <result property="age3544" column="iss_age3544"/>
+        <result property="age4554" column="iss_age4554"/>
+        <result property="age5564" column="iss_age5564"/>
+        <result property="age65plus" column="iss_age65plus"/>
+        <result property="genderFemale" column="iss_gender_female"/>
+        <result property="genderMale" column="iss_gender_male"/>
+        <result property="genderUnknown" column="iss_gender_unknown"/>
+        <result property="followerChangeDaily" column="iss_follower_change_daily"/>
+        <result property="followerChangeWeekly" column="iss_follower_change_weekly"/>
+        <result property="followerChangeMonthly" column="iss_follower_change_monthly"/>
+        <result property="followerRatio" column="iss_follower_ratio"/>
+        <result property="nonFollowerRatio" column="iss_non_follower_ratio"/>
+        <result property="topPostsMediaIds" column="iss_top_posts_media_ids"/>
+        <result property="topVideosMediaIds" column="iss_top_videos_media_ids"/>
+        <result property="snapshotDate" column="iss_snapshot_date"/>
+
+        <collection property="mediaSnapshots" ofType="be15fintomatokatchupbe.oauth.query.domain.InstagramMediaSnapshot">
+            <id property="id" column="ims_id"/>
+            <result property="mediaId" column="ims_media_id"/>
+            <result property="mediaType" column="ims_media_type"/>
+            <result property="mediaUrl" column="ims_media_url"/>
+            <result property="impressions" column="ims_impressions"/>
+            <result property="reach" column="ims_reach"/>
+            <result property="viewCount" column="ims_view_count"/>
+            <result property="likeCount" column="ims_like_count"/>
+            <result property="commentCount" column="ims_comment_count"/>
+            <result property="saveCount" column="ims_save_count"/>
+            <result property="shareCount" column="ims_share_count"/>
+            <result property="engagement" column="ims_engagement"/>
+            <result property="influencerId" column="ims_influencer_id_fk"/>
+            <result property="snapshotDate" column="ims_snapshot_date_fk"/>
+            <result property="snapshotType" column="ims_snapshot_type"/>
+        </collection>
+    </resultMap>
+
+    <select id="findLatestFullSnapshotByInfluencerId" resultMap="InstagramFullSnapshotDtoResultMap">
+        SELECT
+            iss.id AS iss_id,
+            iss.influencer_id AS iss_influencer_id,
+            iss.total_posts AS iss_total_posts,
+            iss.avg_likes AS iss_avg_likes,
+            iss.avg_views AS iss_avg_views,
+            iss.avg_comments AS iss_avg_comments,
+            iss.daily_avg_views AS iss_daily_avg_views,
+            iss.monthly_avg_views AS iss_monthly_avg_views,
+            iss.total_followers AS iss_total_followers,
+            iss.age1317 AS iss_age1317,
+            iss.age1824 AS iss_age1824,
+            iss.age2534 AS iss_age2534,
+            iss.age3544 AS iss_age3544,
+            iss.age4554 AS iss_age4554,
+            iss.age5564 AS iss_age5564,
+            iss.age65plus AS iss_age65plus,
+            iss.gender_female AS iss_gender_female,
+            iss.gender_male AS iss_gender_male,
+            iss.gender_unknown AS iss_gender_unknown,
+            iss.follower_change_daily AS iss_follower_change_daily,
+            iss.follower_change_weekly AS iss_follower_change_weekly,
+            iss.follower_change_monthly AS iss_follower_change_monthly,
+            iss.follower_ratio AS iss_follower_ratio,
+            iss.non_follower_ratio AS iss_non_follower_ratio,
+            iss.top_posts_media_ids AS iss_top_posts_media_ids,
+            iss.top_videos_media_ids AS iss_top_videos_media_ids,
+            iss.snapshot_date AS iss_snapshot_date,
+
+            ims.id AS ims_id,
+            ims.media_id AS ims_media_id,
+            ims.media_type AS ims_media_type,
+            ims.media_url AS ims_media_url,
+            ims.impressions AS ims_impressions,
+            ims.reach AS ims_reach,
+            ims.view_count AS ims_view_count,
+            ims.like_count AS ims_like_count,
+            ims.comment_count AS ims_comment_count,
+            ims.save_count AS ims_save_count,
+            ims.share_count AS ims_share_count,
+            ims.engagement AS ims_engagement,
+            ims.influencer_id AS ims_influencer_id_fk,
+            ims.snapshot_date AS ims_snapshot_date_fk,
+            ims.snapshot_type AS ims_snapshot_type
+        FROM instagram_stats_snapshot iss
+        LEFT JOIN instagram_media_snapshot ims ON iss.influencer_id = ims.influencer_id AND iss.snapshot_date = ims.snapshot_date
+        WHERE iss.influencer_id = #{influencerId}
+        AND iss.snapshot_date = (SELECT MAX(snapshot_date) FROM instagram_stats_snapshot WHERE influencer_id = #{influencerId})
+        ORDER BY iss.id, ims.snapshot_type, ims.view_count DESC, ims.id;
+    </select>
+
+</mapper>
