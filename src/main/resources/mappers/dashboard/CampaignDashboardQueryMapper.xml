@@ -6,37 +6,27 @@
 <mapper namespace="be15fintomatokatchupbe.dashboard.query.mapper.CampaignDashboardQueryMapper">
     <select id="getRevenue" parameterType="long" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.CampaignGetRevenueDTO">
         SELECT
-            CAST(c.sales_quantity AS CHAR) AS salesQuantity,
+        CAST(c.sales_quantity AS CHAR) AS salesQuantity,
 
-            CASE
-            WHEN c.sales_quantity > 0 THEN ROUND(p.total_profit / c.sales_quantity, 2)
-            ELSE NULL
-            END AS averageUnitPrice,
+        CASE
+        WHEN c.sales_quantity > 0 THEN ROUND(COALESCE(picm.total_profit, 0) / c.sales_quantity, 0)
+        ELSE NULL
+        END AS averageUnitPrice,
 
-            (
-            SELECT SUM(pp.total_profit)
-            FROM pipeline pp
-            WHERE pp.campaign_id = c.campaign_id
-            AND pp.pipeline_status_id = 3
-            ) AS totalProfit,
+        COALESCE(picm.total_profit, 0) AS totalProfit,
 
-            CASE
-            WHEN c.sales_quantity > 0 AND c.product_price > 0 THEN
-            ROUND((p.total_profit / (c.sales_quantity * c.product_price)) * 100, 2)
-            ELSE NULL
-            END AS roasPercentage,
+        CASE
+        WHEN COALESCE(picm.ad_price, 0) > 0 THEN
+        ROUND((COALESCE(picm.total_profit, 0) / picm.ad_price) * 100, 2)
+        ELSE NULL
+        END AS roasPercentage,
 
-            CASE
-            WHEN c.available_quantity > 0 THEN
-            ROUND((c.sales_quantity / c.available_quantity) * 100, 2)
-            ELSE NULL
-            END AS conversionRatePercent
+        COALESCE(picm.conversion_rate_percent, 0.0) AS conversionRatePercent
 
-          FROM campaign c
-          LEFT JOIN pipeline p ON c.campaign_id = p.campaign_id
-          LEFT JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
-        WHERE c.campaign_id = #{campaignId}
-        AND picm.influencer_id = #{influencerId}
+        FROM campaign c
+        LEFT JOIN pipeline p ON c.campaign_id = p.campaign_id
+        LEFT JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
+        WHERE picm.pipeline_influencer_id = #{pipelineInfluencerId}
         AND p.pipeline_step_id = 7
         LIMIT 1
     </select>
