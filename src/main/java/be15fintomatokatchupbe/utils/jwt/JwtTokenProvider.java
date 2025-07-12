@@ -77,7 +77,7 @@ public class JwtTokenProvider {
             throw new UnAuthorizationException(GlobalErrorCode.UNAUTHORIZED_REQUEST);
             /* 글로벌 단위에서 캐치 하는 중*/
         } catch (ExpiredJwtException e) {
-            throw new BusinessException(GlobalErrorCode.INVALID_TOKEN);
+            throw new BusinessException(GlobalErrorCode.ACCESS_TOKEN_EXPIRED);
         } catch (UnsupportedJwtException e) {
             throw new BadCredentialsException("지원하지 않는 요청입니다.", e);
         } catch (IllegalArgumentException e) {
