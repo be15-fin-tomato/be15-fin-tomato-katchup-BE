@@ -21,5 +21,5 @@ public interface CampaignDashboardQueryMapper {
 
     Long findPipelineIdByCampaignIdAndInfluencerId(Long campaignId, Long influencerId);
 
-    List<CampaignGetRevenueDTO> getRevenue(Long campaignId, Long influencerId);
+    List<CampaignGetRevenueDTO> getRevenue(Long pipelineInfluencerId);
 }
