@@ -5,7 +5,8 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class YoutubeStatsSnapshot {private int totalVideos;
+public class YoutubeStatsSnapshot {
+    private int totalVideos;
     private double avgViews;
     private double avgLikes;
     private double avgComments;
