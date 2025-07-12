@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "")
+@Table(name = "instagram_media_snapshot")
 public class InstagramMediaSnapshot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
