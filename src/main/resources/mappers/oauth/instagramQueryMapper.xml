@@ -31,8 +31,6 @@
         <result property="followerChangeMonthly" column="iss_follower_change_monthly"/>
         <result property="followerRatio" column="iss_follower_ratio"/>
         <result property="nonFollowerRatio" column="iss_non_follower_ratio"/>
-        <result property="topPostsMediaIds" column="iss_top_posts_media_ids"/>
-        <result property="topVideosMediaIds" column="iss_top_videos_media_ids"/>
         <result property="snapshotDate" column="iss_snapshot_date"/>
 
         <collection property="mediaSnapshots" ofType="be15fintomatokatchupbe.oauth.query.domain.InstagramMediaSnapshot">
@@ -82,8 +80,6 @@
             iss.follower_change_monthly AS iss_follower_change_monthly,
             iss.follower_ratio AS iss_follower_ratio,
             iss.non_follower_ratio AS iss_non_follower_ratio,
-            iss.top_posts_media_ids AS iss_top_posts_media_ids,
-            iss.top_videos_media_ids AS iss_top_videos_media_ids,
             iss.snapshot_date AS iss_snapshot_date,
 
             ims.id AS ims_id,

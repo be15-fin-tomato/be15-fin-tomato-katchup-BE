@@ -23,6 +23,7 @@ public class InstagramFullSnapshot {
     private Double dailyAvgViews;
     private Double monthlyAvgViews;
     private int totalFollowers;
+    private Double reach;
     private Double age1317;
     private Double age1824;
     private Double age2534;
