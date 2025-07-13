@@ -27,6 +27,7 @@ public class InstagramStatsSnapshot {
     private Influencer influencer;
 
     private Integer totalPosts = 0;
+    private Integer totalFollowers;
 
     private Double avgViews = 0.0;
     private Double avgLikes = 0.0;
@@ -58,6 +59,7 @@ public class InstagramStatsSnapshot {
     public void update(InstagramStatsResponse stats) {
         this.reach = stats.getReach();
         this.totalPosts = stats.getTotalPosts();
+        this.totalFollowers = stats.getTotalFollowers();
         this.avgViews = stats.getAverageViews();
         this.avgLikes = stats.getAverageLikes();
         this.avgComments = stats.getAverageComments();

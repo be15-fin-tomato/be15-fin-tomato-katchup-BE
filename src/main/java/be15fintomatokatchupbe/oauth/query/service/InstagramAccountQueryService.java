@@ -132,18 +132,38 @@ public class InstagramAccountQueryService {
     }
 
     private int fetchFollowerCount(String token, String igId) {
-        String url = String.format("%s/%s?fields=followers_count&access_token=%s",
-                baseUrl, igId, token);
-
-        JsonNode root = fetchJson(url);
-        JsonNode countNode = root.path("followers_count");
-
-        if (countNode.isMissingNode() || !countNode.isInt()) {
-            log.warn("No valid followers_count found for igId={}", igId);
+        log.info("[fetchFollowerCount] 팔로워 수를 가져오려 합니다. igId: {}", igId);
+        if (token == null || token.isEmpty()) {
+            log.error("[fetchFollowerCount] Access 토큰이 null 이거나 비어있습니다. igId={}", igId);
             return 0;
         }
 
-        return countNode.asInt();
+        String url = String.format("%s/%s?fields=followers_count&access_token=%s",
+                baseUrl, igId, token);
+        log.info("[fetchFollowerCount] API 요청 URL: {}", url); // 실제 토큰이 포함되므로 운영 환경에서는 주의하세요.
+
+        JsonNode root;
+        try {
+            root = fetchJson(url); // API 호출
+            log.info("[fetchFollowerCount] {} 계정의 API 응답 원본 JSON: {}", igId, root.toString()); // API 응답 전체 로그
+        } catch (BusinessException e) {
+            log.error("[fetchFollowerCount] 팔로워를 가져오는 중 비즈니스 예외 발생 (igId={}): {}", igId, e.getMessage());
+            return 0; // 예외 발생 시 0 반환
+        } catch (Exception e) {
+            log.error("[fetchFollowerCount] 팔로워를 가져오는 중 예상치 못한 예외 발생 (igId={}): {}", igId, e.getMessage(), e);
+            return 0; // 예외 발생 시 0 반환
+        }
+
+        JsonNode countNode = root.path("followers_count");
+
+        if (countNode.isMissingNode() || !countNode.isInt()) {
+            log.warn("[fetchFollowerCount] 응답에서 유효한 'followers_count'를 찾을 수 없습니다 (igId={}). countNode 값: {}", igId, countNode.toString());
+            return 0;
+        }
+
+        int count = countNode.asInt();
+        log.info("[fetchFollowerCount] 팔로워 수 성공적으로 가져옴: {} (igId={})", count, igId);
+        return count;
     }
 
     private Map<String, Double> fetchFollowTypeRatio(String token, String igId) {
