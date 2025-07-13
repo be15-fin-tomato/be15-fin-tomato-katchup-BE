@@ -23,6 +23,14 @@ public class CampaignDashboardQueryService {
     private final CampaignDashboardQueryMapper mapper;
     private final YoutubeService youtubeService;
 
+    private String buildYoutubeThumbnailUrl(String videoId) {
+        if (videoId == null || videoId.trim().isEmpty()) {
+            return null;
+        }
+        return "https://img.youtube.com/vi/" + videoId + "/maxresdefault.jpg";
+    }
+
+    @Transactional(readOnly = true)
     public CampaignContentResponse getCampaignContent(Long pipelineInfluencerId) {
         Long pipelineId = mapper.findPipelineIdByPipelineInfluencerId(pipelineInfluencerId);
         log.info("pipelineId: {}", pipelineId);
@@ -35,19 +43,23 @@ public class CampaignDashboardQueryService {
         if (youtubeLink == null || youtubeLink.isEmpty()) {
             throw new BusinessException(CampaignErrorCode.INVALID_YOUTUBE_LINK);
         }
-
         String videoId = YoutubeService.extractVideoId(youtubeLink);
         log.info("videoId: {}", videoId);
-
         Map<String, Long> metrics = youtubeService.getVideoMetrics(videoId);
         log.info("metrics: {}", metrics);
-
-        return new CampaignContentResponse(metrics);
+        String videoThumbnailUrl = buildYoutubeThumbnailUrl(videoId);
+        log.info("videoThumbnailUrl: {}", videoThumbnailUrl);
+        return CampaignContentResponse.builder()
+                .youtubeVideoId(videoId)
+                .videoThumbnailUrl(videoThumbnailUrl)
+                .metrics(metrics)
+                .build();
     }
 
-    @Transactional // 트랜잭션 경고 해결을 위해 추가
-    public CampaignGetRevenueResponse getRevenue(Long pipelineInfluencerId) { // <-- 파라미터 변경
-        List<CampaignGetRevenueDTO> response = mapper.getRevenue(pipelineInfluencerId); // <-- Mapper 메서드 호출 변경
+
+    @Transactional
+    public CampaignGetRevenueResponse getRevenue(Long pipelineInfluencerId) {
+        List<CampaignGetRevenueDTO> response = mapper.getRevenue(pipelineInfluencerId);
 
         return CampaignGetRevenueResponse.builder()
                 .campaignGetRevenue(response)
