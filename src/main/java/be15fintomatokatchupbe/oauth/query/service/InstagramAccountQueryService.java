@@ -69,6 +69,8 @@ public class InstagramAccountQueryService {
             Double avgComments = calculateAverage(mediaStats, m -> Optional.ofNullable(m.getCommentCount()).orElse(0));
             int totalPosts = mediaStats.size();
 
+            Double totalAccountReach = fetchAccountReach(token, igId, "days_28");
+
             return InstagramStatsResponse.builder()
                     .dailyAverageViews(dailyAvgViews)
                     .monthlyAverageViews(monthlyAvgViews)
@@ -82,6 +84,7 @@ public class InstagramAccountQueryService {
                     .topPosts(topPosts)
                     .topVideos(topVideos)
                     .totalFollowers(totalFollowers)
+                    .reach(totalAccountReach)
                     .allMediaStats(mediaStats)
                     .averageViews(avgViews)
                     .averageLikes(avgLikes)
@@ -199,6 +202,11 @@ public class InstagramAccountQueryService {
 
         if (valueNode == null || !valueNode.isObject()) {
             log.warn("No follower demographic data returned for breakdown={}, igId={}", breakdown, igId);
+            if (breakdown.equals("age")) {
+                return Map.of("13-17", 0.0, "18-24", 0.0, "25-34", 0.0, "35-44", 0.0, "45-54", 0.0, "55-64", 0.0, "65+", 0.0);
+            } else if (breakdown.equals("gender")) {
+                return Map.of("male", 0.0, "female", 0.0);
+            }
             return Map.of();
         }
 
@@ -254,6 +262,31 @@ public class InstagramAccountQueryService {
                 "weekly", Math.round(weekly * 100.0) / 100.0,
                 "monthly", Math.round(monthly * 100.0) / 100.0
         );
+    }
+
+    private Double fetchAccountReach(String token, String igId, String period) {
+        String url = String.format(
+                "%s/%s/insights?metric=reach&period=%s&access_token=%s",
+                baseUrl, igId, period, token
+        );
+
+        JsonNode data = fetchJson(url);
+        JsonNode valuesNode = Optional.ofNullable(data.path("data"))
+                .filter(JsonNode::isArray)
+                .filter(d -> !d.isEmpty())
+                .map(d -> d.get(0))
+                .map(n -> n.path("values"))
+                .filter(JsonNode::isArray)
+                .filter(v -> !v.isEmpty())
+                .map(v -> v.get(0).path("value"))
+                .orElse(null);
+
+        if (valuesNode == null || !valuesNode.isNumber()) {
+            log.warn("No valid reach data returned for igId={}, period={}", igId, period);
+            return 0.0;
+        }
+
+        return valuesNode.asDouble();
     }
 
     private List<InstagramMediaStats> fetchTopMediaStats(String token, String igId) {

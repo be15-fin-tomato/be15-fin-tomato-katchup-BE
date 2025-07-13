@@ -171,11 +171,11 @@ public class InstagramInsightScheduler {
                 LocalDate today = LocalDate.now();
 
                 snapshotService.saveInstagramMediaSnapshots(
-                        influencer, today, statsResponse.getTopPosts(), "topPosts" // ✨ influencer 객체 전달
+                        influencer, today, statsResponse.getTopPosts(), "topPosts"
                 );
 
                 snapshotService.saveInstagramMediaSnapshots(
-                        influencer, today, statsResponse.getTopVideos(), "topVideos" // ✨ influencer 객체 전달
+                        influencer, today, statsResponse.getTopVideos(), "topVideos"
                 );
 
                 log.info("✅ 인플루언서 ID {}의 미디어 통계 스냅샷 저장 완료.", influencerId);
