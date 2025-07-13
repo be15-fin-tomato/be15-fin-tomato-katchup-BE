@@ -39,6 +39,7 @@
             <result property="mediaId" column="ims_media_id"/>
             <result property="mediaType" column="ims_media_type"/>
             <result property="mediaUrl" column="ims_media_url"/>
+            <result property="thumbnailUrl" column="ims_thumbnail_url"/>
             <result property="impressions" column="ims_impressions"/>
             <result property="reach" column="ims_reach"/>
             <result property="viewCount" column="ims_view_count"/>
@@ -87,6 +88,7 @@
             ims.media_id AS ims_media_id,
             ims.media_type AS ims_media_type,
             ims.media_url AS ims_media_url,
+            ims.thumbnail_url AS ims_thumbnail_url,
             ims.impressions AS ims_impressions,
             ims.reach AS ims_reach,
             ims.view_count AS ims_view_count,

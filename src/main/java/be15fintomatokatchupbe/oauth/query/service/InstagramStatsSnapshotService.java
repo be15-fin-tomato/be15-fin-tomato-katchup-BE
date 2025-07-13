@@ -48,6 +48,7 @@ public class InstagramStatsSnapshotService {
                         .mediaId(dto.getMediaId())
                         .mediaType(dto.getMediaType())
                         .mediaUrl(dto.getMediaUrl())
+                        .thumbnailUrl(dto.getThumbnailUrl())
                         .impressions(dto.getImpressions() != null ? dto.getImpressions() : 0)
                         .reach(dto.getReach() != null ? dto.getReach() : 0)
                         .viewCount(dto.getViewCount() != null ? dto.getViewCount() : 0)
