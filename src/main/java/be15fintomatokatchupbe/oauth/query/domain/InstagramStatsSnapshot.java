@@ -26,34 +26,37 @@ public class InstagramStatsSnapshot {
     @JoinColumn(name = "influencer_id")
     private Influencer influencer;
 
-    private Integer totalPosts;
-    private Double avgViews;
-    private Double avgLikes;
-    private Double avgComments;
-    private Double dailyAvgViews;
-    private Double monthlyAvgViews;
+    private Integer totalPosts = 0;
 
-    private Double age1317;
-    private Double age1824;
-    private Double age2534;
-    private Double age3544;
-    private Double age4554;
-    private Double age5564;
-    private Double age65plus;
+    private Double avgViews = 0.0;
+    private Double avgLikes = 0.0;
+    private Double avgComments = 0.0;
+    private Double dailyAvgViews = 0.0;
+    private Double monthlyAvgViews = 0.0;
+    private Double reach = 0.0;
 
-    private Double genderFemale;
-    private Double genderMale;
+    private Double age1317 = 0.0;
+    private Double age1824 = 0.0;
+    private Double age2534 = 0.0;
+    private Double age3544 = 0.0;
+    private Double age4554 = 0.0;
+    private Double age5564 = 0.0;
+    private Double age65plus = 0.0;
 
-    private Double followerChangeDaily;
-    private Double followerChangeWeekly;
-    private Double followerChangeMonthly;
+    private Double genderFemale = 0.0;
+    private Double genderMale = 0.0;
 
-    private Double followerRatio;
-    private Double nonFollowerRatio;
+    private Double followerChangeDaily = 0.0;
+    private Double followerChangeWeekly = 0.0;
+    private Double followerChangeMonthly = 0.0;
+
+    private Double followerRatio = 0.0;
+    private Double nonFollowerRatio = 0.0;
 
     private LocalDate snapshotDate;
 
     public void update(InstagramStatsResponse stats) {
+        this.reach = stats.getReach();
         this.totalPosts = stats.getTotalPosts();
         this.avgViews = stats.getAverageViews();
         this.avgLikes = stats.getAverageLikes();
