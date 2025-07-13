@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/test/instagram/insight")
+@RequestMapping("/oauth2/instagram/test")
 @RequiredArgsConstructor
 public class InstagramSchedulerTestController {
 
