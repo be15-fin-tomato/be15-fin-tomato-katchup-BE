@@ -29,6 +29,14 @@ public class YoutubeQueryController {
     private final YoutubeAnalyticsQueryService youtubeAnalyticsQueryService;
     private final YoutubeSnapshotQueryService youtubeSnapshotQueryService;
 
+    @GetMapping("/auth-url/{influencerId}")
+    public ResponseEntity<ApiResponse<String>> getYoutubeAuthUrl(
+            @PathVariable Long influencerId
+    ) {
+        String authUrl = youtubeOAuthQueryService.buildAuthorizationUrl(influencerId);
+        return ResponseEntity.ok(ApiResponse.success(authUrl));
+    }
+
     @GetMapping("/callback")
     public ResponseEntity<ApiResponse<String>> registerYoutube(
             @RequestParam("code") String code,

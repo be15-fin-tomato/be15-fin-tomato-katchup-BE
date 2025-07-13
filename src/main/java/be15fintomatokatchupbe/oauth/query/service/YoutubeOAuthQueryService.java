@@ -53,7 +53,7 @@ public class YoutubeOAuthQueryService {
     private String redirectUri;
 
     // 유튜브 인증 URL 생성
-    public String buildAuthorizationUrl() {
+    public String buildAuthorizationUrl(Long influencerId) {
         return UriComponentsBuilder
                 .fromUriString("https://accounts.google.com/o/oauth2/v2/auth")
                 .queryParam("client_id", clientId)
@@ -65,6 +65,7 @@ public class YoutubeOAuthQueryService {
                 )))
                 .queryParam("access_type", "offline")
                 .queryParam("prompt", "consent")
+                .queryParam("state", influencerId)
                 .build()
                 .toUriString();
     }
