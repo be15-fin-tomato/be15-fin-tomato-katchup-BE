@@ -39,8 +39,6 @@ public class InstagramFullSnapshot {
     private Double followerChangeMonthly;
     private Double followerRatio;
     private Double nonFollowerRatio;
-    private String topPostsMediaIds;
-    private String topVideosMediaIds;
     private LocalDate snapshotDate;
     private List<InstagramMediaSnapshot> mediaSnapshots;
 }

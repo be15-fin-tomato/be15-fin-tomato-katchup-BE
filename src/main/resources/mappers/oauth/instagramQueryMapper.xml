@@ -50,6 +50,8 @@
             <result property="influencerId" column="ims_influencer_id_fk"/>
             <result property="snapshotDate" column="ims_snapshot_date_fk"/>
             <result property="snapshotType" column="ims_snapshot_type"/>
+            <result property="permalink" column="ims_permalink"/>
+            <result property="timestamp" column="ims_timestamp"/>
         </collection>
     </resultMap>
 
@@ -97,7 +99,9 @@
             ims.engagement AS ims_engagement,
             ims.influencer_id AS ims_influencer_id_fk,
             ims.snapshot_date AS ims_snapshot_date_fk,
-            ims.snapshot_type AS ims_snapshot_type
+            ims.snapshot_type AS ims_snapshot_type,
+            ims.permalink AS ims_permalink,
+            ims.timestamp AS ims_timestamp
         FROM instagram_stats_snapshot iss
         LEFT JOIN instagram_media_snapshot ims ON iss.influencer_id = ims.influencer_id AND iss.snapshot_date = ims.snapshot_date
         WHERE iss.influencer_id = #{influencerId}
