@@ -34,6 +34,9 @@ public class InstagramMediaSnapshot {
     @Column(length = 2048)
     private String mediaUrl;
 
+    @Column(length = 2048)
+    private String thumbnailUrl;
+
     private Integer impressions;
     private Integer reach;
     private Integer viewCount;
