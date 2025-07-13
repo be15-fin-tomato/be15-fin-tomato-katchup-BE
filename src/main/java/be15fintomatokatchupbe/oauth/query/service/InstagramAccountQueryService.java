@@ -147,7 +147,7 @@ public class InstagramAccountQueryService {
     }
 
     private Map<String, Double> fetchFollowTypeRatio(String token, String igId) {
-        String url = String.format("%s/%s/insights?metric=views&period=day&metric_type=total_value&breakdown=follow_type&access_token=%s",
+        String url = String.format("%s/%s/insights?metric=reach&period=day&metric_type=total_value&breakdown=follow_type&access_token=%s",
                 baseUrl, igId, token);
 
         JsonNode results = fetchJson(url);
@@ -165,7 +165,7 @@ public class InstagramAccountQueryService {
 
         if (breakdowns == null || !breakdowns.isArray()) {
             log.warn("No follow_type breakdowns found for igId={}", igId);
-            return Map.of();
+            return Map.of("FOLLOWER", 0.0, "NON_FOLLOWER", 0.0);
         }
 
         Map<String, Double> map = new HashMap<>();
@@ -176,8 +176,15 @@ public class InstagramAccountQueryService {
             total += value;
             map.put(type, (double) value);
         }
-        for (String key : map.keySet()) {
-            map.put(key, Math.round((map.get(key) / total) * 10000.0) / 100.0);
+
+        if (total == 0) {
+            map.put("FOLLOWER", 0.0);
+            map.put("NON_FOLLOWER", 0.0);
+            log.info("Total reach for follow_type breakdown is 0 for igId={}. Returning 0.0 for ratios.", igId);
+        } else {
+            for (String key : map.keySet()) {
+                map.put(key, Math.round((map.get(key) / total) * 10000.0) / 100.0);
+            }
         }
         return map;
     }
