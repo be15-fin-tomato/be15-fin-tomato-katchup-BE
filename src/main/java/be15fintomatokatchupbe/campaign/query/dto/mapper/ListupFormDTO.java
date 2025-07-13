@@ -8,6 +8,7 @@ import lombok.Setter;
 public class ListupFormDTO {
     private Long campaignId;
     private String campaignName;
+    private String name;
     private Long clientCompanyId;
     private String clientCompanyName;
 }

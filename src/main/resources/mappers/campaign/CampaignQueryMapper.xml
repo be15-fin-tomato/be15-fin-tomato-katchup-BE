@@ -4,6 +4,20 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper">
+    <resultMap id="InfluencerInfoMap" type="be15fintomatokatchupbe.campaign.query.dto.response.InfluencerInfo">
+        <id property="influencerId" column="influencerId"/>
+        <result property="name" column="influencerName"/>
+
+        <association property="youtube" javaType="be15fintomatokatchupbe.campaign.query.dto.response.InfluencerInfo$Youtube">
+            <result property="name" column="youtubeName"/>
+            <result property="thumbnailUrl" column="youtubeThumbnailUrl"/>
+        </association>
+
+        <association property="instagram" javaType="be15fintomatokatchupbe.campaign.query.dto.response.InfluencerInfo$Instagram">
+            <result property="name" column="instagramName"/>
+        </association>
+    </resultMap>
+
     <select id="findCampaignWithCategory"
             resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.CampaignWithCategoryDTO">
         SELECT
@@ -484,6 +498,7 @@
         SELECT
               c.campaign_id AS campaignId
             , c.campaign_name AS campaignName
+            , p.name AS name
             , cc.client_company_id AS clientCompanyId
             , cc.client_company_name AS clientCompanyName
         FROM
@@ -662,16 +677,24 @@
         p.pipeline_step_id = #{pipelineStepId}
     </select>
 
-    <select id="findPipelineInfluencer" resultType="be15fintomatokatchupbe.campaign.query.dto.response.InfluencerInfo">
+    <select id="findPipelineInfluencer" resultMap="InfluencerInfoMap">
         SELECT
-              i.influencer_id AS influencerId
-            , i.name AS influencerName
+        i.influencer_id AS influencerId
+        , i.name AS influencerName
+        , y.name AS youtubeName
+        , y.image_url AS youtubeThumbnailUrl
+        , ins.name AS instagramName
         FROM
-            influencer i
+        influencer i
         JOIN
-            pipeline_influencer_client_manager picm ON picm.influencer_id = i.influencer_id AND picm.influencer_id IS NOT NULL
+        pipeline_influencer_client_manager picm
+        ON picm.influencer_id = i.influencer_id AND picm.influencer_id IS NOT NULL
+        LEFT JOIN
+        youtube y ON y.influencer_id = i.influencer_id
+        LEFT JOIN
+        instagram ins ON ins.influencer_id = i.influencer_id
         WHERE
-            picm.pipeline_id = #{pipelineId}
+        picm.pipeline_id = #{pipelineId}
     </select>
 
     <select id="findPipelineProposalInfluencer" resultType="be15fintomatokatchupbe.campaign.query.dto.response.InfluencerProposalInfo">
