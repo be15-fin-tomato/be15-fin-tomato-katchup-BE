@@ -257,7 +257,7 @@ public class InstagramAccountQueryService {
     }
 
     private List<InstagramMediaStats> fetchTopMediaStats(String token, String igId) {
-        String url = String.format("%s/%s/media?fields=id,media_type,media_url&access_token=%s",
+        String url = String.format("%s/%s/media?fields=id,media_type,media_url,thumbnail_url&access_token=%s",
                 baseUrl, igId, token);
         JsonNode mediaList = fetchJson(url).path("data");
 
@@ -271,6 +271,7 @@ public class InstagramAccountQueryService {
             String id = media.path("id").asText();
             String type = media.path("media_type").asText();
             String mediaUrl = media.path("media_url").asText();
+            String thumbnailUrl = media.path("thumbnail_url").asText();
             String insightUrl = String.format(
                     "%s/%s/insights?metric=reach,likes,comments,saved,shares&access_token=%s",
                     baseUrl, id, token
@@ -289,9 +290,10 @@ public class InstagramAccountQueryService {
                     .mediaId(id)
                     .mediaType(type)
                     .mediaUrl(mediaUrl)
+                    .thumbnailUrl(thumbnailUrl)
                     .impressions(0)
                     .reach(metrics.getOrDefault("reach", 0))
-                    .viewCount(metrics.getOrDefault("reach", 0)) // 또는 impressions, views 등 실제 의미에 맞게
+                    .viewCount(metrics.getOrDefault("reach", 0))
                     .likeCount(metrics.getOrDefault("likes", 0))
                     .commentCount(metrics.getOrDefault("comments", 0))
                     .saveCount(metrics.getOrDefault("saved", 0))
