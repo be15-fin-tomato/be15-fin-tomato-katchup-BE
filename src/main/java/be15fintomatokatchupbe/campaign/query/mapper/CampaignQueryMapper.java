@@ -126,4 +126,6 @@ public interface CampaignQueryMapper {
     List<InfluencerProposalInfo> findPipelineProposalInfluencer(Long pipelineId);
 
     List<CampaignRecord> findCampaignByInfluencerId(Long id);
+
+    List<CommunicationHistoryResponse> findCommunicationHistoriesByClientCompanyId(@Param("clientCompanyId") Long clientCompanyId);
 }
