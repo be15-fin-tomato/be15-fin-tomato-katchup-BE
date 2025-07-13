@@ -16,7 +16,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,6 +36,8 @@ public class InstagramAccountQueryService {
 
     @Value("${facebook.base-url}")
     private String baseUrl;
+
+    private static final DateTimeFormatter ISO_OFFSET_DATE_TIME_NO_COLON = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
     public InstagramStatsResponse fetchStats(Long influencerId) {
         Instagram instagram = instagramRepository.findByInfluencerId(influencerId)
@@ -69,6 +75,8 @@ public class InstagramAccountQueryService {
             Double avgComments = calculateAverage(mediaStats, m -> Optional.ofNullable(m.getCommentCount()).orElse(0));
             int totalPosts = mediaStats.size();
 
+            Double totalAccountReach = fetchAccountReach(token, igId, "days_28");
+
             return InstagramStatsResponse.builder()
                     .dailyAverageViews(dailyAvgViews)
                     .monthlyAverageViews(monthlyAvgViews)
@@ -82,6 +90,7 @@ public class InstagramAccountQueryService {
                     .topPosts(topPosts)
                     .topVideos(topVideos)
                     .totalFollowers(totalFollowers)
+                    .reach(totalAccountReach)
                     .allMediaStats(mediaStats)
                     .averageViews(avgViews)
                     .averageLikes(avgLikes)
@@ -129,22 +138,42 @@ public class InstagramAccountQueryService {
     }
 
     private int fetchFollowerCount(String token, String igId) {
-        String url = String.format("%s/%s?fields=followers_count&access_token=%s",
-                baseUrl, igId, token);
-
-        JsonNode root = fetchJson(url);
-        JsonNode countNode = root.path("followers_count");
-
-        if (countNode.isMissingNode() || !countNode.isInt()) {
-            log.warn("No valid followers_count found for igId={}", igId);
+        log.info("[fetchFollowerCount] 팔로워 수를 가져오려 합니다. igId: {}", igId);
+        if (token == null || token.isEmpty()) {
+            log.error("[fetchFollowerCount] Access 토큰이 null 이거나 비어있습니다. igId={}", igId);
             return 0;
         }
 
-        return countNode.asInt();
+        String url = String.format("%s/%s?fields=followers_count&access_token=%s",
+                baseUrl, igId, token);
+        log.info("[fetchFollowerCount] API 요청 URL: {}", url); // 실제 토큰이 포함되므로 운영 환경에서는 주의하세요.
+
+        JsonNode root;
+        try {
+            root = fetchJson(url); // API 호출
+            log.info("[fetchFollowerCount] {} 계정의 API 응답 원본 JSON: {}", igId, root.toString()); // API 응답 전체 로그
+        } catch (BusinessException e) {
+            log.error("[fetchFollowerCount] 팔로워를 가져오는 중 비즈니스 예외 발생 (igId={}): {}", igId, e.getMessage());
+            return 0; // 예외 발생 시 0 반환
+        } catch (Exception e) {
+            log.error("[fetchFollowerCount] 팔로워를 가져오는 중 예상치 못한 예외 발생 (igId={}): {}", igId, e.getMessage(), e);
+            return 0; // 예외 발생 시 0 반환
+        }
+
+        JsonNode countNode = root.path("followers_count");
+
+        if (countNode.isMissingNode() || !countNode.isInt()) {
+            log.warn("[fetchFollowerCount] 응답에서 유효한 'followers_count'를 찾을 수 없습니다 (igId={}). countNode 값: {}", igId, countNode.toString());
+            return 0;
+        }
+
+        int count = countNode.asInt();
+        log.info("[fetchFollowerCount] 팔로워 수 성공적으로 가져옴: {} (igId={})", count, igId);
+        return count;
     }
 
     private Map<String, Double> fetchFollowTypeRatio(String token, String igId) {
-        String url = String.format("%s/%s/insights?metric=views&period=day&metric_type=total_value&breakdown=follow_type&access_token=%s",
+        String url = String.format("%s/%s/insights?metric=reach&period=day&metric_type=total_value&breakdown=follow_type&access_token=%s",
                 baseUrl, igId, token);
 
         JsonNode results = fetchJson(url);
@@ -162,7 +191,7 @@ public class InstagramAccountQueryService {
 
         if (breakdowns == null || !breakdowns.isArray()) {
             log.warn("No follow_type breakdowns found for igId={}", igId);
-            return Map.of();
+            return Map.of("FOLLOWER", 0.0, "NON_FOLLOWER", 0.0);
         }
 
         Map<String, Double> map = new HashMap<>();
@@ -173,8 +202,15 @@ public class InstagramAccountQueryService {
             total += value;
             map.put(type, (double) value);
         }
-        for (String key : map.keySet()) {
-            map.put(key, Math.round((map.get(key) / total) * 10000.0) / 100.0);
+
+        if (total == 0) {
+            map.put("FOLLOWER", 0.0);
+            map.put("NON_FOLLOWER", 0.0);
+            log.info("Total reach for follow_type breakdown is 0 for igId={}. Returning 0.0 for ratios.", igId);
+        } else {
+            for (String key : map.keySet()) {
+                map.put(key, Math.round((map.get(key) / total) * 10000.0) / 100.0);
+            }
         }
         return map;
     }
@@ -199,6 +235,11 @@ public class InstagramAccountQueryService {
 
         if (valueNode == null || !valueNode.isObject()) {
             log.warn("No follower demographic data returned for breakdown={}, igId={}", breakdown, igId);
+            if (breakdown.equals("age")) {
+                return Map.of("13-17", 0.0, "18-24", 0.0, "25-34", 0.0, "35-44", 0.0, "45-54", 0.0, "55-64", 0.0, "65+", 0.0);
+            } else if (breakdown.equals("gender")) {
+                return Map.of("male", 0.0, "female", 0.0);
+            }
             return Map.of();
         }
 
@@ -256,8 +297,33 @@ public class InstagramAccountQueryService {
         );
     }
 
+    private Double fetchAccountReach(String token, String igId, String period) {
+        String url = String.format(
+                "%s/%s/insights?metric=reach&period=%s&access_token=%s",
+                baseUrl, igId, period, token
+        );
+
+        JsonNode data = fetchJson(url);
+        JsonNode valuesNode = Optional.ofNullable(data.path("data"))
+                .filter(JsonNode::isArray)
+                .filter(d -> !d.isEmpty())
+                .map(d -> d.get(0))
+                .map(n -> n.path("values"))
+                .filter(JsonNode::isArray)
+                .filter(v -> !v.isEmpty())
+                .map(v -> v.get(0).path("value"))
+                .orElse(null);
+
+        if (valuesNode == null || !valuesNode.isNumber()) {
+            log.warn("No valid reach data returned for igId={}, period={}", igId, period);
+            return 0.0;
+        }
+
+        return valuesNode.asDouble();
+    }
+
     private List<InstagramMediaStats> fetchTopMediaStats(String token, String igId) {
-        String url = String.format("%s/%s/media?fields=id,media_type,media_url&access_token=%s",
+        String url = String.format("%s/%s/media?fields=id,media_type,media_url,thumbnail_url,timestamp,permalink&access_token=%s",
                 baseUrl, igId, token);
         JsonNode mediaList = fetchJson(url).path("data");
 
@@ -271,6 +337,10 @@ public class InstagramAccountQueryService {
             String id = media.path("id").asText();
             String type = media.path("media_type").asText();
             String mediaUrl = media.path("media_url").asText();
+            String thumbnailUrl = media.path("thumbnail_url").asText();
+            String permalink = media.path("permalink").asText();
+            String timestampStr = media.path("timestamp").asText();
+
             String insightUrl = String.format(
                     "%s/%s/insights?metric=reach,likes,comments,saved,shares&access_token=%s",
                     baseUrl, id, token
@@ -279,19 +349,41 @@ public class InstagramAccountQueryService {
             JsonNode insights = fetchJson(insightUrl).path("data");
 
             Map<String, Integer> metrics = new HashMap<>();
-            if (insights.isArray()) {
+            if (insights != null && insights.isArray()) {
                 for (JsonNode m : insights) {
-                    metrics.put(m.path("name").asText(), m.path("values").get(0).path("value").asInt());
+                    if (m.has("values") && m.get("values").isArray() && m.get("values").get(0).has("value")) {
+                        metrics.put(m.path("name").asText(), m.get("values").get(0).path("value").asInt());
+                    } else if (m.has("value")) {
+                        metrics.put(m.path("name").asText(), m.path("value").asInt());
+                    } else {
+                        log.warn("Insight data for mediaId {} is missing 'value' or 'values[0].value': {}", id, m.toPrettyString());
+                    }
                 }
+            } else {
+                log.warn("No insights data for mediaId={}", id);
+            }
+
+            LocalDateTime timestamp = null;
+            if (!timestampStr.isEmpty()) {
+                try {
+                    timestamp = OffsetDateTime.parse(timestampStr, ISO_OFFSET_DATE_TIME_NO_COLON).toLocalDateTime();
+                } catch (DateTimeParseException e) {
+                    log.error("Failed to parse timestamp string '{}' for mediaId {}: {}", timestampStr, id, e.getMessage());
+                }
+            } else {
+                log.warn("Timestamp string is empty for mediaId {}. Setting timestamp to null.", id);
             }
 
             results.add(InstagramMediaStats.builder()
                     .mediaId(id)
                     .mediaType(type)
                     .mediaUrl(mediaUrl)
+                    .thumbnailUrl(thumbnailUrl)
+                    .permalink(permalink)
+                    .timestamp(timestamp)
                     .impressions(0)
                     .reach(metrics.getOrDefault("reach", 0))
-                    .viewCount(metrics.getOrDefault("reach", 0)) // 또는 impressions, views 등 실제 의미에 맞게
+                    .viewCount(metrics.getOrDefault("reach", 0))
                     .likeCount(metrics.getOrDefault("likes", 0))
                     .commentCount(metrics.getOrDefault("comments", 0))
                     .saveCount(metrics.getOrDefault("saved", 0))

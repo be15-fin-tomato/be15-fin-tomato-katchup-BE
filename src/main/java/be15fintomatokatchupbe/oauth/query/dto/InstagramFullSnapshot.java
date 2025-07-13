@@ -23,6 +23,7 @@ public class InstagramFullSnapshot {
     private Double dailyAvgViews;
     private Double monthlyAvgViews;
     private int totalFollowers;
+    private Double reach;
     private Double age1317;
     private Double age1824;
     private Double age2534;
@@ -38,8 +39,6 @@ public class InstagramFullSnapshot {
     private Double followerChangeMonthly;
     private Double followerRatio;
     private Double nonFollowerRatio;
-    private String topPostsMediaIds;
-    private String topVideosMediaIds;
     private LocalDate snapshotDate;
     private List<InstagramMediaSnapshot> mediaSnapshots;
 }

@@ -15,6 +15,7 @@
         <result property="dailyAvgViews" column="iss_daily_avg_views"/>
         <result property="monthlyAvgViews" column="iss_monthly_avg_views"/>
         <result property="totalFollowers" column="iss_total_followers"/>
+        <result property="reach" column="iss_reach"/>
         <result property="age1317" column="iss_age1317"/>
         <result property="age1824" column="iss_age1824"/>
         <result property="age2534" column="iss_age2534"/>
@@ -30,8 +31,6 @@
         <result property="followerChangeMonthly" column="iss_follower_change_monthly"/>
         <result property="followerRatio" column="iss_follower_ratio"/>
         <result property="nonFollowerRatio" column="iss_non_follower_ratio"/>
-        <result property="topPostsMediaIds" column="iss_top_posts_media_ids"/>
-        <result property="topVideosMediaIds" column="iss_top_videos_media_ids"/>
         <result property="snapshotDate" column="iss_snapshot_date"/>
 
         <collection property="mediaSnapshots" ofType="be15fintomatokatchupbe.oauth.query.domain.InstagramMediaSnapshot">
@@ -39,6 +38,7 @@
             <result property="mediaId" column="ims_media_id"/>
             <result property="mediaType" column="ims_media_type"/>
             <result property="mediaUrl" column="ims_media_url"/>
+            <result property="thumbnailUrl" column="ims_thumbnail_url"/>
             <result property="impressions" column="ims_impressions"/>
             <result property="reach" column="ims_reach"/>
             <result property="viewCount" column="ims_view_count"/>
@@ -50,6 +50,8 @@
             <result property="influencerId" column="ims_influencer_id_fk"/>
             <result property="snapshotDate" column="ims_snapshot_date_fk"/>
             <result property="snapshotType" column="ims_snapshot_type"/>
+            <result property="permalink" column="ims_permalink"/>
+            <result property="timestamp" column="ims_timestamp"/>
         </collection>
     </resultMap>
 
@@ -64,6 +66,7 @@
             iss.daily_avg_views AS iss_daily_avg_views,
             iss.monthly_avg_views AS iss_monthly_avg_views,
             iss.total_followers AS iss_total_followers,
+            iss.reach AS iss_reach,
             iss.age1317 AS iss_age1317,
             iss.age1824 AS iss_age1824,
             iss.age2534 AS iss_age2534,
@@ -79,14 +82,13 @@
             iss.follower_change_monthly AS iss_follower_change_monthly,
             iss.follower_ratio AS iss_follower_ratio,
             iss.non_follower_ratio AS iss_non_follower_ratio,
-            iss.top_posts_media_ids AS iss_top_posts_media_ids,
-            iss.top_videos_media_ids AS iss_top_videos_media_ids,
             iss.snapshot_date AS iss_snapshot_date,
 
             ims.id AS ims_id,
             ims.media_id AS ims_media_id,
             ims.media_type AS ims_media_type,
             ims.media_url AS ims_media_url,
+            ims.thumbnail_url AS ims_thumbnail_url,
             ims.impressions AS ims_impressions,
             ims.reach AS ims_reach,
             ims.view_count AS ims_view_count,
@@ -97,7 +99,9 @@
             ims.engagement AS ims_engagement,
             ims.influencer_id AS ims_influencer_id_fk,
             ims.snapshot_date AS ims_snapshot_date_fk,
-            ims.snapshot_type AS ims_snapshot_type
+            ims.snapshot_type AS ims_snapshot_type,
+            ims.permalink AS ims_permalink,
+            ims.timestamp AS ims_timestamp
         FROM instagram_stats_snapshot iss
         LEFT JOIN instagram_media_snapshot ims ON iss.influencer_id = ims.influencer_id AND iss.snapshot_date = ims.snapshot_date
         WHERE iss.influencer_id = #{influencerId}

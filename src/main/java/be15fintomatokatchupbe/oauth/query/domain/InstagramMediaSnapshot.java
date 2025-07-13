@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Builder
@@ -34,6 +35,9 @@ public class InstagramMediaSnapshot {
     @Column(length = 2048)
     private String mediaUrl;
 
+    @Column(length = 2048)
+    private String thumbnailUrl;
+
     private Integer impressions;
     private Integer reach;
     private Integer viewCount;
@@ -42,6 +46,9 @@ public class InstagramMediaSnapshot {
     private Integer saveCount;
     private Integer shareCount;
     private Integer engagement;
+
+    private String permalink;
+    private LocalDateTime timestamp;
 
     @Column(nullable = false)
     private LocalDate snapshotDate;
