@@ -16,7 +16,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,6 +36,8 @@ public class InstagramAccountQueryService {
 
     @Value("${facebook.base-url}")
     private String baseUrl;
+
+    private static final DateTimeFormatter ISO_OFFSET_DATE_TIME_NO_COLON = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ");
 
     public InstagramStatsResponse fetchStats(Long influencerId) {
         Instagram instagram = instagramRepository.findByInfluencerId(influencerId)
@@ -317,7 +323,7 @@ public class InstagramAccountQueryService {
     }
 
     private List<InstagramMediaStats> fetchTopMediaStats(String token, String igId) {
-        String url = String.format("%s/%s/media?fields=id,media_type,media_url,thumbnail_url&access_token=%s",
+        String url = String.format("%s/%s/media?fields=id,media_type,media_url,thumbnail_url,timestamp,permalink&access_token=%s",
                 baseUrl, igId, token);
         JsonNode mediaList = fetchJson(url).path("data");
 
@@ -332,6 +338,9 @@ public class InstagramAccountQueryService {
             String type = media.path("media_type").asText();
             String mediaUrl = media.path("media_url").asText();
             String thumbnailUrl = media.path("thumbnail_url").asText();
+            String permalink = media.path("permalink").asText();
+            String timestampStr = media.path("timestamp").asText();
+
             String insightUrl = String.format(
                     "%s/%s/insights?metric=reach,likes,comments,saved,shares&access_token=%s",
                     baseUrl, id, token
@@ -340,10 +349,29 @@ public class InstagramAccountQueryService {
             JsonNode insights = fetchJson(insightUrl).path("data");
 
             Map<String, Integer> metrics = new HashMap<>();
-            if (insights.isArray()) {
+            if (insights != null && insights.isArray()) {
                 for (JsonNode m : insights) {
-                    metrics.put(m.path("name").asText(), m.path("values").get(0).path("value").asInt());
+                    if (m.has("values") && m.get("values").isArray() && m.get("values").get(0).has("value")) {
+                        metrics.put(m.path("name").asText(), m.get("values").get(0).path("value").asInt());
+                    } else if (m.has("value")) {
+                        metrics.put(m.path("name").asText(), m.path("value").asInt());
+                    } else {
+                        log.warn("Insight data for mediaId {} is missing 'value' or 'values[0].value': {}", id, m.toPrettyString());
+                    }
                 }
+            } else {
+                log.warn("No insights data for mediaId={}", id);
+            }
+
+            LocalDateTime timestamp = null;
+            if (!timestampStr.isEmpty()) {
+                try {
+                    timestamp = OffsetDateTime.parse(timestampStr, ISO_OFFSET_DATE_TIME_NO_COLON).toLocalDateTime();
+                } catch (DateTimeParseException e) {
+                    log.error("Failed to parse timestamp string '{}' for mediaId {}: {}", timestampStr, id, e.getMessage());
+                }
+            } else {
+                log.warn("Timestamp string is empty for mediaId {}. Setting timestamp to null.", id);
             }
 
             results.add(InstagramMediaStats.builder()
@@ -351,6 +379,8 @@ public class InstagramAccountQueryService {
                     .mediaType(type)
                     .mediaUrl(mediaUrl)
                     .thumbnailUrl(thumbnailUrl)
+                    .permalink(permalink)
+                    .timestamp(timestamp)
                     .impressions(0)
                     .reach(metrics.getOrDefault("reach", 0))
                     .viewCount(metrics.getOrDefault("reach", 0))

@@ -2,6 +2,8 @@ package be15fintomatokatchupbe.oauth.query.dto;
 
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Builder
@@ -23,5 +25,7 @@ public class InstagramMediaStats {
     private Integer shareCount;   // 공유
 
     private Integer engagement;
+    private String permalink;
+    private LocalDateTime timestamp;
 }
 

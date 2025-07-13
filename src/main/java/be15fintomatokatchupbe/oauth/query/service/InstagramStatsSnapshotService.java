@@ -60,6 +60,8 @@ public class InstagramStatsSnapshotService {
                         .influencer(influencer)
                         .snapshotDate(snapshotDate)
                         .snapshotType(snapshotType)
+                        .permalink(dto.getPermalink())
+                        .timestamp(dto.getTimestamp())
                         .build())
                 .collect(Collectors.toList());
 
