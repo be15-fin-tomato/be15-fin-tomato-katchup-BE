@@ -15,6 +15,7 @@
         <result property="dailyAvgViews" column="iss_daily_avg_views"/>
         <result property="monthlyAvgViews" column="iss_monthly_avg_views"/>
         <result property="totalFollowers" column="iss_total_followers"/>
+        <result property="reach" column="iss_reach"/>
         <result property="age1317" column="iss_age1317"/>
         <result property="age1824" column="iss_age1824"/>
         <result property="age2534" column="iss_age2534"/>
@@ -65,6 +66,7 @@
             iss.daily_avg_views AS iss_daily_avg_views,
             iss.monthly_avg_views AS iss_monthly_avg_views,
             iss.total_followers AS iss_total_followers,
+            iss.reach AS iss_reach,
             iss.age1317 AS iss_age1317,
             iss.age1824 AS iss_age1824,
             iss.age2534 AS iss_age2534,

@@ -19,6 +19,7 @@ public class InstagramStatsResponse {
     private Double dailyAverageViews;
     private Double monthlyAverageViews;
     private int totalFollowers;
+    private Double reach;
 
     // 전체 미디어 평균 수치
     private Double averageViews;    // fetchStats의 avgViews
