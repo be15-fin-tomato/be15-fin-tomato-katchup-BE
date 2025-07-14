@@ -9,9 +9,14 @@ import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.Pipelin
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.*;
 import be15fintomatokatchupbe.campaign.command.domain.repository.*;
 import be15fintomatokatchupbe.campaign.exception.CampaignErrorCode;
+import be15fintomatokatchupbe.campaign.query.mapper.CampaignCommandMapper;
 import be15fintomatokatchupbe.client.command.application.support.ClientHelperService;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManager;
 import be15fintomatokatchupbe.common.exception.BusinessException;
+import be15fintomatokatchupbe.contract.command.domain.entity.Contract;
+import be15fintomatokatchupbe.contract.command.domain.repository.ContractRepository;
+import be15fintomatokatchupbe.email.command.domain.aggregate.Satisfaction;
+import be15fintomatokatchupbe.email.command.domain.repository.SatisfactionRepository;
 import be15fintomatokatchupbe.file.domain.File;
 import be15fintomatokatchupbe.file.service.FileService;
 import be15fintomatokatchupbe.relation.service.HashInfCampService;
@@ -46,6 +51,10 @@ public class RevenueCommandService {
     private final PipelineStepRepository pipelineStepRepository;
     private final PipelineStatusRepository pipelineStatusRepository;
     private final IdeaRepository ideaRepository;
+    private final ContractRepository contractRepository;
+    private final SatisfactionRepository satisfactionRepository;
+
+    private final CampaignCommandMapper campaignCommandMapper;
 
     @Transactional
     public void createRevenue(Long userId, CreateRevenueRequest request, List<MultipartFile> files) {
@@ -78,6 +87,23 @@ public class RevenueCommandService {
 
         if(Objects.equals(request.getPipelineStatusId(), PipelineStatusConstants.APPROVED)){
             campaign.confirmCampaign();
+            List<Long> influencerId = campaignCommandMapper.getInfluencerId(request.getCampaignId());
+            for (Long influencer : influencerId) {
+                /*만족도 테이블에 값 삽입*/
+                Satisfaction satisfaction = Satisfaction.builder()
+                        .campaignId(request.getCampaignId())
+                        .clientManagerId(request.getClientManagerId())
+                        .influencerId(influencer)
+                        .build();
+                satisfactionRepository.save(satisfaction);
+
+                /* 계약서 테이블 값 삽입 */
+                Contract contract = Contract.builder()
+                        .campaignId(request.getCampaignId())
+                        .influencerId(influencer)
+                        .build();
+                contractRepository.save(contract);
+            }
         }
         campaignRepository.save(campaign);
 
@@ -159,6 +185,23 @@ public class RevenueCommandService {
 
         if(Objects.equals(request.getPipelineStatusId(), PipelineStatusConstants.APPROVED)){
             campaign.confirmCampaign();
+            List<Long> influencerId = campaignCommandMapper.getInfluencerId(request.getCampaignId());
+            for (Long influencer : influencerId) {
+                /*만족도 테이블에 값 삽입*/
+                Satisfaction satisfaction = Satisfaction.builder()
+                        .campaignId(request.getCampaignId())
+                        .clientManagerId(request.getClientManagerId())
+                        .influencerId(influencer)
+                        .build();
+                satisfactionRepository.save(satisfaction);
+
+                /* 계약서 테이블 값 삽입 */
+                Contract contract = Contract.builder()
+                        .campaignId(request.getCampaignId())
+                        .influencerId(influencer)
+                        .build();
+                contractRepository.save(contract);
+            }
         }
 
         /* 연관 테이블 지워주기 */

@@ -1,6 +1,7 @@
 package be15fintomatokatchupbe.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -12,5 +13,16 @@ public class WebConfig implements WebMvcConfigurer {
         registry
             .addResourceHandler("/uploads/**") // 접근 경로
             .addResourceLocations("file:/uploads/"); // 실제 디스크 위치 (운영에서는 절대경로로)
+    }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/sse/subscribe")
+                .allowedOrigins(
+                        "http://localhost:5173",
+                        "https://tomato-katchup.xyz"
+                )
+                .allowedMethods("GET")
+                .allowCredentials(true);
     }
 }
