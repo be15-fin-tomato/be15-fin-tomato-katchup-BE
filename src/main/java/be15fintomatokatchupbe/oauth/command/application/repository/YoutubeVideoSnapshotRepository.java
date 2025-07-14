@@ -12,4 +12,6 @@ public interface YoutubeVideoSnapshotRepository extends JpaRepository<YoutubeVid
     @Transactional
     @Query("DELETE FROM YoutubeVideoSnapshot v WHERE v.snapshot.id = :snapshotId")
     void deleteBySnapshotId(@Param("snapshotId") Long snapshotId);
+
+    void deleteByInfluencerId(Long influencerId);
 }

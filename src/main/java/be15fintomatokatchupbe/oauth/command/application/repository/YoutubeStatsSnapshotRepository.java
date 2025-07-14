@@ -11,4 +11,5 @@ public interface YoutubeStatsSnapshotRepository extends JpaRepository<YoutubeSta
     @Query("SELECT s FROM YoutubeStatsSnapshot s WHERE s.influencerId = :influencerId")
     Optional<YoutubeStatsSnapshot> findByInfluencerId(@Param("influencerId") Long influencerId);
 
+    void deleteByInfluencerId(Long influencerId);
 }
