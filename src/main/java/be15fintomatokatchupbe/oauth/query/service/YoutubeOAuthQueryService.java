@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -108,10 +109,12 @@ public class YoutubeOAuthQueryService {
                 .subscriber(subscriberCount)
                 .build();
 
-        youtubeHelperService.save(youtube);
+        youtubeHelperService.saveOrUpdate(youtube);
+
         log.info("✅ 유튜브 계정 연동 완료 - influencerId={}, channelId={}", influencerId, channelId);
     }
 
+    @Transactional
     public void registerYoutubeByOAuth(String code, Long influencerId) {
         GoogleTokenResponse tokenResponse = getToken(code);
         saveRefreshTokenByAccess(tokenResponse);
@@ -253,7 +256,7 @@ public class YoutubeOAuthQueryService {
                                 };
                             },
                             row -> ((Number) row.get(1)).doubleValue() * 100 / totalViews,
-                            (v1, v2) -> v1 // ⚠ 중복 key 있을 경우 첫 번째 값 유지
+                            (v1, v2) -> v1
                     ));
 
         } catch (WebClientResponseException e) {
@@ -262,7 +265,6 @@ public class YoutubeOAuthQueryService {
             return Map.of("subscribed", 0.0, "notSubscribed", 0.0);
         }
     }
-
 
     public Map<String, Double> getAgeGroupRatio(String accessToken, String channelId, String startDate, String endDate) {
         return getRatioByDimension(accessToken, channelId, startDate, endDate, "ageGroup");
