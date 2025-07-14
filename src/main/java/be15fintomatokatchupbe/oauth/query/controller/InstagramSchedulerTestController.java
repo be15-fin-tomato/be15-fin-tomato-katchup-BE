@@ -1,6 +1,6 @@
 package be15fintomatokatchupbe.oauth.query.controller;
 
-import be15fintomatokatchupbe.oauth.query.scheduler.InstagramInsightScheduler;
+import be15fintomatokatchupbe.oauth.scheduler.InstagramInsightScheduler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

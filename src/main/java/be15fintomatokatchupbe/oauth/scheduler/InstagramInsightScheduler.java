@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.oauth.query.scheduler;
+package be15fintomatokatchupbe.oauth.scheduler;
 
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
