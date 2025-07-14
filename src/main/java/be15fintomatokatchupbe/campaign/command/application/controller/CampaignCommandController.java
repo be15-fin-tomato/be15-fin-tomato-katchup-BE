@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.campaign.command.application.dto.request.*;
 import be15fintomatokatchupbe.campaign.command.application.service.*;
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,7 @@ public class CampaignCommandController {
     private final RevenueCommandService revenueCommandService;
     private final ListupCommandService listupCommandService;
 
-
+    @Operation(summary = "기회인지 등록", description = "사용자는 영업 관리 파이프라인의 1단계인 기회인지를 등록할 수 있다.")
     @PostMapping("/chance")
     public ResponseEntity<ApiResponse<Void>> createChance(
             @AuthenticationPrincipal CustomUserDetail user,
@@ -41,6 +42,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @Operation(summary = "리스트업 등록", description = "사용자는 영업 관리 파이프라인의 리스트업을 등록할 수 있다. 해당 캠페인에 알맞는 인플루언서를 리스트업하는 단계이다.")
     @PostMapping("/listup")
     public ResponseEntity<ApiResponse<Void>> createListup(
             @AuthenticationPrincipal CustomUserDetail user,
@@ -53,6 +55,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @Operation(summary = "제안 등록", description = "사용자는 영업 관리 파이프라인의 제안을 등록할 수 있다. 인플루언서 리스트업 결과를 제안하는 단계이다.")
     @PostMapping("/proposal")
     public ResponseEntity<ApiResponse<Void>> createProposal(
             @AuthenticationPrincipal CustomUserDetail user,
@@ -66,6 +69,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @Operation(summary = "견적 등록", description = "사용자는 영업 관리 파이프라인의 견적을 등록할 수 있다. 해당 캠페인의 인플루언서에 대한 견적을 등록하는 단계이다.")
     @PostMapping("/quotation")
     public ResponseEntity<ApiResponse<Void>> createQuotation(
             @AuthenticationPrincipal CustomUserDetail user,
@@ -78,6 +82,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @Operation(summary = "계약 등록", description = "사용자는 영업 관리 파이프라인의 계약을 등록할 수 있다. 해당 캠페인에 대한 인플루언서 계약이 성사되었을 시 생성한다.")
     @PostMapping("/contract")
     public ResponseEntity<ApiResponse<Void>> createContract(
             @AuthenticationPrincipal CustomUserDetail userDetail,
@@ -91,6 +96,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @Operation(summary = "매출 등록", description = "사용자는 영업 관리 파이프라인의 매출을 등록할 수 있다. 캠페인 계약 후에 광고 매출을 기록하는 단계이다.")
     @PostMapping("/revenue")
     public ResponseEntity<ApiResponse<Void>> createRevenue(
             @AuthenticationPrincipal CustomUserDetail userDetail,
@@ -105,6 +111,7 @@ public class CampaignCommandController {
     }
 
     // 캠페인 상세 수정
+    @Operation(summary = "캠페인 상세 수정", description = "사용자는 등록된 캠페인의 정보를 수정할 수 있다.")
     @PutMapping("/chance/update")
     public ResponseEntity<ApiResponse<Void>> updateChance(
             @RequestBody UpdateChanceRequest request
@@ -116,6 +123,7 @@ public class CampaignCommandController {
     }
 
     // 캠페인 상세 삭제
+    @Operation(summary = "캠페인 상세 삭제", description = "사용자는 등록된 캠페인을 삭제할 수 있다.")
     @DeleteMapping("/{campaignId}")
     public ResponseEntity<ApiResponse<Void>> deleteCampaign(
             @AuthenticationPrincipal CustomUserDetail user,
@@ -126,6 +134,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @Operation(summary = "기회인지 수정", description = "사용자는 등록된 기회인지 단계의 정보를 수정할 수 있다.")
     @PutMapping("/listup")
     public ResponseEntity<ApiResponse<Void>> updateListup(
             @AuthenticationPrincipal CustomUserDetail user,
@@ -137,6 +146,8 @@ public class CampaignCommandController {
 
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @Operation(summary = "제안 수정", description = "사용자는 등록된 제안 단계의 정보를 수정할 수 있다.")
     @PutMapping("/proposal")
     public ResponseEntity<ApiResponse<Void>> updateProposal(
             @AuthenticationPrincipal CustomUserDetail user,
@@ -149,6 +160,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @Operation(summary = "견적 수정", description = "사용자는 등록된 견적 단계의 정보를 수정할 수 있다.")
     @PutMapping("/quotation")
     public ResponseEntity<ApiResponse<Void>> updateQuotation(
             @AuthenticationPrincipal CustomUserDetail user,
@@ -161,6 +173,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @Operation(summary = "계약 수정", description = "사용자는 등록된 계약 단계의 정보를 수정할 수 있다.")
     @PutMapping("/contract")
     public ResponseEntity<ApiResponse<Void>> updateContract(
             @AuthenticationPrincipal CustomUserDetail user,
@@ -173,6 +186,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @Operation(summary = "매출 수정", description = "사용자는 등록된 매출 단계의 정보를 수정할 수 있다.")
     @PutMapping("/revenue")
     public ResponseEntity<ApiResponse<Void>> updateRevenue(
             @AuthenticationPrincipal CustomUserDetail user,
@@ -185,6 +199,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @Operation(summary = "기회인지 삭제", description = "사용자는 등록된 기회인지를 삭제할 수 있다.")
     @DeleteMapping("listup/{pipelineId}")
     public ResponseEntity<ApiResponse<Void>> deleteListup(
             @AuthenticationPrincipal CustomUserDetail user,
@@ -197,6 +212,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @Operation(summary = "제안 삭제", description = "사용자는 등록된 제안을 삭제할 수 있다.")
     @DeleteMapping("/proposal/{pipelineId}")
     public ResponseEntity<ApiResponse<Void>> deleteProposal(
             @AuthenticationPrincipal CustomUserDetail user,
@@ -209,6 +225,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @Operation(summary = "견적 삭제", description = "사용자는 등록된 견적을 삭제할 수 있다.")
     @DeleteMapping("/quotation/{pipelineId}")
     public ResponseEntity<ApiResponse<Void>> deleteQuotation(
             @AuthenticationPrincipal CustomUserDetail user,
@@ -221,6 +238,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @Operation(summary = "계약 삭제", description = "사용자는 등록된 계약을 삭제할 수 있다.")
     @DeleteMapping("/contract/{pipelineId}")
     public ResponseEntity<ApiResponse<Void>> deleteContract(
             @AuthenticationPrincipal CustomUserDetail user,
@@ -233,6 +251,7 @@ public class CampaignCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
+    @Operation(summary = "매출 삭제", description = "사용자는 등록된 매출을 삭제할 수 있다.")
     @DeleteMapping("/revenue/{pipelineId}")
     public ResponseEntity<ApiResponse<Void>> deleteRevenue(
             @AuthenticationPrincipal CustomUserDetail user,
