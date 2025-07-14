@@ -3,7 +3,7 @@ name: Deploy to Amazon ECS (Skip Terraform)
 on:
   push:
     branches:
-      - devops
+      - main
 
 env:
   AWS_REGION: ap-northeast-2
@@ -33,11 +33,17 @@ jobs:
 
       - name: Decode and write firebase.json
         run: |
+          mkdir -p src/main/resources
           echo "${{ secrets.FIREBASE_CREDENTIALS_BASE64 }}" | base64 -d > src/main/resources/tomato-katchup-firebase-adminsdk-fbsvc-6b51d99c07.json
+
+      - name: Decode and write credentials.json
+        run: |
+          mkdir -p src/main/resources
+          echo "${{ secrets.CREDENTIAL }}" | base64 -d > src/main/resources/credentials.json
 
       - name: Build and Tag Docker image
         run: |
-          docker build -t $ECR_REPOSITORY:latest .
+          docker build --build-arg SPRING_PROFILE=prod -t $ECR_REPOSITORY:latest .
           docker tag $ECR_REPOSITORY:latest ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:latest
 
       - name: Push Docker image to ECR

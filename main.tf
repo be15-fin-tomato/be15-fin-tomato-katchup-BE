@@ -232,7 +232,8 @@ resource "aws_ecs_task_definition" "spring_task" {
         { name = "MONGODB_URI", value = "${var.mongodb_uri}" },
         { name = "FCM_SECRET_FILE", value = "${var.fcm_secret_file}" },
         { name = "OPENAI_API_KEY", value = "${var.openai_api_key}" },
-        { name = "OPENAI_MODEL_ID", value = "${var.openai_model_id}" }
+        { name = "OPENAI_MODEL_ID", value = "${var.openai_model_id}" },
+        { name = "OPENAI_RECOMMEND_MODEL_ID", value = "${var.openai_recommend_model_id}"}
       ],
       logConfiguration = {
         logDriver = "awslogs",
