@@ -4,7 +4,6 @@ import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Youtube;
 import be15fintomatokatchupbe.influencer.command.domain.repository.YoutubeRepository;
 import be15fintomatokatchupbe.oauth.command.application.Service.YoutubeCommandService;
-import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeStatsResponse;
 import be15fintomatokatchupbe.oauth.query.service.YoutubeAnalyticsQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,9 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Component
@@ -22,7 +19,6 @@ import java.util.Map;
 public class YoutubeStatsSnapshotScheduler {
 
     private final YoutubeRepository youtubeRepository;
-    private final YoutubeAnalyticsQueryService youtubeAnalyticsQueryService;
     private final YoutubeCommandService youtubeCommandService;
 
     /*  매일 새벽 3시에 유튜브 통계를 조회하고 DB에 저장 */

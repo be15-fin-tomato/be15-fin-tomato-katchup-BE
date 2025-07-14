@@ -1,7 +1,6 @@
 package be15fintomatokatchupbe.oauth.query.controller;
 
 import be15fintomatokatchupbe.common.dto.ApiResponse;
-import be15fintomatokatchupbe.oauth.command.application.Service.YoutubeCommandService;
 import be15fintomatokatchupbe.oauth.command.application.domain.YoutubeStatsSnapshot;
 import be15fintomatokatchupbe.oauth.query.dto.YoutubeVideoInfo;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeStatsResponse;
