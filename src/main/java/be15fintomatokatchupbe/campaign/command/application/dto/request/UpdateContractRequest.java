@@ -3,11 +3,13 @@ package be15fintomatokatchupbe.campaign.command.application.dto.request;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 
 @Getter
 @Setter
+@SuperBuilder
 @NoArgsConstructor
 public class UpdateContractRequest extends BasePipelineRequest{
     // 파이프라인 정보

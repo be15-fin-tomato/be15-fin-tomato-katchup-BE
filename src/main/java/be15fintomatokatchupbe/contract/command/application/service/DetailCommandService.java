@@ -31,7 +31,6 @@ public class DetailCommandService {
     private final ContractFileRepository contractFileRepository;
     private final FileService fileService;
 
-//    private static final String FILE_UPLOAD_DIR = "C:/Users/Playdata/Desktop/Tomato_contract_file/";
 @Transactional
 public void updateDetail(Long detailId, DetailUpdateRequest request, MultipartFile file) {
     Detail detail = detailRepository.findById(detailId)
@@ -64,7 +63,6 @@ public void updateDetail(Long detailId, DetailUpdateRequest request, MultipartFi
             List<ContractFile> uploadedFiles = fileService.uploadContractFile(List.of(file));
             ContractFile s3File = uploadedFiles.get(0);
 
-            // ✅ 4. ContractFile 저장
             ContractFile savedFile = contractFileRepository.save(
                     ContractFile.builder()
                             .originalName(originalFilename)
@@ -74,7 +72,6 @@ public void updateDetail(Long detailId, DetailUpdateRequest request, MultipartFi
             );
             log.info(String.valueOf(savedFile.getFileId()));
 
-            // ✅ 5. Detail에 연결
             detail.setFileId(savedFile.getFileId());
             detailRepository.save(detail);
 
@@ -99,7 +96,6 @@ public void updateDetail(Long detailId, DetailUpdateRequest request, MultipartFi
                         .map(f -> f.substring(originalFilename.lastIndexOf(".") + 1))
                         .orElse("unknown");
 
-                // 2. program 추정
                 String program = switch (extension.toLowerCase()) {
                     case "doc", "docx" -> "word";
                     case "hwp" -> "hwp";
