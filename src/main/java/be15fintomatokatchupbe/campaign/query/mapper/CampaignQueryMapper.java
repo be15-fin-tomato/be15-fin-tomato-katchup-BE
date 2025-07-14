@@ -12,9 +12,7 @@ import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface CampaignQueryMapper {
@@ -130,5 +128,9 @@ public interface CampaignQueryMapper {
 
     List<CommunicationHistoryResponse> findCommunicationHistoriesByClientCompanyId(@Param("clientCompanyId") Long clientCompanyId);
 
-    List<InfluencerRecommendDTO> findInfluencerAndProduct(RecommendInfluencerRequest request);
+    List<Integer> findInfluencerAndProduct(@Param("request")RecommendInfluencerRequest request, List<Integer> categoryList);
+
+    RequestCampaign findProductNameByCampaignId(Long campaignId);
+
+    List<String> findProductByInfluencerId(Integer influencerId);
 }

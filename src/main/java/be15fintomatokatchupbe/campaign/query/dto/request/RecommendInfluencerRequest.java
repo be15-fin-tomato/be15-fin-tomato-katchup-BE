@@ -1,9 +1,6 @@
 package be15fintomatokatchupbe.campaign.query.dto.request;
 
-import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
 import lombok.*;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -13,8 +10,8 @@ public class RecommendInfluencerRequest {
     /* 파이프라인 Id */
     private Long campaignId;
 
-    /* 영향력 등급 */
-    private Long influenceLevel;
+    /* 활성도 등급 */
+    private Long engagement ;
 
     /* 알고리즘 스코어 */
     private Double algorithmScore;
@@ -23,6 +20,7 @@ public class RecommendInfluencerRequest {
     private Boolean categories;
 
     /* 선호 성별 */
+    /* 1 남자 2 여자 */
     private Long preferredGender;
 
     /* 선호 연령 */
@@ -37,7 +35,7 @@ public class RecommendInfluencerRequest {
     public String toString() {
         return "RecommendInfluencerRequest{" +
                 "campaignId=" + campaignId +
-                ", influenceLevel=" + influenceLevel +
+                ", engagement =" + engagement  +
                 ", algorithmScore=" + algorithmScore +
                 ", categories=" + categories +
                 ", preferredGender=" + preferredGender +

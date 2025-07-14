@@ -2,18 +2,22 @@ package be15fintomatokatchupbe.campaign.query.service;
 
 
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
+import be15fintomatokatchupbe.campaign.exception.CampaignErrorCode;
+import be15fintomatokatchupbe.campaign.query.dto.request.*;
 import be15fintomatokatchupbe.campaign.query.dto.response.ProposalReferenceListResponse;
 import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
-import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
-import be15fintomatokatchupbe.campaign.query.dto.request.ContractListRequest;
-import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
-import be15fintomatokatchupbe.campaign.query.dto.request.RecommendInfluencerRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
 import be15fintomatokatchupbe.campaign.query.dto.mapper.ListupFormDTO;
 import be15fintomatokatchupbe.common.dto.Pagination;
+import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
+import be15fintomatokatchupbe.influencer.query.mapper.InfluencerMapper;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -28,6 +32,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CampaignQueryService {
     private final CampaignQueryMapper campaignQueryMapper;
+    private final InfluencerMapper influencerQueryMapper;
     private final ChatClient chatClient;
 
     public ListupSearchResponse getListupList(Long userId, PipelineSearchRequest request) {
@@ -731,17 +736,67 @@ public class CampaignQueryService {
     }
 
     public ListupDetailResponse getRecommendInfluencerList(RecommendInfluencerRequest request) {
-//        List<InfluencerRecommendDTO> influencerList = campaignQueryMapper.findInfluencerAndProduct(request);
-        log.info(request.toString());
+        // 1. 광고 상품 & 관련 인플루언서 리스트 조회
+        RequestCampaign campaign = campaignQueryMapper.findProductNameByCampaignId(request.getCampaignId());
+        List<Integer> influencerList = campaignQueryMapper.findInfluencerAndProduct(request, campaign.getCategoryList());
 
-/*        String generateResult = chatClient.prompt()
+        if(influencerList.isEmpty()){
+            throw new BusinessException(CampaignErrorCode.INFLUENCER_NOT_FOUND);
+        }
+        // 2. 각 인플루언서의 제품 리스트 구성
+        List<InfluencerPrompt.InfluencerEntry> influencerEntries = new ArrayList<>();
+        for (Integer influencerId : influencerList) {
+            List<String> products = campaignQueryMapper.findProductByInfluencerId(influencerId);
+            influencerEntries.add(new InfluencerPrompt.InfluencerEntry(influencerId, products));
+        }
+
+        // 3. JSON 요청 생성
+        InfluencerPrompt promptData = new InfluencerPrompt(campaign.getProductName(), influencerEntries);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
+
+        String jsonPayload = null;
+        List<Integer> matchedIds = new ArrayList<>();
+        try{
+            jsonPayload = mapper.writeValueAsString(promptData);
+
+
+        // 4. GPT 호출
+        String generateResult = chatClient.prompt()
                 .system("너는 광고 제품에 가장 적합한 인플루언서를 추천해주는 비서야. 각 인플루언서는 자신이 사용하거나 리뷰한 제품 리스트를 가지고 있어.")
-                .user()
+                .user(jsonPayload)
                 .call()
-                .content();*/
+                .content();
 
+        // 5. 응답 파싱
+        RecommendResult result = mapper.readValue(generateResult, RecommendResult.class);
+        matchedIds = result.getBestMatchInfluencerIds();
+        log.info("추천 인플루언서 ID: " + matchedIds);
+        }catch (JsonProcessingException e) {
+            throw new BusinessException(CampaignErrorCode.FAILED_GENERATE_RECOMMEND);
+        }
+        List<InfluencerInfo> responseList = new ArrayList<>();
+        if(!matchedIds.isEmpty()){
+            responseList = influencerQueryMapper.findInfluencerInfoList(matchedIds);
+        }
+        else{
+            Collections.shuffle(influencerList);
+            List<Integer> randomIds = influencerList.stream()
+                    .limit(5)
+                    .collect(Collectors.toList());
+            responseList = influencerQueryMapper.findInfluencerInfoList(randomIds);
+        }
 
-        return ListupDetailResponse.builder().build();
+        for(InfluencerInfo influencer: responseList){
+            List<String> categoryList = influencerQueryMapper.findInfluencerCategories(influencer.getInfluencerId());
+            influencer.setCategoryList(categoryList);
+        }
+
+        // 6. 응답 객체 생성 (예: 이 ID들을 다시 조회해도 됨)
+        return ListupDetailResponse.builder()
+                .influencerList(responseList)
+                .build();
     }
 }
 
