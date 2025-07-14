@@ -7,7 +7,7 @@ import lombok.Setter;
 public class EmailSearchRequest {
 
     private Integer page = 1;
-    private Integer size = 6;
+    private Integer size = 10;
     private String searchType; // "campaignName", "clientCompanyName", "clientManagerName", "all"
     private String keyword;
     private String userName;
