@@ -1,9 +1,11 @@
 package be15fintomatokatchupbe.contract.query.dto.request;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
+@Builder
 public class ContractSuccessRequest {
 
     private Integer page = 1;
