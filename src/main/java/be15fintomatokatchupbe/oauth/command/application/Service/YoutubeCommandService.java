@@ -40,6 +40,8 @@ public class YoutubeCommandService {
     private final InfluencerRepository influencerRepository;
     private final YoutubeAnalyticsQueryService youtubeAnalyticsQueryService;
     private final YoutubeOAuthQueryService youtubeOAuthQueryService;
+    private final YoutubeStatsSnapshotRepository youtubeStatsSnapshotRepository;
+    private final YoutubeVideoSnapshotRepository youtubeVideoSnapshotRepository;
 
     // 최초 연동: 채널 정보 조회 후 DB 저장
     public void registerYoutubeAccount(Long influencerId, String accessToken, String refreshToken) {
@@ -108,10 +110,14 @@ public class YoutubeCommandService {
         youtubeTokenRepository.delete(channelId);
         youtubeTokenRepository.deleteAccessToken(channelId);
 
-        // 3. Youtube 엔티티 삭제 (influencerId 기준)
+        // 3. Youtube 관련 데이터 삭제 (순서 변경: 자식 먼저 삭제)
+        youtubeVideoSnapshotRepository.deleteByInfluencerId(influencerId);
+        youtubeStatsSnapshotRepository.deleteByInfluencerId(influencerId);
+
+        // 4. Youtube 엔티티 삭제 (influencerId 기준)
         youtubeHelperService.deleteYoutubeByInfluencerId(influencerId);
 
-        // 4. Influencer 연동 상태 해제 (isConnected = 'N')
+        // 5. Influencer 연동 상태 해제 (isConnected = 'N')
         youtubeHelperService.disconnectInfluencerYoutube(influencerId);
 
         log.info("🧹 유튜브 연동 해제 완료 - influencerId={}, channelId={}", influencerId, channelId);
