@@ -70,7 +70,8 @@ public class SecurityConfig {
 //                                ).permitAll()
 
                                 .requestMatchers(HttpMethod.GET,
-                                        "/auth/find/password"
+                                        "/auth/find/password",
+                                        "/sse/subscribe"
                                 ).permitAll()
                                 /* 유저 권한 */
 //                                .requestMatchers(HttpMethod.POST,
