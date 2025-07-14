@@ -31,7 +31,7 @@ import java.util.Optional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class InstagramInsightScheduler {
+public class InstagramScheduler {
 
     private final InfluencerRepository influencerRepository;
     private final InstagramRepository instagramRepository;

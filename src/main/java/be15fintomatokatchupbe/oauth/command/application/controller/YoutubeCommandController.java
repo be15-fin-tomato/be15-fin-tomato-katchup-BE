@@ -4,7 +4,7 @@ import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import be15fintomatokatchupbe.oauth.command.application.Service.YoutubeCommandService;
-import be15fintomatokatchupbe.oauth.scheduler.YoutubeStatsSnapshotScheduler;
+import be15fintomatokatchupbe.oauth.scheduler.YoutubeScheduler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 public class YoutubeCommandController {
 
     private final YoutubeCommandService youtubeCommandService;
-    private final YoutubeStatsSnapshotScheduler scheduler;
+    private final YoutubeScheduler scheduler;
 
     @GetMapping("/callback")
     public ResponseEntity<Void> registerYoutube(

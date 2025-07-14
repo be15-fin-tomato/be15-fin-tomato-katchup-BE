@@ -1,6 +1,6 @@
 package be15fintomatokatchupbe.oauth.query.controller;
 
-import be15fintomatokatchupbe.oauth.scheduler.InstagramInsightScheduler;
+import be15fintomatokatchupbe.oauth.scheduler.InstagramScheduler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class InstagramSchedulerTestController {
 
-    private final InstagramInsightScheduler scheduler;
+    private final InstagramScheduler scheduler;
 
     // 게시물 인사이트 수집 테스트용 엔드포인트
     @PostMapping("/post")
