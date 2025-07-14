@@ -4,7 +4,8 @@ import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import be15fintomatokatchupbe.oauth.command.application.Service.YoutubeCommandService;
-import be15fintomatokatchupbe.oauth.scheduler.YoutubeScheduler;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +19,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+@Tag(name = "인플루언서-유튜브 계정 연동")
 @Slf4j
 @RestController
 @RequestMapping("/oauth2/youtube")
@@ -26,6 +28,7 @@ public class YoutubeCommandController {
 
     private final YoutubeCommandService youtubeCommandService;
 
+    @Operation(summary = "OAuth 콜백: code로 유튜브 토큰 발급 및 프론트 리디렉션", description = "사용자는 인가 코드를 받아 유튜브 액세스 토큰을 발급 받을 수 있다.")
     @GetMapping("/callback")
     public ResponseEntity<Void> registerYoutube(
             @RequestParam("code") String code,
@@ -64,6 +67,7 @@ public class YoutubeCommandController {
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
+    @Operation(summary = "인스타그램 연동 해제", description = "사용자는 해당하는 인플루언서와 유튜브 채널의 연동을 해제할 수 있다.")
     @DeleteMapping("/{influencerId}/disconnect")
     public ResponseEntity<ApiResponse<Void>> disconnectYoutube(
             @AuthenticationPrincipal CustomUserDetail userDetail,
