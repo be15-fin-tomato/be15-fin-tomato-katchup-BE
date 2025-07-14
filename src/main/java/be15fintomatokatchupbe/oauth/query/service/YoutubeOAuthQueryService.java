@@ -53,7 +53,7 @@ public class YoutubeOAuthQueryService {
     private String redirectUri;
 
     // 유튜브 인증 URL 생성
-    public String buildAuthorizationUrl() {
+    public String buildAuthorizationUrl(Long influencerId) {
         return UriComponentsBuilder
                 .fromUriString("https://accounts.google.com/o/oauth2/v2/auth")
                 .queryParam("client_id", clientId)
@@ -65,8 +65,29 @@ public class YoutubeOAuthQueryService {
                 )))
                 .queryParam("access_type", "offline")
                 .queryParam("prompt", "consent")
+                .queryParam("state", influencerId)
                 .build()
                 .toUriString();
+    }
+
+    private <T> T postForm(String url, MultiValueMap<String, String> body, Class<T> responseType) {
+        return webClient.post()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(responseType)
+                .block();
+    }
+
+    private MultiValueMap<String, String> buildForm(String code) {
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("code", code);
+        map.add("client_id", clientId);
+        map.add("client_secret", clientSecret);
+        map.add("redirect_uri", redirectUri);
+        map.add("grant_type", "authorization_code");
+        return map;
     }
 
     // code → accessToken + refreshToken 교환
@@ -79,45 +100,7 @@ public class YoutubeOAuthQueryService {
         }
     }
 
-    // 최초 연동: 채널 정보 조회 후 DB 저장
-    public void registerYoutubeAccount(Long influencerId, String accessToken, String refreshToken) {
-        // 1. 채널 정보 조회
-        String url = "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true";
-        YoutubeChannelInfoResponse youtubeChannelInfo = getWithAuth(url, accessToken, YoutubeChannelInfoResponse.class);
-
-        if (youtubeChannelInfo.items() == null || youtubeChannelInfo.items().isEmpty()) {
-            throw new BusinessException(OAuthErrorCode.YOUTUBE_CHANNEL_NOT_FOUND);
-        }
-
-        YoutubeChannelInfoResponse.Item item = youtubeChannelInfo.items().get(0);
-
-        // 2. 정보 추출
-        String channelId = item.id();
-        String title = item.snippet().title();
-        String thumbnail = item.snippet().thumbnails().defaultThumbnail().url();
-        Long subscriberCount = item.statistics().subscriberCount();
-
-        // 3. 유튜브 엔티티 저장
-        Youtube youtube = Youtube.builder()
-                .influencerId(influencerId)
-                .channelId(channelId)
-                .title(title)
-                .thumbnail(thumbnail)
-                .refreshToken(refreshToken)
-                .subscriber(subscriberCount)
-                .build();
-
-        youtubeHelperService.save(youtube);
-        log.info("✅ 유튜브 계정 연동 완료 - influencerId={}, channelId={}", influencerId, channelId);
-    }
-
-    public void registerYoutubeByOAuth(String code, Long influencerId) {
-        GoogleTokenResponse tokenResponse = getToken(code);
-        saveRefreshTokenByAccess(tokenResponse);
-        registerYoutubeAccount(influencerId, tokenResponse.getAccessToken(), tokenResponse.getRefreshToken());
-    }
-
-    private void saveRefreshTokenByAccess(GoogleTokenResponse tokenResponse) {
+    public void saveRefreshTokenByAccess(YoutubeOAuthQueryService.GoogleTokenResponse tokenResponse) {
         String accessToken = tokenResponse.getAccessToken();
         YoutubeChannelInfoResponse youtubeChannelInfo = getWithAuth(
                 "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true",
@@ -133,9 +116,38 @@ public class YoutubeOAuthQueryService {
         youtubeTokenRepository.saveAccessToken(channelId, tokenResponse.getAccessToken(), duration);
     }
 
-    public ChannelIdResponse getMyChannelIdPost(String accessToken) {
-        String url = "https://www.googleapis.com/youtube/v3/channels?part=id&mine=true";
-        return getWithAuthPost(url, accessToken, ChannelIdResponse.class);
+    public String getValidAccessToken(String channelId) {
+        // 1. Redis에서 accessToken 조회
+        String accessToken = youtubeTokenRepository.findAccessToken(channelId);
+
+        // 2. 없으면 refresh_token으로 accessToken 재발급
+        if (accessToken == null || accessToken.isBlank()) {
+            log.info("🔄 Redis에 accessToken 없음 → refresh token으로 재발급 시도");
+            accessToken = refreshAndGetAccessToken(channelId);
+        }
+
+        return accessToken;
+    }
+
+    public String refreshAndGetAccessToken(String channelId) {
+        String refreshToken = youtubeTokenRepository.find(channelId);
+        if (refreshToken == null) {
+            Youtube youtube = youtubeHelperService.findYoutube(channelId);
+            refreshToken = youtube.getRefreshToken();
+        }
+        GoogleTokenResponse newToken = refreshAccessToken(refreshToken);
+        Duration duration = Duration.ofSeconds(newToken.getExpiresIn());
+        youtubeTokenRepository.saveAccessToken(channelId, newToken.getAccessToken(), duration);
+        return newToken.getAccessToken();
+    }
+
+    public GoogleTokenResponse refreshAccessToken(String refreshToken) {
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("client_id", clientId);
+        form.add("client_secret", clientSecret);
+        form.add("refresh_token", refreshToken);
+        form.add("grant_type", "refresh_token");
+        return postForm("https://oauth2.googleapis.com/token", form, GoogleTokenResponse.class);
     }
 
     public AnalyticsResponse getChannelAnalytics(String accessToken, String channelId, String startDate, String endDate,
@@ -252,7 +264,7 @@ public class YoutubeOAuthQueryService {
                                 };
                             },
                             row -> ((Number) row.get(1)).doubleValue() * 100 / totalViews,
-                            (v1, v2) -> v1 // ⚠ 중복 key 있을 경우 첫 번째 값 유지
+                            (v1, v2) -> v1
                     ));
 
         } catch (WebClientResponseException e) {
@@ -261,7 +273,6 @@ public class YoutubeOAuthQueryService {
             return Map.of("subscribed", 0.0, "notSubscribed", 0.0);
         }
     }
-
 
     public Map<String, Double> getAgeGroupRatio(String accessToken, String channelId, String startDate, String endDate) {
         return getRatioByDimension(accessToken, channelId, startDate, endDate, "ageGroup");
@@ -382,19 +393,7 @@ public class YoutubeOAuthQueryService {
                 .toList();
     }
 
-    private <T> T getWithAuthPost(String url, String accessToken, Class<T> responseType) {
-        String token = accessToken.startsWith("Bearer ") ? accessToken : "Bearer " + accessToken;
-        log.info("✅ 최종 Authorization 헤더: {}", token);
-
-        return webClient.get()
-                .uri(url)
-                .header(HttpHeaders.AUTHORIZATION, token)
-                .retrieve()
-                .bodyToMono(responseType)
-                .block();
-    }
-
-    private <T> T getWithAuth(String url, String accessToken, Class<T> responseType) {
+    public <T> T getWithAuth(String url, String accessToken, Class<T> responseType) {
         String token = accessToken.startsWith("Bearer ") ? accessToken : "Bearer " + accessToken;
         return webClient.get()
                 .uri(url)
@@ -404,59 +403,6 @@ public class YoutubeOAuthQueryService {
                 .block();
     }
 
-    public String getValidAccessToken(String channelId) {
-        // 1. Redis에서 accessToken 조회
-        String accessToken = youtubeTokenRepository.findAccessToken(channelId);
-
-        // 2. 없으면 refresh_token으로 accessToken 재발급
-        if (accessToken == null || accessToken.isBlank()) {
-            log.info("🔄 Redis에 accessToken 없음 → refresh token으로 재발급 시도");
-            accessToken = refreshAndGetAccessToken(channelId);
-        }
-
-        return accessToken;
-    }
-
-    public String refreshAndGetAccessToken(String channelId) {
-        String refreshToken = youtubeTokenRepository.find(channelId);
-        if (refreshToken == null) {
-            Youtube youtube = youtubeHelperService.findYoutube(channelId);
-            refreshToken = youtube.getRefreshToken();
-        }
-        GoogleTokenResponse newToken = refreshAccessToken(refreshToken);
-        Duration duration = Duration.ofSeconds(newToken.getExpiresIn());
-        youtubeTokenRepository.saveAccessToken(channelId, newToken.getAccessToken(), duration);
-        return newToken.getAccessToken();
-    }
-
-    private <T> T postForm(String url, MultiValueMap<String, String> body, Class<T> responseType) {
-        return webClient.post()
-                .uri(url)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .bodyValue(body)
-                .retrieve()
-                .bodyToMono(responseType)
-                .block();
-    }
-
-    private MultiValueMap<String, String> buildForm(String code) {
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add("code", code);
-        map.add("client_id", clientId);
-        map.add("client_secret", clientSecret);
-        map.add("redirect_uri", redirectUri);
-        map.add("grant_type", "authorization_code");
-        return map;
-    }
-
-    public GoogleTokenResponse refreshAccessToken(String refreshToken) {
-        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        form.add("client_id", clientId);
-        form.add("client_secret", clientSecret);
-        form.add("refresh_token", refreshToken);
-        form.add("grant_type", "refresh_token");
-        return postForm("https://oauth2.googleapis.com/token", form, GoogleTokenResponse.class);
-    }
 
     @Getter
     public static class GoogleTokenResponse {

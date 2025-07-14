@@ -42,14 +42,11 @@ public class Influencer {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
-
-    @OneToOne(mappedBy = "influencer")
-    private Youtube youtube;
 
     @Column(name = "instagram_is_connected", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -64,13 +61,13 @@ public class Influencer {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+//        updatedAt = LocalDateTime.now();
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+//    @PreUpdate
+//    protected void onUpdate() {
+//        updatedAt = LocalDateTime.now();
+//    }
 
     public enum Gender {
         M, F, O
