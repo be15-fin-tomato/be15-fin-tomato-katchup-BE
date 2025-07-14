@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.ContractListRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
+import be15fintomatokatchupbe.campaign.query.dto.request.RecommendInfluencerRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.influencer.query.dto.response.CampaignRecord;
 import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
@@ -11,9 +12,7 @@ import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 @Mapper
 public interface CampaignQueryMapper {
@@ -83,7 +82,7 @@ public interface CampaignQueryMapper {
 
     String selectCampaignNotes(Long campaignId);
 
-    List<User> selectCampaignUserList(@Param("clientCompanyId") Long clientCompanyId);
+    List<User> selectCampaignUserList(@Param("campaignId") Long campaignId);
 
     List<Long> selectCampaignCategoryList(@Param("campaignId") Long campaignId);
 
@@ -128,4 +127,10 @@ public interface CampaignQueryMapper {
     List<CampaignRecord> findCampaignByInfluencerId(Long id);
 
     List<CommunicationHistoryResponse> findCommunicationHistoriesByClientCompanyId(@Param("clientCompanyId") Long clientCompanyId);
+
+    List<Integer> findInfluencerAndProduct(@Param("request")RecommendInfluencerRequest request, List<Integer> categoryList);
+
+    RequestCampaign findProductNameByCampaignId(Long campaignId);
+
+    List<String> findProductByInfluencerId(Integer influencerId);
 }

@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.influencer.query.mapper;
 
+import be15fintomatokatchupbe.campaign.query.dto.response.InfluencerInfo;
 import be15fintomatokatchupbe.influencer.query.dto.request.InfluencerListRequestDTO;
 import be15fintomatokatchupbe.influencer.query.dto.response.*;
 import org.apache.ibatis.annotations.Mapper;
@@ -22,5 +23,9 @@ public interface InfluencerMapper {
     Optional<InfluencerCardResponse> findInfluencerById(@Param("influencerId") Long influencerId);
 
     InfluencerQuotationDTO findInfluencerQuotationDetail(Long id);
+
+    List<InfluencerInfo> findInfluencerInfoList(@Param("ids") List<Integer> matchedIds);
+
+    List<String> findInfluencerCategories(Long influencerId);
 }
 

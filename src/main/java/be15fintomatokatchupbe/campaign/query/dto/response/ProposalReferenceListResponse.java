@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.campaign.query.controller;
+package be15fintomatokatchupbe.campaign.query.dto.response;
 
 import be15fintomatokatchupbe.campaign.query.dto.mapper.ReferenceDto;
 import lombok.Builder;

@@ -68,7 +68,10 @@ class RevenueCommandServiceTest {
                 pipelineRepository,
                 pipelineStepRepository,
                 pipelineStatusRepository,
-                ideaRepository
+                ideaRepository,
+                null,
+                null,
+                null
         );
     }
 
