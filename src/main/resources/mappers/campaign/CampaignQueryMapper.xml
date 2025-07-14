@@ -1421,4 +1421,23 @@
         ORDER BY
         p.created_at DESC
     </select>
+
+    <!-- 인플루언서 광고 이력 조회 -->
+<!--    <resultMap id="InfluencerRecommendResultMap" type="be15fintomatokatchupbe.campaign.query.dto.mapper.InfluencerRecommendDTO">-->
+<!--        <id property="influencerId" column="influencer_id"/>-->
+<!--        <collection property="product"-->
+<!--                    ofType="be15fintomatokatchupbe.campaign.query.dto.mapper.InfluencerRecommendDTO.Product">-->
+<!--            <result property="productName" column="product_name"/>-->
+<!--        </collection>-->
+<!--    </resultMap>-->
+<!--    <select id="findInfluencerAndProduct" resultType="InfluencerRecommendResultMap">-->
+<!--        SELECT-->
+<!--              i.influencer_id-->
+<!--            , c.product_name-->
+<!--        FROM-->
+<!--            pipeline_influencer_client_manager picm-->
+<!--        JOIN-->
+<!--            pipeline_influencer_client_manager picm-->
+
+<!--    </select>-->
 </mapper>

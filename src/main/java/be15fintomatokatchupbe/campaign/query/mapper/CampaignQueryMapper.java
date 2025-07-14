@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.ContractListRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
+import be15fintomatokatchupbe.campaign.query.dto.request.RecommendInfluencerRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.influencer.query.dto.response.CampaignRecord;
 import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
@@ -128,4 +129,6 @@ public interface CampaignQueryMapper {
     List<CampaignRecord> findCampaignByInfluencerId(Long id);
 
     List<CommunicationHistoryResponse> findCommunicationHistoriesByClientCompanyId(@Param("clientCompanyId") Long clientCompanyId);
+
+    List<InfluencerRecommendDTO> findInfluencerAndProduct(RecommendInfluencerRequest request);
 }

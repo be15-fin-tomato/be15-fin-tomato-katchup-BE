@@ -48,6 +48,12 @@ spring:
       host: ${REDIS_HOST}
     mongodb:
       uri: ${MONGODB_URI}
+  ai:
+    openai:
+      chat:
+        options:
+          model: ${OPENAI_RECOMMEND_MODEL_ID}
+      api-key: ${OPENAI_API_KEY}
 
 jwt:
   secret: ${JWT_SECRET}

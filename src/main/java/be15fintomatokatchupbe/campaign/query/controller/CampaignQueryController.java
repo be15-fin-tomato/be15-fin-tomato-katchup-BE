@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.campaign.query.controller;
 
 import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.ContractListRequest;
+import be15fintomatokatchupbe.campaign.query.dto.request.RecommendInfluencerRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.service.CampaignQueryService;
@@ -10,7 +11,6 @@ import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -254,6 +254,17 @@ public class CampaignQueryController {
     public ResponseEntity<ApiResponse<CampaignResultListResponse>> getCampaignResults(
             @ModelAttribute CampaignResultRequest request) {
         CampaignResultListResponse response = campaignQueryService.findCampaignResultList(request);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/listup/recommend")
+    @Operation(summary = "AI 인플루언서 추천", description = "사용자는 AI 인플루언서 추천을 요청할 수 있다.")
+    public ResponseEntity<ApiResponse<ListupDetailResponse>> getRecommendInfluencerList(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @ModelAttribute RecommendInfluencerRequest request
+    ){
+        ListupDetailResponse response = campaignQueryService.getRecommendInfluencerList(request);
+
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

@@ -2,30 +2,25 @@ package be15fintomatokatchupbe.campaign.query.service;
 
 
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
-import be15fintomatokatchupbe.campaign.query.controller.ProposalReferenceListResponse;
+import be15fintomatokatchupbe.campaign.query.dto.response.ProposalReferenceListResponse;
 import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.ContractListRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
+import be15fintomatokatchupbe.campaign.query.dto.request.RecommendInfluencerRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
 import be15fintomatokatchupbe.campaign.query.dto.mapper.ListupFormDTO;
 import be15fintomatokatchupbe.common.dto.Pagination;
-import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
 import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +28,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CampaignQueryService {
     private final CampaignQueryMapper campaignQueryMapper;
+    private final ChatClient chatClient;
 
     public ListupSearchResponse getListupList(Long userId, PipelineSearchRequest request) {
         int offset = (request.getPage() - 1) * request.getSize();
@@ -732,6 +728,20 @@ public class CampaignQueryService {
         List<CommunicationHistoryResponse> histories = campaignQueryMapper.findCommunicationHistoriesByClientCompanyId(clientCompanyId);
         log.info("고객사 ID {}의 커뮤니케이션 이력 조회 완료. {}개 이력 발견", clientCompanyId, histories.size());
         return histories;
+    }
+
+    public ListupDetailResponse getRecommendInfluencerList(RecommendInfluencerRequest request) {
+        List<InfluencerRecommendDTO> influencerList = campaignQueryMapper.findInfluencerAndProduct(request);
+
+
+/*        String generateResult = chatClient.prompt()
+                .system("너는 광고 제품에 가장 적합한 인플루언서를 추천해주는 비서야. 각 인플루언서는 자신이 사용하거나 리뷰한 제품 리스트를 가지고 있어.")
+                .user()
+                .call()
+                .content();*/
+
+
+        return ListupDetailResponse.builder().build();
     }
 }
 
