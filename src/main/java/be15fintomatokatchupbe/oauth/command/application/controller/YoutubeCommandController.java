@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 public class YoutubeCommandController {
 
     private final YoutubeCommandService youtubeCommandService;
-    private final YoutubeScheduler scheduler;
 
     @GetMapping("/callback")
     public ResponseEntity<Void> registerYoutube(
@@ -74,12 +73,4 @@ public class YoutubeCommandController {
         return ResponseEntity.ok(ApiResponse.success(null));
     }
 
-    // 스케줄러 테스트용
-    @PostMapping("/stats-scheduler")
-    public ResponseEntity<Void> testYoutubeScheduler(
-            @AuthenticationPrincipal CustomUserDetail userDetail
-            ) {
-        scheduler.collectDailyYoutubeStats();
-        return ResponseEntity.ok().build();
-    }
 }
