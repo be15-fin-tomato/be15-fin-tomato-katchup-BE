@@ -7,8 +7,8 @@ import be15fintomatokatchupbe.influencer.command.domain.repository.InfluencerRep
 import be15fintomatokatchupbe.influencer.command.domain.repository.InstagramRepository;
 import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
 import be15fintomatokatchupbe.oauth.command.application.repository.InstagramStatsSnapshotRepository;
-import be15fintomatokatchupbe.oauth.query.domain.InstagramPostInsight;
-import be15fintomatokatchupbe.oauth.query.domain.InstagramStatsSnapshot;
+import be15fintomatokatchupbe.oauth.command.application.domain.InstagramPostInsight;
+import be15fintomatokatchupbe.oauth.command.application.domain.InstagramStatsSnapshot;
 import be15fintomatokatchupbe.oauth.command.application.repository.InstagramPostInsightRepository;
 import be15fintomatokatchupbe.oauth.query.service.InstagramPostQueryService;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramPostInsightResponse;

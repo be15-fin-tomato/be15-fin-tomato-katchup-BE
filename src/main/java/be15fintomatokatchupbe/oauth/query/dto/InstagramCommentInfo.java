@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class CommentInfo {
+public class InstagramCommentInfo {
     private String text;
     private int likeCount;
 }
