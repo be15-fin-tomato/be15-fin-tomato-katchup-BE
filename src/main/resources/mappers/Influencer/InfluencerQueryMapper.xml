@@ -5,6 +5,44 @@
 
 <mapper namespace="be15fintomatokatchupbe.influencer.query.mapper.InfluencerMapper">
 
+    <resultMap id="InfluencerQuotationDetailMap" type="be15fintomatokatchupbe.influencer.query.dto.response.InfluencerQuotationDTO">
+        <id property="influencerId" column="influencerId"/>
+        <result property="name" column="name"/>
+        <result property="youtubeName" column="youtubeName"/>
+        <result property="imageUrl" column="imageUrl"/>
+        <result property="instagramName" column="instagramName"/>
+
+        <!-- YouTube 필드 -->
+        <result property="subscriber" column="subscriber"/>
+        <result property="youtubeAvgViews" column="youtubeAvgViews"/>
+        <result property="youtubeAvgLikes" column="youtubeAvgLikes"/>
+        <result property="youtubeAvgComments" column="youtubeAvgComments"/>
+        <result property="youtubeAge1317" column="youtubeAge1317"/>
+        <result property="youtubeAge1824" column="youtubeAge1824"/>
+        <result property="youtubeAge2534" column="youtubeAge2534"/>
+        <result property="youtubeAge3544" column="youtubeAge3544"/>
+        <result property="youtubeAge4554" column="youtubeAge4554"/>
+        <result property="youtubeAge5564" column="youtubeAge5564"/>
+        <result property="youtubeAge65Plus" column="youtubeAge65Plus"/>
+        <result property="youtubeGenderFemale" column="youtubeGenderFemale"/>
+        <result property="youtubeGenderMale" column="youtubeGenderMale"/>
+
+        <!-- Instagram 필드 -->
+        <result property="follower" column="follower"/>
+        <result property="instagramAvgViews" column="instagramAvgViews"/>
+        <result property="instagramAvgLikes" column="instagramAvgLikes"/>
+        <result property="instagramAvgComments" column="instagramAvgComments"/>
+        <result property="instagramAge1317" column="instagramAge1317"/>
+        <result property="instagramAge1824" column="instagramAge1824"/>
+        <result property="instagramAge2534" column="instagramAge2534"/>
+        <result property="instagramAge3544" column="instagramAge3544"/>
+        <result property="instagramAge4554" column="instagramAge4554"/>
+        <result property="instagramAge5564" column="instagramAge5564"/>
+        <result property="instagramAge65Plus" column="instagramAge65Plus"/>
+        <result property="instagramGenderFemale" column="instagramGenderFemale"/>
+        <result property="instagramGenderMale" column="instagramGenderMale"/>
+    </resultMap>
+
     <resultMap id="InfluencerCardMap" type="be15fintomatokatchupbe.influencer.query.dto.response.InfluencerCardResponse">
         <id property="influencerId" column="influencer_id"/>
         <result property="name" column="name"/>
@@ -20,7 +58,7 @@
         <association property="youtube" javaType="be15fintomatokatchupbe.influencer.query.dto.response.YoutubeInfoResponse">
             <result property="accountId" column="channel_id"/>
             <result property="subscriber" column="subscriber"/>
-            <result property="name" column="name"/>
+            <result property="name" column="youtube_name"/>
             <result property="thumbnailUrl" column="image_url"/>
         </association>
 
@@ -30,14 +68,108 @@
             <result property="name" column="instagram_name"/>
         </association>
 
-        <collection property="tags" ofType="be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto">
-            <result property="categoryId" column="category_id"/>
-            <result property="categoryName" column="category_name"/>
-        </collection>
+        <collection property="tags" ofType="be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto"
+                    column="influencer_id" select="getTagsForInfluencer"/>
     </resultMap>
 
-    <!-- 먼저 influencer_id만 추출 -> 22명 추출
-    태그로 인해서 중복 row 발생한 것을 서브쿼리 사용으로 해결 -->
+    <select id="getTagsForInfluencer" resultType="be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto">
+        SELECT
+        c.category_id,
+        c.category_name
+        FROM hashtag_influencer_campaign h
+        JOIN category c ON h.category_id = c.category_id
+        WHERE h.influencer_id = #{influencer_id}
+    </select>
+
+    <sql id="influencerBaseJoins">
+        FROM influencer i
+        LEFT JOIN user u ON i.user_id = u.user_id
+        LEFT JOIN youtube y ON i.influencer_id = y.influencer_id
+        LEFT JOIN instagram ig ON i.influencer_id = ig.influencer_id
+        LEFT JOIN influencer_age_distribution ad ON i.age_distribution_id = ad.age_distribution_id
+    </sql>
+
+    <!-- ✅ 다중 카테고리 필터링 포함한 메인 필터 -->
+    <sql id="dynamicFilters">
+        WHERE i.is_deleted = 'N'
+        <if test="influencerName != null and influencerName != ''">
+            AND i.name LIKE CONCAT('%', #{influencerName}, '%')
+            OR y.name LIKE CONCAT('%', #{influencerName}, '%')
+            OR ig.name LIKE CONCAT('%', #{influencerName}, '%')
+        </if>
+
+        <if test="categoryIds != null and categoryIds.size > 0">
+            AND EXISTS (
+            SELECT 1
+            FROM hashtag_influencer_campaign h_cat
+            WHERE h_cat.influencer_id = i.influencer_id
+            AND h_cat.category_id IN
+            <foreach item="id" collection="categoryIds" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+            )
+        </if>
+
+        <if test="minSubscriber != null">
+            AND y.subscriber &gt;= #{minSubscriber}
+        </if>
+        <if test="maxSubscriber != null">
+            AND y.subscriber &lt;= #{maxSubscriber}
+        </if>
+        <if test="minFollower != null">
+            AND ig.follower &gt;= #{minFollower}
+        </if>
+        <if test="maxFollower != null">
+            AND ig.follower &lt;= #{maxFollower}
+        </if>
+        <if test="minPrice != null">
+            AND i.price &gt;= #{minPrice}
+        </if>
+        <if test="maxPrice != null">
+            AND i.price &lt;= #{maxPrice}
+        </if>
+    </sql>
+
+    <sql id="dynamicFiltersForDerivedTable">
+        WHERE i_sub.is_deleted = 'N'
+        <if test="influencerName != null and influencerName != ''">
+            AND i_sub.name LIKE CONCAT('%', #{influencerName}, '%')
+            OR y_sub.name LIKE CONCAT('%', #{influencerName}, '%')
+            OR ig_sub.name LIKE CONCAT('%', #{influencerName}, '%')
+        </if>
+
+        <if test="categoryIds != null and categoryIds.size > 0">
+            AND EXISTS (
+            SELECT 1
+            FROM hashtag_influencer_campaign h_cat_sub
+            WHERE h_cat_sub.influencer_id = i_sub.influencer_id
+            AND h_cat_sub.category_id IN
+            <foreach item="id" collection="categoryIds" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+            )
+        </if>
+
+        <if test="minSubscriber != null">
+            AND y_sub.subscriber &gt;= #{minSubscriber}
+        </if>
+        <if test="maxSubscriber != null">
+            AND y_sub.subscriber &lt;= #{maxSubscriber}
+        </if>
+        <if test="minFollower != null">
+            AND ig_sub.follower &gt;= #{minFollower}
+        </if>
+        <if test="maxFollower != null">
+            AND ig_sub.follower &lt;= #{maxFollower}
+        </if>
+        <if test="minPrice != null">
+            AND i_sub.price &gt;= #{minPrice}
+        </if>
+        <if test="maxPrice != null">
+            AND i_sub.price &lt;= #{maxPrice}
+        </if>
+    </sql>
+
     <select id="findInfluencers" resultMap="InfluencerCardMap">
         SELECT
         i.influencer_id,
@@ -50,46 +182,67 @@
         i.instagram_is_connected,
         i.youtube_is_connected,
         u.name AS manager,
-
-        c.category_id,
-        c.category_name,
-
-        y.channel_id AS channel_id,
+        y.subscriber,
+        y.channel_id,
         y.name AS youtube_name,
-
+        y.image_url,
         ig.account_id AS instagram_account_id,
         ig.follower AS instagram_follower,
         ig.name AS instagram_name
-
-        FROM (
-        SELECT influencer_id
-        FROM influencer
-        WHERE is_deleted = 'N'
-        ORDER BY influencer_id ASC
-        LIMIT #{size} OFFSET #{offset}
-        ) sub
-
-        JOIN influencer i ON sub.influencer_id = i.influencer_id
+        FROM influencer i
         LEFT JOIN user u ON i.user_id = u.user_id
         LEFT JOIN youtube y ON i.influencer_id = y.influencer_id
         LEFT JOIN instagram ig ON i.influencer_id = ig.influencer_id
-        LEFT JOIN hashtag_influencer_campaign h ON i.influencer_id = h.influencer_id
-        LEFT JOIN category c ON h.category_id = c.category_id
         LEFT JOIN influencer_age_distribution ad ON i.age_distribution_id = ad.age_distribution_id
+        JOIN (
+        SELECT i_sub.influencer_id
+        FROM influencer i_sub
+        LEFT JOIN youtube y_sub ON i_sub.influencer_id = y_sub.influencer_id
+        LEFT JOIN instagram ig_sub ON i_sub.influencer_id = ig_sub.influencer_id
+        <include refid="dynamicFiltersForDerivedTable"/>
+        GROUP BY i_sub.influencer_id
+        <choose>
+            <when test="sortBy == 'price' and sortOrder == 'asc'">
+                ORDER BY i_sub.price ASC
+            </when>
+            <when test="sortBy == 'price' and sortOrder == 'desc'">
+                ORDER BY i_sub.price DESC
+            </when>
+            <otherwise>
+                ORDER BY i_sub.influencer_id ASC
+            </otherwise>
+        </choose>
+        LIMIT #{size} OFFSET #{offset}
+        ) AS sub_influencers ON i.influencer_id = sub_influencers.influencer_id
+        <choose>
+            <when test="sortBy == 'price' and sortOrder == 'asc'">
+                ORDER BY i.price ASC
+            </when>
+            <when test="sortBy == 'price' and sortOrder == 'desc'">
+                ORDER BY i.price DESC
+            </when>
+            <otherwise>
+                ORDER BY i.influencer_id ASC
+            </otherwise>
+        </choose>
     </select>
 
-    <select id="countInfluencers" resultType="int">
+    <select id="findInfluencersCount" resultType="int">
         SELECT COUNT(DISTINCT i.influencer_id)
         FROM influencer i
-        WHERE i.is_deleted = 'N'
+        LEFT JOIN user u ON i.user_id = u.user_id
+        LEFT JOIN youtube y ON i.influencer_id = y.influencer_id
+        LEFT JOIN instagram ig ON i.influencer_id = ig.influencer_id
+        LEFT JOIN influencer_age_distribution ad ON i.age_distribution_id = ad.age_distribution_id
+        <include refid="dynamicFilters"/>
     </select>
 
     <select id="findInfluencerList" resultType="be15fintomatokatchupbe.influencer.query.dto.response.InfluencerSearchDto">
         SELECT
-              influencer_id AS id
-            , name as name
+        influencer_id AS id
+        , name as name
         FROM
-            influencer
+        influencer
         <where>
             is_deleted = 'N'
             <if test="keyword != null and keyword != ''">
@@ -105,29 +258,25 @@
 
     <select id="findInfluencerById" resultMap="InfluencerCardMap">
         SELECT
-            i.influencer_id,
-            i.name,
-            i.gender,
-            i.target_gender,
-            ad.age_range,
-            i.national,
-            i.price,
-            i.instagram_is_connected,
-            i.youtube_is_connected,
-            u.name AS manager,
-
-            c.category_id,
-            c.category_name,
-
-            y.channel_id,
-            y.name,
-            y.image_url,
-            y.subscriber,
-
-            ig.account_id AS instagram_account_id,
-            ig.follower AS instagram_follower,
-            ig.name AS instagram_name
-
+        i.influencer_id,
+        i.name,
+        i.gender,
+        i.target_gender,
+        ad.age_range,
+        i.national,
+        i.price,
+        i.instagram_is_connected,
+        i.youtube_is_connected,
+        u.name AS manager,
+        y.subscriber,
+        y.channel_id,
+        y.name AS youtube_name,
+        y.image_url,
+        ig.account_id AS instagram_account_id,
+        ig.follower AS instagram_follower,
+        ig.name AS instagram_name,
+        c.category_id,
+        c.category_name
         FROM influencer i
         LEFT JOIN user u ON i.user_id = u.user_id
         LEFT JOIN youtube y ON i.influencer_id = y.influencer_id
@@ -139,4 +288,50 @@
         AND i.influencer_id = #{influencerId}
     </select>
 
+    <select id="findInfluencerQuotationDetail" resultMap="InfluencerQuotationDetailMap">
+        SELECT
+        i.influencer_id AS influencerId
+        , i.name AS name
+        , y.name AS youtubeName
+        , y.image_url AS imageUrl
+        , i.name AS instagramName
+        , y.subscriber AS subscriber
+        , yss.avg_views AS youtubeAvgViews
+        , yss.avg_likes AS youtubeAvgLikes
+        , yss.avg_comments AS youtubeAvgComments
+        , yss.age1317 AS youtubeAge1317
+        , yss.age1824 AS youtubeAge1824
+        , yss.age2534 AS youtubeAge2534
+        , yss.age3544 AS youtubeAge3544
+        , yss.age4554 AS youtubeAge4554
+        , yss.age5564 AS youtubeAge5564
+        , yss.age65plus AS youtubeAge65Plus
+        , yss.gender_female AS youtubeGenderFemale
+        , yss.gender_male AS youtubeGenderMale
+        , ins.follower AS follower
+        , iss.avg_views AS instagramAvgViews
+        , iss.avg_likes AS instagramAvgLikes
+        , iss.avg_comments AS instagramAvgComments
+        , iss.age1317 AS instagramAge1317
+        , iss.age1824 AS instagramAge1824
+        , iss.age2534 AS instagramAge2534
+        , iss.age3544 AS instagramAge3544
+        , iss.age4554 AS instagramAge4554
+        , iss.age5564 AS instagramAge5564
+        , iss.age65plus AS instagramAge65Plus
+        , iss.gender_female AS instagramGenderFemale
+        , iss.gender_male AS instagramGenderMale
+        FROM
+        influencer i
+        LEFT JOIN
+        youtube_stats_snapshot yss on yss.influencer_id = i.influencer_id
+        LEFT JOIN
+        instagram_stats_snapshot iss on iss.influencer_id = i.influencer_id
+        LEFT JOIN
+        youtube y ON i.influencer_id = y.influencer_id
+        LEFT JOIN
+        instagram ins on i.influencer_id = ins.influencer_id
+        WHERE
+        i.influencer_id = #{influencerId}
+    </select>
 </mapper>

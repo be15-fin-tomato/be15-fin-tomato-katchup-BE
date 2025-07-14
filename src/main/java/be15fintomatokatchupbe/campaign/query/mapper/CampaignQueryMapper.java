@@ -2,8 +2,10 @@ package be15fintomatokatchupbe.campaign.query.mapper;
 
 import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
+import be15fintomatokatchupbe.campaign.query.dto.request.ContractListRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
+import be15fintomatokatchupbe.influencer.query.dto.response.CampaignRecord;
 import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import org.apache.ibatis.annotations.Mapper;
@@ -11,6 +13,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface CampaignQueryMapper {
@@ -76,7 +79,7 @@ public interface CampaignQueryMapper {
     // 캠페인 상세
     CampaignDetailDto selectCampaignDetail(@Param("campaignId") Long campaignId);
 
-    BigDecimal selectAverageExpectedProfitMargin(Long campaignId);
+    float selectAverageExpectedProfitMargin(Long campaignId);
 
     String selectCampaignNotes(Long campaignId);
 
@@ -88,7 +91,7 @@ public interface CampaignQueryMapper {
 
     Long selectTotalExpectedRevenue(Long campaignId);
 
-    List<CampaignListResponse> findPagedCampaigns(@Param("limit") int limit, @Param("offset") int offset);
+    List<CampaignListsDTO> findPagedCampaigns(@Param("limit") int limit, @Param("offset") int offset, @Param("request") ContractListRequest request);
 
     List<PipelineStepStatusDto> findPipelineStepsByCampaignIds(@Param("campaignIds") List<Long> campaignIds);
 
@@ -98,19 +101,31 @@ public interface CampaignQueryMapper {
 
     List<ReferenceDto> getReferenceList(Long campaignId, Long pipelineStepId);
 
-    List<CampaignResultResponse> findCampaignResultList(
-            @Param("request") CampaignResultRequest request, // request 객체도 명시
-            @Param("offset") int offset,                     // offset 파라미터 추가 및 @Param
-            @Param("size") int size,                         // size 파라미터 추가 및 @Param
-            @Param("sortBy") String sortBy,
-            @Param("sortOrder") String sortOrder
-    );
+    List<CampaignResultResponse> findCampaignResultList(@Param("request") CampaignResultRequest request);
 
     int countCampaignResultList(
             @Param("request") CampaignResultRequest request // count 쿼리도 request 객체 명시
     );
 
+    // 고객사 ID로 캠페인 목록 조회
+    List<CampaignListDTO> findCampaignsByClientCompanyId(@Param("clientCompanyId") Long clientCompanyId);
+
     List<CampaignWithCategoryDTO> findCampaignWithCategory(Long clientCompanyId, String campaignName, List<Long> tags);
 
     List<CategoryDto> findCategoryByCampaignId(Long campaignId);
+
+    List<PipelineStepsDto> findPipelineStepsGroupedByCampaignIds(List<Long> campaignIds);
+
+    List<CampaignInfluencerInfo> findInfluencerInfoByPipelineIds(@Param("pipelineIds") List<Long> pipelineIds);
+
+
+    int getTotalSize(@Param("request")ContractListRequest request);
+
+    ProposalFormDTO findProposalDetail(Long pipelineId);
+
+    List<InfluencerProposalInfo> findPipelineProposalInfluencer(Long pipelineId);
+
+    List<CampaignRecord> findCampaignByInfluencerId(Long id);
+
+    List<CommunicationHistoryResponse> findCommunicationHistoriesByClientCompanyId(@Param("clientCompanyId") Long clientCompanyId);
 }

@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface ContractFileRepository extends JpaRepository<ContractFile, Long> {
-    Optional<Object> findByFilePath(String key);
+    Optional<ContractFile> findByFilePath(String key);
 }

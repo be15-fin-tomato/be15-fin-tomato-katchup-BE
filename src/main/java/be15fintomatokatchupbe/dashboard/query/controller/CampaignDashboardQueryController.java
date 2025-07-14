@@ -22,22 +22,20 @@ public class CampaignDashboardQueryController {
     private final CampaignDashboardQueryService campaignDashboardQueryService;
 
     @Operation(summary = "캠페인 컨텐츠 정보 조회", description = "사용자는 진행한 캠페인에 대한 컨텐츠 분석 정보를 조회할 수 있다.")
-    @GetMapping("/content/{campaignId}/{influencerId}")
+    @GetMapping("/content/{pipelineInfluencerId}")
     public ResponseEntity<ApiResponse<CampaignContentResponse>> getCampaignContent(
-            @PathVariable Long campaignId,
-            @PathVariable Long influencerId
+            @PathVariable Long pipelineInfluencerId
     ){
-        CampaignContentResponse response = campaignDashboardQueryService.getCampaignContent(campaignId, influencerId);
+        CampaignContentResponse response = campaignDashboardQueryService.getCampaignContent(pipelineInfluencerId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
     @Operation(summary = "성과 대시보드 수익요약 조회", description = "사용자는 성과 대시보드 수익요약을 조회할 수 있다.")
-    @GetMapping("/get/revenue/{campaignId}/{influencerId}")
+    @GetMapping("/get/revenue/{pipelineInfluencerId}") // <-- 경로 변수 변경
     public ResponseEntity<ApiResponse<CampaignGetRevenueResponse>> getRevenue (
-            @PathVariable Long campaignId,
-            @PathVariable Long influencerId
+            @PathVariable Long pipelineInfluencerId // <-- 파라미터 변경
     ) {
-        CampaignGetRevenueResponse response = campaignDashboardQueryService.getRevenue(campaignId, influencerId);
+        CampaignGetRevenueResponse response = campaignDashboardQueryService.getRevenue(pipelineInfluencerId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

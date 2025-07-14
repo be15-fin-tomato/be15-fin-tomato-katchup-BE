@@ -85,4 +85,3 @@ naver:
 openai:
   api-key: ${OPENAI_API_KEY}
   model-id: ${OPENAI_MODEL_ID}
-

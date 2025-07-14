@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/test/instagram/insight")
+@RequestMapping("/oauth2/instagram/test")
 @RequiredArgsConstructor
 public class InstagramSchedulerTestController {
 
@@ -26,4 +26,12 @@ public class InstagramSchedulerTestController {
         scheduler.collectInstagramStatsSnapshots();
         return "통계 스냅샷 수집 완료";
     }
+
+    // 인기 미디어 스냅샷 테스트용 엔드포인트
+    @PostMapping("/media")
+    public String collectMediaSnapshotsManually() {
+        scheduler.collectInstagramMediaSnapshots();
+        return "미디어 통계 스냅샷 수집 완료 (상위 5개)";
+    }
+
 }

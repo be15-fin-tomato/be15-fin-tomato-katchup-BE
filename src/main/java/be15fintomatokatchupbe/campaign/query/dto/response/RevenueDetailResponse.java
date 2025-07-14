@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.campaign.query.dto.response;
 
+import be15fintomatokatchupbe.campaign.query.dto.mapper.ReferenceDto;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,7 +13,7 @@ public class RevenueDetailResponse {
     RevenueFormResponse form;
 
     /* 참고에 들어갈 내용 */
-    List<ReferenceInfo> referenceList;
+    List<ReferenceDto> referenceList;
 
     /* 의견에 들어갈 내용 */
     List<IdeaInfo> ideaList;

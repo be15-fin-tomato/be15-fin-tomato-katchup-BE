@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.relation.service;
 
 import be15fintomatokatchupbe.campaign.command.application.dto.request.InfluencerProposalRequest;
 import be15fintomatokatchupbe.campaign.command.application.dto.request.InfluencerRevenueRequest;
+import be15fintomatokatchupbe.campaign.command.application.dto.request.UpdateProposalRequest;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Pipeline;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManager;
 import be15fintomatokatchupbe.influencer.command.application.support.InfluencerHelperService;
@@ -80,5 +81,19 @@ public class PipeInfClientManagerService {
     @Transactional
     public void deleteByPipeline(Pipeline pipeline){
         pipeInfClientManagerRepository.deleteAllByPipeline(pipeline);
+    }
+
+    @Transactional
+    public void saveProposalInfluencer(List<UpdateProposalRequest.InfluencerItem> influencerList, Pipeline foundPipeline) {
+        List<PipelineInfluencerClientManager> resultList = influencerList.stream()
+                .map(influencer -> PipelineInfluencerClientManager.builder()
+                        .pipeline(foundPipeline)
+                        .influencer(influencerHelperService.findValidInfluencer(influencer.getInfluencerId()))
+                        .strength(influencer.getStrength())
+                        .notes(influencer.getNotes())
+                        .build())
+                .toList();
+
+        pipeInfClientManagerRepository.saveAll(resultList);
     }
 }

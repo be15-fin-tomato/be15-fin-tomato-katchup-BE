@@ -32,7 +32,7 @@ public class YoutubeVideoSnapshot {
     private Long comments;
     private String thumbnailUrl;
 
-    private LocalDateTime createdAt;
+    private LocalDateTime publishedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "snapshot_id")

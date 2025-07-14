@@ -39,4 +39,8 @@ public class PipelineInfluencerClientManager {
     private String strength;
 
     private String notes;
+
+    public void update(ClientManager clientManager) {
+        this.clientManager = clientManager;
+    }
 }

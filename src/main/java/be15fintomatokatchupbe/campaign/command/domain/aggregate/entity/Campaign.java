@@ -4,6 +4,8 @@ import be15fintomatokatchupbe.client.command.domain.aggregate.ClientCompany;
 import be15fintomatokatchupbe.common.domain.StatusType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EntityListeners(AuditingEntityListener.class)
 public class Campaign {
 
     @Id
@@ -45,6 +48,7 @@ public class Campaign {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
@@ -62,7 +66,7 @@ public class Campaign {
         this.productName = productName;
         this.productPrice = productPrice;
         this.awarenessPath = awarenessPath;
-        this.updatedAt = LocalDateTime.now();
+//        this.updatedAt = LocalDateTime.now();
     }
 
     public void softDelete() {
@@ -73,5 +77,9 @@ public class Campaign {
     public void updateRevenue(Long productPrice, Long salesQuantity) {
         this.productPrice = productPrice;
         this.salesQuantity = salesQuantity;
+    }
+
+    public void confirmCampaign(){
+        this.campaignStatus = CampaignStatus.builder().campaignStatusId(5L).build();
     }
 }

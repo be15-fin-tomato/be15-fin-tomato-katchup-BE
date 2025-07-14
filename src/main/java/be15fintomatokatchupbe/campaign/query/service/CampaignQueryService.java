@@ -2,17 +2,21 @@ package be15fintomatokatchupbe.campaign.query.service;
 
 
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
+import be15fintomatokatchupbe.campaign.query.controller.ProposalReferenceListResponse;
 import be15fintomatokatchupbe.campaign.query.dto.mapper.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
+import be15fintomatokatchupbe.campaign.query.dto.request.ContractListRequest;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.mapper.CampaignQueryMapper;
 import be15fintomatokatchupbe.campaign.query.dto.mapper.ListupFormDTO;
 import be15fintomatokatchupbe.common.dto.Pagination;
+import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
 import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -21,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -278,7 +283,7 @@ public class CampaignQueryService {
         List<UserInfo> userDto = campaignQueryMapper.findPipelineUser(pipelineId);
 
         /* 참고 목록 가져오기 */
-        List<ReferenceInfo> referenceDto = campaignQueryMapper.findPipeReference(pipelineId, PipelineStepConstants.PROPOSAL);
+        List<ReferenceDto> referenceDto = campaignQueryMapper.getReferenceList(quotationFormDto.getCampaignId(), PipelineStepConstants.PROPOSAL);
 
         /* 의견 가져오기 */
         List<IdeaInfo> ideaDto = campaignQueryMapper.findPipeIdea(pipelineId);
@@ -328,7 +333,7 @@ public class CampaignQueryService {
         List<UserInfo> userDto = campaignQueryMapper.findPipelineUser(pipelineId);
 
         /* 참고 목록 가져오기 */
-        List<ReferenceInfo> referenceDto = campaignQueryMapper.findPipeReference(pipelineId, PipelineStepConstants.QUOTATION);
+        List<ReferenceDto> referenceDto = campaignQueryMapper.getReferenceList(contractFormDto.getCampaignId(), PipelineStepConstants.QUOTATION);
 
         /* 의견 가져오기 */
         List<IdeaInfo> ideaDto = campaignQueryMapper.findPipeIdea(pipelineId);
@@ -380,7 +385,7 @@ public class CampaignQueryService {
         List<InfluencerRevenueInfo> influencerDto = campaignQueryMapper.findPipelineRevenueInfluencer(pipelineId);
 
         /* 참고 목록 가져오기 */
-        List<ReferenceInfo> referenceDto = campaignQueryMapper.findPipeReference(pipelineId, PipelineStepConstants.CONTRACT);
+        List<ReferenceDto> referenceDto = campaignQueryMapper.getReferenceList(revenueFormDto.getCampaignId(), PipelineStepConstants.CONTRACT);
 
         /* 의견 가져오기 */
         List<IdeaInfo> ideaDto = campaignQueryMapper.findPipeIdea(pipelineId);
@@ -426,9 +431,6 @@ public class CampaignQueryService {
             return null;
         }
 
-        // 날짜 포맷터 선언
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
         // 2. 캠페인 유저 리스트 조회
         List<User> userList = campaignQueryMapper.selectCampaignUserList(detail.getClientCompanyId());
         detail.setUserList(userList);
@@ -441,16 +443,8 @@ public class CampaignQueryService {
         detail.setExpectedRevenue(totalExpectedRevenue);
 
 
-        BigDecimal avgProfitMargin = campaignQueryMapper.selectAverageExpectedProfitMargin(campaignId);
-
-        if (avgProfitMargin != null) {
-            detail.setExpectedProfitMargin(
-                    avgProfitMargin.multiply(BigDecimal.valueOf(100))
-                            .setScale(0, RoundingMode.HALF_UP)
-            );
-        } else {
-            detail.setExpectedProfitMargin(BigDecimal.ZERO);
-        }
+        float avgProfitMargin = campaignQueryMapper.selectAverageExpectedProfitMargin(campaignId);
+        detail.setExpectedProfitMargin(avgProfitMargin);
 
         String notes = campaignQueryMapper.selectCampaignNotes(campaignId);
         detail.setNotes(notes);
@@ -471,39 +465,53 @@ public class CampaignQueryService {
                 .build();
     }
 
-    public List<CampaignListResponse> getPagedCampaigns(int page, int size) {
+    public CampaignListResponse getPagedCampaigns(int page, int size, ContractListRequest request) {
         int offset = (page - 1) * size;
 
-        List<CampaignListResponse> campaigns = campaignQueryMapper.findPagedCampaigns(size, offset);
-        List<Long> campaignIds = campaigns.stream()
-                .map(CampaignListResponse::getCampaignId)
-                .distinct()
-                .toList();
+        List<CampaignListsDTO> campaigns = campaignQueryMapper.findPagedCampaigns(size, offset, request);
+        if (campaigns.isEmpty()) {
+            Pagination pagination = Pagination.builder()
+                    .currentPage(page)
+                    .size(size)
+                    .totalPage(0)
+                    .totalCount(0)
+                    .build();
 
-        if (!campaignIds.isEmpty()) {
-            List<PipelineStepStatusDto> steps = campaignQueryMapper.findPipelineStepsByCampaignIds(campaignIds);
-
-            Map<Long, List<PipelineStepDto>> stepMap = steps.stream()
-                    .collect(Collectors.groupingBy(
-                            PipelineStepStatusDto::getCampaignId,
-                            Collectors.mapping(
-                                    s -> new PipelineStepDto(s.getStepType(), s.getStartedAt()),
-                                    Collectors.toList()
-                            )
-                    ));
-
-            for (CampaignListResponse dto : campaigns) {
-                List<PipelineStepDto> stepList = stepMap.getOrDefault(dto.getCampaignId(), Collections.emptyList());
-                dto.setPipelineSteps(stepList);
-
-                // 사후관리는 제외 (총 6단계만 계산)
-                long completed = stepList.stream().filter(s -> s.getStartedAt() != null).count();
-                dto.setSuccessProbability((int) ((completed / 6.0) * 100));
-            }
+            return CampaignListResponse.builder()
+                    .campaignList(Collections.emptyList())
+                    .pagination(pagination)
+                    .build();
         }
 
-        return campaigns;
+        List<Long> campaignIds = campaigns.stream()
+                .map(CampaignListsDTO::getCampaignId)
+                .collect(Collectors.toList());
+
+        List<PipelineStepsDto> stepsList = campaignQueryMapper.findPipelineStepsGroupedByCampaignIds(campaignIds);
+
+        Map<Long, List<PipelineStepsDto>> stepMap = stepsList.stream()
+                .collect(Collectors.groupingBy(PipelineStepsDto::getCampaignId));
+
+        for (CampaignListsDTO campaign : campaigns) {
+            List<PipelineStepsDto> steps = stepMap.getOrDefault(campaign.getCampaignId(), new ArrayList<>());
+            campaign.setPipelineSteps(steps);
+        }
+
+        int totalCount = campaignQueryMapper.getTotalSize(request);
+
+        Pagination pagination = Pagination.builder()
+                .currentPage(page)
+                .size(size)
+                .totalPage((int) Math.ceil((double) totalCount / size))
+                .totalCount(totalCount)
+                .build();
+
+        return CampaignListResponse.builder()
+                .campaignList(campaigns)
+                .pagination(pagination)
+                .build();
     }
+
 
     public QuotationReferenceListResponse getQuotationReferenceList(Long campaignId) {
         List<ReferenceDto> contractReferenceList = campaignQueryMapper.getReferenceList(campaignId, PipelineStepConstants.QUOTATION);
@@ -520,29 +528,70 @@ public class CampaignQueryService {
                 .referenceList(contractReferenceList)
                 .build();
     }
-
     public CampaignResultListResponse findCampaignResultList(CampaignResultRequest request) {
-        int page = request.getPage() != null ? request.getPage() : 1;
-        int size = request.getSize() != null ? request.getSize() : 6;
+        int clientPage = request.getPage() != null ? request.getPage() : 1;
+        int clientSize = request.getSize() != null ? request.getSize() : 10; // 프론트 size와 통일
+        int clientOffset = (clientPage - 1) * clientSize;
 
-        int offset = (page - 1) * size;
+        // 1. 전체 필터링 조건에 맞는 "베이스 파이프라인" 데이터 조회
+        // 이 쿼리에는 LIMIT/OFFSET이 없어야 합니다 (XML에서 제거했으므로).
+        // 백엔드에서 모든 조건을 만족하는 파이프라인 기본 정보를 가져옵니다.
+        request.setOffset(0);
+        request.setSize(Integer.MAX_VALUE); // 모든 데이터를 가져오도록 유지
 
-        int total = campaignQueryMapper.countCampaignResultList(request);
+        List<CampaignResultResponse> baseList =
+                campaignQueryMapper.findCampaignResultList(request);
 
-        List<CampaignResultResponse> rawResultList =
-                campaignQueryMapper.findCampaignResultList(
-                        request,    // @Param("request")로 매퍼에 전달
-                        offset,     // @Param("offset")로 매퍼에 전달
-                        size,       // @Param("size")로 매퍼에 전달
-                        request.getSortBy(),
-                        request.getSortOrder()
-                );
+        // 2. pipelineId 모으기
+        List<Long> pipelineIds = baseList.stream()
+                .map(CampaignResultResponse::getPipelineId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
 
-        List<CampaignResultResponse> finalResultList = rawResultList;
+        // 3. 최종 카드 리스트 만들기 (인플루언서 정보 병합)
+        List<CampaignResultResponse> finalList = new ArrayList<>();
 
+        if (!pipelineIds.isEmpty()) {
+            List<CampaignInfluencerInfo> infList =
+                    campaignQueryMapper.findInfluencerInfoByPipelineIds(pipelineIds);
+
+            Map<Long, List<CampaignInfluencerInfo>> infMap = infList.stream()
+                    .collect(Collectors.groupingBy(CampaignInfluencerInfo::getPipelineId));
+
+            for (CampaignResultResponse base : baseList) {
+                List<CampaignInfluencerInfo> matched = infMap.get(base.getPipelineId());
+
+                if (matched == null || matched.isEmpty()) {
+                    // 인플루언서 정보가 없는 경우에도 추가
+                    finalList.add(base);
+                } else {
+                    for (CampaignInfluencerInfo inf : matched) {
+                        CampaignResultResponse card = new CampaignResultResponse();
+                        BeanUtils.copyProperties(base, card);
+                        card.setInfluencerName(inf.getInfluencerName());
+                        card.setPipelineInfluencerId(inf.getPipelineInfluencerId());
+                        finalList.add(card);
+                    }
+                }
+            }
+        } else {
+            finalList = baseList; // baseList가 비어있지 않은 경우만 해당
+        }
+
+        // 4. 인플루언서 정보 병합된 최종 리스트에 대한 페이징 적용
+        int fromIndex = Math.min(clientOffset, finalList.size());
+        int toIndex = Math.min(clientOffset + clientSize, finalList.size());
+
+        List<CampaignResultResponse> pagedList = new ArrayList<>();
+        if (fromIndex < toIndex) {
+            pagedList = finalList.subList(fromIndex, toIndex);
+        }
+
+        // 5. 응답 반환: total을 finalList의 실제 크기로 설정
         return CampaignResultListResponse.builder()
-                .data(finalResultList)
-                .total(total)
+                .data(pagedList)
+                .total(finalList.size()) // <-- 여기서 total을 finalList의 크기로 설정합니다.
                 .build();
     }
 
@@ -556,11 +605,52 @@ public class CampaignQueryService {
         return ListupDetailResponse.builder()
                 .campaignId(listupFormDto.getCampaignId())
                 .campaignName(listupFormDto.getCampaignName())
+                .name(listupFormDto.getName())
                 .clientCompanyId(listupFormDto.getClientCompanyId())
                 .clientCompanyName(listupFormDto.getClientCompanyName())
                 .influencerList(influencerList)
                 .build();
     }
+
+    // 고객사 별 캠페인 목록 조회
+    public List<CampaignListDTO> getCampaignsByClientCompanyId(Long clientCompanyId) {
+        List<CampaignListDTO> campaigns = campaignQueryMapper.findCampaignsByClientCompanyId(clientCompanyId);
+        List<Long> campaignIds = campaigns.stream()
+                .map(CampaignListDTO::getCampaignId)
+                .toList();
+
+        if (!campaignIds.isEmpty()) {
+            List<PipelineStepStatusDto> steps = campaignQueryMapper.findPipelineStepsByCampaignIds(campaignIds);
+
+            for (PipelineStepStatusDto step : steps) {
+                log.info(step.toString());
+            }
+
+            Map<Long, List<PipelineStepDto>> stepMap = steps.stream()
+                    .collect(Collectors.groupingBy(
+                            PipelineStepStatusDto::getCampaignId,
+                            Collectors.mapping(
+                                    s -> new PipelineStepDto(s.getStepType(), s.getCreatedAt()),
+                                    Collectors.toList()
+                            )
+                    ));
+
+            for (CampaignListDTO dto : campaigns) {
+                List<PipelineStepDto> stepList = stepMap.getOrDefault(dto.getCampaignId(), Collections.emptyList());
+                dto.setPipelineSteps(stepList);
+                long completed = stepList.stream()
+                        .filter(s -> s.getStepType() != null)
+                        .map(s -> s.getStepType())
+                        .distinct()
+                        .count();
+
+                dto.setSuccessProbability((int) ((completed / 7.0) * 100));
+            }
+        }
+
+        return campaigns;
+    }
+
 
     public CampaignAiResponse getCampaignWithCategory(Long clientCompanyId, String campaignName, List<Long> tags) {
         log.info("받은 쿼리 : "+ campaignName + clientCompanyId);
@@ -573,6 +663,75 @@ public class CampaignQueryService {
         }
 
         return CampaignAiResponse.builder().campaignList(responseDto).build();
+    }
+
+    public ProposalReferenceListResponse getProposalReferenceList(Long campaignId) {
+        List<ReferenceDto> proposalReferenceList = campaignQueryMapper.getReferenceList(campaignId, PipelineStepConstants.PROPOSAL);
+
+        return ProposalReferenceListResponse.builder()
+                .referenceList(proposalReferenceList)
+                .build();
+    }
+
+    public ProposalDetailResponse getProposalDetail(Long pipelineId) {
+        /* 폼 정보 가져오기 */
+        /* 폼 가져오기 */
+        ProposalFormDTO proposalFormDTO = campaignQueryMapper.findProposalDetail(pipelineId);
+
+        /* 인풀루언서 가져오기 */
+        List<InfluencerProposalInfo> influencerDto = campaignQueryMapper.findPipelineProposalInfluencer(pipelineId);
+
+        /* 담당자 가져오기 */
+        List<UserInfo> userDto = campaignQueryMapper.findPipelineUser(pipelineId);
+
+        /* 참고 목록 가져오기 */
+        List<ReferenceDto> referenceDto = campaignQueryMapper.getReferenceList(proposalFormDTO.getCampaignId(), PipelineStepConstants.LIST_UP);
+
+        /* 의견 가져오기 */
+        List<IdeaInfo> ideaDto = campaignQueryMapper.findPipeIdea(pipelineId);
+
+        /* 조합하기 */
+        ProposalFormResponse form = ProposalFormResponse.builder()
+                .name(proposalFormDTO.getName())
+                .clientCompanyId(proposalFormDTO.getClientCompanyId())
+                .clientCompanyName(proposalFormDTO.getClientCompanyName())
+                .clientManagerId(proposalFormDTO.getClientManagerId())
+                .clientManagerName(proposalFormDTO.getClientManagerName())
+                .pipelineStatusId(proposalFormDTO.getPipelineStatusId())
+                .pipelineStatusName(proposalFormDTO.getPipelineStatusName())
+                .userList(userDto)
+                .campaignId(proposalFormDTO.getCampaignId())
+                .campaignName(proposalFormDTO.getCampaignName())
+                .requestAt(proposalFormDTO.getRequestAt())
+                .presentAt(proposalFormDTO.getPresentAt())
+                .startedAt(proposalFormDTO.getStartedAt())
+                .endedAt(proposalFormDTO.getEndedAt())
+                .influencerList(influencerDto)
+                .content(proposalFormDTO.getContent())
+                .notes(proposalFormDTO.getNotes())
+                .build();
+
+        /* 응답하기 */
+        return ProposalDetailResponse
+                .builder()
+                .form(form)
+                .referenceList(referenceDto)
+                .ideaList(ideaDto)
+                .build();
+    }
+
+    public ListupReferenceResponse getListupReferenceList(Long campaignId) {
+        List<ReferenceDto> referenceDto = campaignQueryMapper.getReferenceList(campaignId, PipelineStepConstants.LIST_UP);
+
+        return ListupReferenceResponse.builder()
+                .referenceList(referenceDto).build();
+    }
+
+    public List<CommunicationHistoryResponse> getCommunicationHistoriesByClientCompany(Long clientCompanyId) {
+        log.info("고객사 ID {}의 커뮤니케이션 이력 조회 시작", clientCompanyId);
+        List<CommunicationHistoryResponse> histories = campaignQueryMapper.findCommunicationHistoriesByClientCompanyId(clientCompanyId);
+        log.info("고객사 ID {}의 커뮤니케이션 이력 조회 완료. {}개 이력 발견", clientCompanyId, histories.size());
+        return histories;
     }
 }
 

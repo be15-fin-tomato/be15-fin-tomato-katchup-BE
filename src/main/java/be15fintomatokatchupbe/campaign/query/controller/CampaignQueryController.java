@@ -1,7 +1,7 @@
 package be15fintomatokatchupbe.campaign.query.controller;
 
-import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Campaign;
 import be15fintomatokatchupbe.campaign.query.dto.request.CampaignResultRequest;
+import be15fintomatokatchupbe.campaign.query.dto.request.ContractListRequest;
 import be15fintomatokatchupbe.campaign.query.dto.response.*;
 import be15fintomatokatchupbe.campaign.query.dto.request.PipelineSearchRequest;
 import be15fintomatokatchupbe.campaign.query.service.CampaignQueryService;
@@ -10,7 +10,7 @@ import be15fintomatokatchupbe.config.security.model.CustomUserDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
+import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -49,6 +49,31 @@ public class CampaignQueryController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @GetMapping("/proposal/{id}")
+    @Operation(summary = "제안 상세 조회", description = "제안 상세 정보를 조회합니다.")
+    public ResponseEntity<ApiResponse<ProposalDetailResponse>> getProposalDetail(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable("id") Long pipelineId
+    ){
+        Long userId = userDetail.getUserId();
+        ProposalDetailResponse response = campaignQueryService.getProposalDetail(pipelineId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/proposal/reference")
+    @Operation(summary = "제안 참조 조회", description = "제안 참조 목록을 조회합니다.")
+    public ResponseEntity<ApiResponse<ProposalReferenceListResponse>> getProposalReferenceList(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @RequestParam(value = "campaignId", required = false) Long campaignId
+    ){
+        Long userId = userDetail.getUserId();
+
+        ProposalReferenceListResponse response = campaignQueryService.getProposalReferenceList(campaignId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     @GetMapping("/quotation")
     @Operation(summary = "견적 목록 조회", description = "견적 목록을 조회합니다.")
     public ResponseEntity<ApiResponse<QuotationSearchResponse>> getQuotationList(
@@ -69,6 +94,17 @@ public class CampaignQueryController {
     ){
         Long userId = userDetail.getUserId();
         ListupDetailResponse response = campaignQueryService.getListupDetail(userId, pipelineId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/listup/reference")
+    @Operation(summary = "리스트업 참조 조회",  description = "리스트업 참조를 조회합니다.")
+    public ResponseEntity<ApiResponse<ListupReferenceResponse>> getListupReferenceList(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @RequestParam(value = "campaignId", required = false) Long campaignId
+    ){
+        ListupReferenceResponse response = campaignQueryService.getListupReferenceList(campaignId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
@@ -169,13 +205,24 @@ public class CampaignQueryController {
     // 캠페인 목록 조회
     @GetMapping
     @Operation(summary = "캠페인 목록 조회", description = "캠페인을 페이징 형태로 조회합니다.")
-    public ResponseEntity<ApiResponse<List<CampaignListResponse>>> getCampaignList(
+    public ResponseEntity<ApiResponse<CampaignListResponse>> getCampaignList(
             @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @ModelAttribute ContractListRequest request
     ) {
-        List<CampaignListResponse> result = campaignQueryService.getPagedCampaigns(page, size);
+        CampaignListResponse result = campaignQueryService.getPagedCampaigns(page, size, request);
         return ResponseEntity.ok(ApiResponse.success(result));
     }
+
+    @GetMapping("/by-client-company/{clientCompanyId}")
+    @Operation(summary = "고객사 ID로 캠페인 목록 조회", description = "해당 고객사 ID로 진행된 캠페인 목록을 조회합니다.")
+    public ResponseEntity<ApiResponse<List<CampaignListDTO>>> getCampaignsByClientCompanyId(
+            @PathVariable Long clientCompanyId
+    ) {
+        List<CampaignListDTO> result = campaignQueryService.getCampaignsByClientCompanyId(clientCompanyId);
+        return ResponseEntity.ok(ApiResponse.success(result));
+    }
+
 
     // AI 캠페인 조회
     @GetMapping("/ai/search")
@@ -210,4 +257,3 @@ public class CampaignQueryController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 }
-

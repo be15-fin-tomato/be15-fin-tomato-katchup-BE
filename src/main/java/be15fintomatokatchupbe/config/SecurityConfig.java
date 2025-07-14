@@ -3,6 +3,7 @@ package be15fintomatokatchupbe.config;
 import be15fintomatokatchupbe.config.security.CustomAccessDeniedHandler;
 import be15fintomatokatchupbe.config.security.CustomAuthenticationEntryPoint;
 import be15fintomatokatchupbe.config.security.JwtAuthenticationFilter;
+import be15fintomatokatchupbe.utils.jwt.JwtErrorResponse;
 import be15fintomatokatchupbe.utils.jwt.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +30,7 @@ public class SecurityConfig {
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final JwtTokenProvider jwtTokenProvider;
+    private final JwtErrorResponse jwtErrorResponse;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -59,31 +61,38 @@ public class SecurityConfig {
                                         "/swagger-ui.html",
                                         "/oauth2/**")
                                 .permitAll()
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // CORS Preflight 요청 허용
+
                                 /* 일반 권한 */
                                 /* TODO : 필요 할 때 주석 풀고 작성 해 주세요!*/
-                                .requestMatchers(HttpMethod.POST,
-                                        "/**"
-                                ).permitAll()
+//                                .requestMatchers(HttpMethod.POST,
+//                                        "/**"
+//                                ).permitAll()
 
                                 .requestMatchers(HttpMethod.GET,
                                         "/auth/find/password"
                                 ).permitAll()
                                 /* 유저 권한 */
+//                                .requestMatchers(HttpMethod.POST,
+//                                        "/**"
+//                                ).authenticated()
+//                                .requestMatchers(HttpMethod.GET,
+//                                        "/**"
+//                                ).authenticated()
+//                                .requestMatchers(HttpMethod.PUT,
+//                                        "/**"
+//                                ).authenticated()
+//                                .requestMatchers(HttpMethod.PATCH,
+//                                        "/**"
+//                                ).authenticated()
+//                                .requestMatchers(HttpMethod.DELETE,
+//                                        "/**"
+//                                ).authenticated()
                                 .requestMatchers(HttpMethod.POST,
-                                        "/**"
-                                ).authenticated()
-                                .requestMatchers(HttpMethod.GET,
-                                        "/**"
-                                ).authenticated()
-                                .requestMatchers(HttpMethod.PUT,
-                                        "/**"
-                                ).authenticated()
-                                .requestMatchers(HttpMethod.PATCH,
-                                        "/**"
-                                ).authenticated()
-                                .requestMatchers(HttpMethod.DELETE,
-                                        "/**"
-                                ).authenticated()
+                                        "/auth/reissue"
+                                        , "/auth/login")
+                                .permitAll()
+                                .anyRequest().authenticated()
                 ).addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         /* CORS 설정 */
         http
@@ -94,7 +103,7 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
-        return new JwtAuthenticationFilter(jwtTokenProvider);
+        return new JwtAuthenticationFilter(jwtTokenProvider ,jwtErrorResponse);
     }
 
     @Bean

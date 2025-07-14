@@ -3,6 +3,7 @@ package be15fintomatokatchupbe.campaign.command.application.service;
 import be15fintomatokatchupbe.campaign.command.application.dto.request.CreateContractRequest;
 import be15fintomatokatchupbe.campaign.command.application.dto.request.UpdateContractRequest;
 import be15fintomatokatchupbe.campaign.command.application.support.CampaignHelperService;
+import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.CampaignStatusConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStatusConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.constant.PipelineStepConstants;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.*;
@@ -59,8 +60,13 @@ public class ContractCommandService {
             throw new BusinessException(CampaignErrorCode.APPROVED_CONTRACT_ALREADY_EXISTS);
         }
 
-        ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
         Campaign campaign = campaignHelperService.findValidCampaign(request.getCampaignId());
+        /* 이미 완료된 캠페인인 경우 수정 불가 */
+        if(Objects.equals(campaign.getCampaignStatus().getCampaignStatusId(), CampaignStatusConstants.FINISHED)){
+            throw new BusinessException(CampaignErrorCode.FINISHED_CAMPAIGN);
+        }
+
+        ClientManager clientManager = clientHelperService.findValidClientManager(request.getClientManagerId());
         PipelineStep pipelineStep = pipelineStepRepository.findById(PipelineStepConstants.CONTRACT)
                 .orElseThrow(() -> new BusinessException(CampaignErrorCode.PIPELINE_STEP_NOT_FOUND));
         PipelineStatus pipelineStatus = pipelineStatusRepository.findById(request.getPipelineStatusId())
@@ -188,6 +194,28 @@ public class ContractCommandService {
     public void deleteContract(Long pipelineId) {
         // 1. 삭제할 파이프라인 찾아 주기
         Pipeline foundPipeline = campaignHelperService.findValidPipeline(pipelineId);
+
+        if(foundPipeline.getPipelineStatus().getPipelineStatusId().equals(PipelineStatusConstants.APPROVED)){
+            throw new BusinessException(CampaignErrorCode.APPROVED_PIPELINE_CANNOT_BE_DELETED);
+        }
+
+        if(!Objects.equals(foundPipeline.getPipelineStep().getPipelineStepId(), PipelineStepConstants.CONTRACT)){
+            throw new BusinessException(CampaignErrorCode.INVALID_ACCESS);
+        }
+
+        // 2. 파이프라인 소프트 딜리트 하기
+        foundPipeline.softDelete();
+
+        // 3. 관련 테이블 지워주기
+        campaignHelperService.deleteRelationTable(foundPipeline);
+
+        /* 파일 테이블 지워주기 */
+        fileService.deleteByPipeline(foundPipeline);
+    }
+
+    public void deleteAllContract(Long pipelineId) {
+        // 1. 삭제할 파이프라인 찾아 주기
+        Pipeline foundPipeline = campaignHelperService.findValidAllPipeline(pipelineId);
 
         if(foundPipeline.getPipelineStatus().getPipelineStatusId().equals(PipelineStatusConstants.APPROVED)){
             throw new BusinessException(CampaignErrorCode.APPROVED_PIPELINE_CANNOT_BE_DELETED);

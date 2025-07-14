@@ -7,5 +7,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class PipelineStepDto {
     private String stepType;
-    private String startedAt;
+    private String createdAt;
+
 }

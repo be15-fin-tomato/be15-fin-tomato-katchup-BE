@@ -11,5 +11,6 @@ public class SendEmailRequest {
     private String targetEmail;
     private String title;
     private String content;
+    private Long fileId;
 
 }
