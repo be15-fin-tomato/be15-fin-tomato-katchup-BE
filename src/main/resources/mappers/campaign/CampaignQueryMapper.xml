@@ -1423,4 +1423,166 @@
         ORDER BY
         p.created_at DESC
     </select>
+
+    <resultMap id="RequestCampaignMap" type="be15fintomatokatchupbe.campaign.query.dto.mapper.RequestCampaign">
+        <id property="campaignId" column="campaign_id"/>
+        <result property="productName" column="product_name"/>
+        <collection property="categoryList" ofType="int" column="category_id"/>
+    </resultMap>
+
+    <select id="findProductNameByCampaignId" resultMap="RequestCampaignMap">
+        SELECT
+        c.campaign_id,
+        c.product_name,
+        hic.category_id
+        FROM
+        campaign c
+        JOIN
+        hashtag_influencer_campaign hic ON c.campaign_id = hic.campaign_id
+        WHERE
+        c.campaign_id = #{campaignId}
+    </select>
+
+    <!-- 인플루언서 필터링 -->
+    <select id="findInfluencerAndProduct" resultType="int">
+        SELECT
+              i.influencer_id
+        FROM
+            influencer i
+        JOIN
+            youtube_stats_snapshot yss ON i.influencer_id = yss.influencer_id
+        JOIN
+            youtube y ON y.influencer_id = i.influencer_id
+        WHERE
+            i.is_deleted = 'N'
+        <!-- 언령대 -->
+        <choose>
+
+            <when test="request.preferredAgeRange == '1317'">
+                AND yss.age1317 >= yss.age1824
+                AND yss.age1317 >= yss.age2534
+                AND yss.age1317 >= yss.age3544
+                AND yss.age1317 >= yss.age4554
+                AND yss.age1317 >= yss.age5564
+                AND yss.age1317 >= yss.age65plus
+            </when>
+            <when test="request.preferredAgeRange == '1824'">
+                AND yss.age1824 >= yss.age1317
+                AND yss.age1824 >= yss.age2534
+                AND yss.age1824 >= yss.age3544
+                AND yss.age1824 >= yss.age4554
+                AND yss.age1824 >= yss.age5564
+                AND yss.age1824 >= yss.age65plus
+            </when>
+            <when test="request.preferredAgeRange == '2534'">
+                AND yss.age2534 >= yss.age1317
+                AND yss.age2534 >= yss.age1824
+                AND yss.age2534 >= yss.age3544
+                AND yss.age2534 >= yss.age4554
+                AND yss.age2534 >= yss.age5564
+                AND yss.age2534 >= yss.age65plus
+            </when>
+            <when test="request.preferredAgeRange == '3544'">
+                AND yss.age3544 >= yss.age1317
+                AND yss.age3544 >= yss.age1824
+                AND yss.age3544 >= yss.age2534
+                AND yss.age3544 >= yss.age4554
+                AND yss.age3544 >= yss.age5564
+                AND yss.age3544 >= yss.age65plus
+            </when>
+            <when test="request.preferredAgeRange == '4554'">
+                AND yss.age4554 >= yss.age1317
+                AND yss.age4554 >= yss.age1824
+                AND yss.age4554 >= yss.age2534
+                AND yss.age4554 >= yss.age3544
+                AND yss.age4554 >= yss.age5564
+                AND yss.age4554 >= yss.age65plus
+            </when>
+            <when test="request.preferredAgeRange == '5564'">
+                AND yss.age5564 >= yss.age1317
+                AND yss.age5564 >= yss.age1824
+                AND yss.age5564 >= yss.age2534
+                AND yss.age5564 >= yss.age3544
+                AND yss.age5564 >= yss.age4554
+                AND yss.age5564 >= yss.age65plus
+            </when>
+            <when test="request.preferredAgeRange == '65'">
+                AND yss.age65plus >= yss.age1317
+                AND yss.age65plus >= yss.age1824
+                AND yss.age65plus >= yss.age2534
+                AND yss.age65plus >= yss.age3544
+                AND yss.age65plus >= yss.age4554
+                AND yss.age65plus >= yss.age5564
+            </when>
+        </choose>
+        <!-- 성별 -->
+        <choose>
+            <when test="request.preferredGender == 2">
+                AND yss.gender_female >= yss.gender_male
+            </when>
+            <when test="request.preferredGender == 1">
+                AND yss.gender_male > yss.gender_female
+            </when>
+        </choose>
+        <!-- 만족도 조사 -->
+        <if test="request.advertiserSatisfaction != null and request.advertiserSatisfaction > 0">
+            AND (
+            SELECT IFNULL(ROUND(AVG(score), 1), 0.0)
+            FROM satisfaction s
+            WHERE s.influencer_id = i.influencer_id
+            AND s.score IS NOT NULL
+            ) >= #{request.advertiserSatisfaction}
+        </if>
+        <!-- 알고리즘 스코어 -->
+        <if test="request.algorithmScore != null and request.algorithmScore > 0">
+            AND LEAST(
+            (IF(y.subscriber IS NULL OR y.subscriber = 0, 0, (yss.avg_views / y.subscriber)) * 100),
+            100
+            ) >= #{request.algorithmScore}
+        </if>
+        <!-- 참여도 -->
+        <if test="request.engagement != null and request.engagement > 0">
+            AND LEAST(
+            IF(yss.avg_views IS NULL OR yss.avg_views = 0, 0,
+            ((yss.avg_likes + yss.avg_comments) / yss.avg_views) * 100
+            ),
+            100
+            ) >= #{request.engagement}
+        </if>
+        <!-- 구독자 수 -->
+        <if test="request.followerCount != null and request.followerCount > 0">
+            AND y.subscriber >= #{request.followerCount}
+        </if>
+        <!-- 카테고리-->
+        <if test="request.categories != null and request.categories != false and categoryList != null and categoryList.size() > 0">
+            AND EXISTS (
+            SELECT 1
+            FROM hashtag_influencer_campaign hic
+            WHERE hic.influencer_id = i.influencer_id
+            AND hic.category_id IN
+            <foreach item="category" collection="categoryList" open="(" separator="," close=")">
+                #{category}
+            </foreach>
+            )
+        </if>
+    </select>
+
+    <select id="findProductByInfluencerId" resultType="string">
+        SELECT
+            product_name
+        FROM
+            campaign c
+        JOIN
+            pipeline p ON c.campaign_id = p.campaign_id
+        JOIN
+            pipeline_influencer_client_manager picm ON picm.pipeline_id = p.pipeline_id
+        WHERE
+            p.pipeline_step_id = 7
+        AND
+            p.pipeline_status_id = 2
+        AND
+            c.campaign_status_id = 5
+        AND
+            picm.influencer_id = #{influencerId}
+    </select>
 </mapper>
