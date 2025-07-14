@@ -67,7 +67,7 @@ public class YoutubeCommandController {
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
     }
 
-    @Operation(summary = "인스타그램 연동 해제", description = "사용자는 해당하는 인플루언서와 유튜브 채널의 연동을 해제할 수 있다.")
+    @Operation(summary = "유튜브 연동 해제", description = "사용자는 해당하는 인플루언서와 유튜브 채널의 연동을 해제할 수 있다.")
     @DeleteMapping("/{influencerId}/disconnect")
     public ResponseEntity<ApiResponse<Void>> disconnectYoutube(
             @AuthenticationPrincipal CustomUserDetail userDetail,
