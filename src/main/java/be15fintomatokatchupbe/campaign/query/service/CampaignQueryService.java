@@ -731,8 +731,8 @@ public class CampaignQueryService {
     }
 
     public ListupDetailResponse getRecommendInfluencerList(RecommendInfluencerRequest request) {
-        List<InfluencerRecommendDTO> influencerList = campaignQueryMapper.findInfluencerAndProduct(request);
-
+//        List<InfluencerRecommendDTO> influencerList = campaignQueryMapper.findInfluencerAndProduct(request);
+        log.info(request.toString());
 
 /*        String generateResult = chatClient.prompt()
                 .system("너는 광고 제품에 가장 적합한 인플루언서를 추천해주는 비서야. 각 인플루언서는 자신이 사용하거나 리뷰한 제품 리스트를 가지고 있어.")

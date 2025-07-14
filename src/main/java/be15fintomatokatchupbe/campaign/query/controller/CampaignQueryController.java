@@ -257,7 +257,7 @@ public class CampaignQueryController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    @GetMapping("/listup/recommend")
+    @GetMapping("/ai/recommend")
     @Operation(summary = "AI 인플루언서 추천", description = "사용자는 AI 인플루언서 추천을 요청할 수 있다.")
     public ResponseEntity<ApiResponse<ListupDetailResponse>> getRecommendInfluencerList(
             @AuthenticationPrincipal CustomUserDetail userDetail,
