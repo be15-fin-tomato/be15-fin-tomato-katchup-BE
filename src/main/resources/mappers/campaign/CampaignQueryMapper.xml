@@ -868,9 +868,11 @@
         SELECT
               u.user_id
             , u.name
-        FROM client_company_user cu
-        JOIN user u ON cu.user_id = u.user_id
-        WHERE cu.client_company_id = #{clientCompanyId}
+        FROM campaign c
+        JOIN pipeline p ON c.campaign_id = p.campaign_id
+        JOIN user u ON u.user_id = p.writer_id
+        WHERE c.campaign_id = #{campaignId}
+          AND p.pipeline_step_id = 1
     </select>
 
     <!-- 캠페인 카테고리 리스트 조회 -->

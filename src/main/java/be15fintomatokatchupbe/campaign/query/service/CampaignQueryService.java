@@ -432,7 +432,7 @@ public class CampaignQueryService {
         }
 
         // 2. 캠페인 유저 리스트 조회
-        List<User> userList = campaignQueryMapper.selectCampaignUserList(detail.getClientCompanyId());
+        List<User> userList = campaignQueryMapper.selectCampaignUserList(detail.getCampaignId());
         detail.setUserList(userList);
 
         // 3. 캠페인 카테고리 리스트 조회
