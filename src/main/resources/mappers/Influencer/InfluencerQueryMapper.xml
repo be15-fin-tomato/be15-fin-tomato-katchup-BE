@@ -94,6 +94,8 @@
         WHERE i.is_deleted = 'N'
         <if test="influencerName != null and influencerName != ''">
             AND i.name LIKE CONCAT('%', #{influencerName}, '%')
+            OR y.name LIKE CONCAT('%', #{influencerName}, '%')
+            OR ig.name LIKE CONCAT('%', #{influencerName}, '%')
         </if>
 
         <if test="categoryIds != null and categoryIds.size > 0">
@@ -132,6 +134,8 @@
         WHERE i_sub.is_deleted = 'N'
         <if test="influencerName != null and influencerName != ''">
             AND i_sub.name LIKE CONCAT('%', #{influencerName}, '%')
+            OR y_sub.name LIKE CONCAT('%', #{influencerName}, '%')
+            OR ig_sub.name LIKE CONCAT('%', #{influencerName}, '%')
         </if>
 
         <if test="categoryIds != null and categoryIds.size > 0">
@@ -286,49 +290,48 @@
 
     <select id="findInfluencerQuotationDetail" resultMap="InfluencerQuotationDetailMap">
         SELECT
-            i.influencer_id AS influencerId
-            , i.name AS name
-            , y.name AS youtubeName
-            , y.image_url AS imageUrl
-            , i.name AS instagramName
-            , y.subscriber AS subscriber
-            , yss.avg_views AS youtubeAvgViews
-            , yss.avg_likes AS youtubeAvgLikes
-            , yss.avg_comments AS youtubeAvgComments
-            , yss.age1317 AS youtubeAge1317
-            , yss.age1824 AS youtubeAge1824
-            , yss.age2534 AS youtubeAge2534
-            , yss.age3544 AS youtubeAge3544
-            , yss.age4554 AS youtubeAge4554
-            , yss.age5564 AS youtubeAge5564
-            , yss.age65plus AS youtubeAge65Plus
-            , yss.gender_female AS youtubeGenderFemale
-            , yss.gender_male AS youtubeGenderMale
-            , ins.follower AS follower
-            , iss.avg_views AS instagramAvgViews
-            , iss.avg_likes AS instagramAvgLikes
-            , iss.avg_comments AS instagramAvgComments
-            , iss.age1317 AS instagramAge1317
-            , iss.age1824 AS instagramAge1824
-            , iss.age2534 AS instagramAge2534
-            , iss.age3544 AS instagramAge3544
-            , iss.age4554 AS instagramAge4554
-            , iss.age5564 AS instagramAge5564
-            , iss.age65plus AS instagramAge65Plus
-            , iss.gender_female AS instagramGenderFemale
-            , iss.gender_male AS instagramGenderMale
+        i.influencer_id AS influencerId
+        , i.name AS name
+        , y.name AS youtubeName
+        , y.image_url AS imageUrl
+        , i.name AS instagramName
+        , y.subscriber AS subscriber
+        , yss.avg_views AS youtubeAvgViews
+        , yss.avg_likes AS youtubeAvgLikes
+        , yss.avg_comments AS youtubeAvgComments
+        , yss.age1317 AS youtubeAge1317
+        , yss.age1824 AS youtubeAge1824
+        , yss.age2534 AS youtubeAge2534
+        , yss.age3544 AS youtubeAge3544
+        , yss.age4554 AS youtubeAge4554
+        , yss.age5564 AS youtubeAge5564
+        , yss.age65plus AS youtubeAge65Plus
+        , yss.gender_female AS youtubeGenderFemale
+        , yss.gender_male AS youtubeGenderMale
+        , ins.follower AS follower
+        , iss.avg_views AS instagramAvgViews
+        , iss.avg_likes AS instagramAvgLikes
+        , iss.avg_comments AS instagramAvgComments
+        , iss.age1317 AS instagramAge1317
+        , iss.age1824 AS instagramAge1824
+        , iss.age2534 AS instagramAge2534
+        , iss.age3544 AS instagramAge3544
+        , iss.age4554 AS instagramAge4554
+        , iss.age5564 AS instagramAge5564
+        , iss.age65plus AS instagramAge65Plus
+        , iss.gender_female AS instagramGenderFemale
+        , iss.gender_male AS instagramGenderMale
         FROM
-            influencer i
+        influencer i
         LEFT JOIN
-            youtube_stats_snapshot yss on yss.influencer_id = i.influencer_id
+        youtube_stats_snapshot yss on yss.influencer_id = i.influencer_id
         LEFT JOIN
-            instagram_stats_snapshot iss on iss.influencer_id = i.influencer_id
+        instagram_stats_snapshot iss on iss.influencer_id = i.influencer_id
         LEFT JOIN
-            youtube y ON i.influencer_id = y.influencer_id
+        youtube y ON i.influencer_id = y.influencer_id
         LEFT JOIN
-            instagram ins on i.influencer_id = ins.influencer_id
+        instagram ins on i.influencer_id = ins.influencer_id
         WHERE
-            i.influencer_id = #{influencerId}
+        i.influencer_id = #{influencerId}
     </select>
-
 </mapper>
