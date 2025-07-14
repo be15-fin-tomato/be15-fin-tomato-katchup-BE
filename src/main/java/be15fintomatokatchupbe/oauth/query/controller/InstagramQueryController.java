@@ -27,19 +27,7 @@ public class
 InstagramQueryController {
     private final InstagramPostQueryService instagramPostQueryService;
     private final InstagramAccountQueryService instagramAccountQueryService;
-    private final InstagramTokenService instagramTokenService;
     private final InstagramStatsSnapshotService instagramStatsSnapshotService;
-
-    // TODO: 프론트에서 처리해야됨 (지금은 백엔드 테스트용)
-    @Operation(summary = "OAuth 콜백: code로 토큰 발급 및 프론트 리디렉션", description = "사용자는 인가 코드를 받아 액세스 토큰을 발급 받을 수 있다.")
-    @GetMapping("/callback")
-    public ResponseEntity<ApiResponse<InstagramTokenResponse>> handleInstagramCallback(
-            @RequestParam("code") String code,
-            @RequestParam("state") Long influencerId
-    ) {
-        InstagramTokenResponse tokenResponse = instagramTokenService.exchangeCodeForToken(code, influencerId);
-        return ResponseEntity.ok(ApiResponse.success(tokenResponse));
-    }
 
     @Operation(summary = "인스타그램 계정 통계 조회", description = "사용자는 인플루언서의 인스타그램 계정 통계 자료를 조회할 수 있다.")
     @GetMapping("/stats")
