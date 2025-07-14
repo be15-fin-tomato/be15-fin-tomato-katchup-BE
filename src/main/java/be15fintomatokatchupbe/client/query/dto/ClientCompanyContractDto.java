@@ -23,6 +23,8 @@ public class ClientCompanyContractDto {
 
     private Date endedAt; // 마지막 날
 
+    private Long pipelineInfluencerId;
+
 
 
 

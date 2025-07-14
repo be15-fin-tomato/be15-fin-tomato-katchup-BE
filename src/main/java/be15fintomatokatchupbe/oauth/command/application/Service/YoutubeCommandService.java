@@ -5,6 +5,7 @@ import be15fintomatokatchupbe.influencer.command.application.support.YoutubeHelp
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Youtube;
 import be15fintomatokatchupbe.influencer.command.domain.repository.InfluencerRepository;
+import be15fintomatokatchupbe.influencer.command.domain.repository.YoutubeRepository;
 import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
 import be15fintomatokatchupbe.infra.redis.YoutubeTokenRepository;
 import be15fintomatokatchupbe.oauth.command.application.domain.YoutubeStatsSnapshot;
@@ -12,12 +13,16 @@ import be15fintomatokatchupbe.oauth.command.application.domain.YoutubeVideoSnaps
 import be15fintomatokatchupbe.oauth.command.application.repository.YoutubeStatsSnapshotRepository;
 import be15fintomatokatchupbe.oauth.command.application.repository.YoutubeVideoSnapshotRepository;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
+import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeChannelInfoResponse;
 import be15fintomatokatchupbe.oauth.query.dto.response.YoutubeStatsResponse;
+import be15fintomatokatchupbe.oauth.query.service.YoutubeAnalyticsQueryService;
+import be15fintomatokatchupbe.oauth.query.service.YoutubeOAuthQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -29,9 +34,65 @@ public class YoutubeCommandService {
 
     private final YoutubeHelperService youtubeHelperService;
     private final YoutubeTokenRepository youtubeTokenRepository;
+    private final YoutubeRepository youtubeRepository;
     private final YoutubeStatsSnapshotRepository statsSnapshotRepository;
     private final YoutubeVideoSnapshotRepository videoSnapshotRepository;
     private final InfluencerRepository influencerRepository;
+    private final YoutubeAnalyticsQueryService youtubeAnalyticsQueryService;
+    private final YoutubeOAuthQueryService youtubeOAuthQueryService;
+
+    // 최초 연동: 채널 정보 조회 후 DB 저장
+    public void registerYoutubeAccount(Long influencerId, String accessToken, String refreshToken) {
+        // 1. 채널 정보 조회
+        String url = "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true";
+        YoutubeChannelInfoResponse youtubeChannelInfo =
+                youtubeOAuthQueryService.getWithAuth(url, accessToken, YoutubeChannelInfoResponse.class);
+
+        if (youtubeChannelInfo.items() == null || youtubeChannelInfo.items().isEmpty()) {
+            throw new BusinessException(OAuthErrorCode.YOUTUBE_CHANNEL_NOT_FOUND);
+        }
+
+        YoutubeChannelInfoResponse.Item item = youtubeChannelInfo.items().get(0);
+
+        // 2. 정보 추출
+        String channelId = item.id();
+        String title = item.snippet().title();
+        String thumbnail = item.snippet().thumbnails().defaultThumbnail().url();
+        Long subscriberCount = item.statistics().subscriberCount();
+
+        // 3. 유튜브 엔티티 저장
+        Youtube youtube = Youtube.builder()
+                .influencerId(influencerId)
+                .channelId(channelId)
+                .title(title)
+                .thumbnail(thumbnail)
+                .refreshToken(refreshToken)
+                .subscriber(subscriberCount)
+                .build();
+
+        youtubeHelperService.saveOrUpdate(youtube);
+
+        log.info("✅ 유튜브 계정 연동 완료 - influencerId={}, channelId={}", influencerId, channelId);
+
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(30);
+
+        try {
+            collectAndSaveYoutubeStatsSnapshot(influencerId, startDate.toString(), endDate.toString());
+            log.info("✅ 신규 계정 통계 스냅샷 즉시 저장 완료 - influencerId={}", influencerId);
+        } catch (BusinessException e) {
+            log.warn("⚠️ 신규 계정 통계 스냅샷 즉시 저장 실패 (비즈니스 예외): {}", e.getMessage());
+        } catch (Exception e) {
+            log.error("❌ 신규 계정 통계 스냅샷 즉시 저장 실패 (시스템 예외): {}", e.getMessage(), e);
+        }
+    }
+
+    @Transactional
+    public void registerYoutubeByOAuth(String code, Long influencerId) {
+        YoutubeOAuthQueryService.GoogleTokenResponse tokenResponse = youtubeOAuthQueryService.getToken(code);
+        youtubeOAuthQueryService.saveRefreshTokenByAccess(tokenResponse);
+        registerYoutubeAccount(influencerId, tokenResponse.getAccessToken(), tokenResponse.getRefreshToken());
+    }
 
     @Transactional
     public void disconnectYoutubeAccount(Long influencerId) {
@@ -108,6 +169,35 @@ public class YoutubeCommandService {
                 .toList();
 
         videoSnapshotRepository.saveAll(videoSnapshots);
+    }
+
+    @Transactional
+    public void collectAndSaveYoutubeStatsSnapshot(Long influencerId, String startDate, String endDate) {
+        String channelId;
+
+        try {
+            Youtube youtube = youtubeRepository.findById(influencerId)
+                    .orElseThrow(() -> new BusinessException(OAuthErrorCode.YOUTUBE_CHANNEL_NOT_FOUND)); // 적절한 예외 처리
+            channelId = youtube.getChannelId();
+
+
+            log.info("📊 통계 스냅샷 수집 시작 - influencerId={}, channelId={}", influencerId, channelId);
+
+            YoutubeStatsResponse response = youtubeAnalyticsQueryService.getYoutubeStatsByInfluencer(
+                    influencerId, startDate, endDate
+            );
+
+            saveOrUpdateSnapshot(influencerId, response);
+
+            log.info("✅ 통계 스냅샷 수집 및 저장 성공 - influencerId={}", influencerId);
+
+        } catch (BusinessException e) {
+            log.warn("⛔️ 비즈니스 예외 발생 (스냅샷 수집) - influencerId={}, message={}", influencerId, e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("🔥 시스템 예외 발생 (스냅샷 수집) - influencerId={}, message={}", influencerId, e.getMessage(), e);
+            throw new BusinessException(OAuthErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }

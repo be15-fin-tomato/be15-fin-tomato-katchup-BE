@@ -1,14 +1,14 @@
 package be15fintomatokatchupbe.campaign.command.application.dto.request;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CreateListupRequest {
     public List<Long> influencerId;
     public String name;

@@ -146,12 +146,12 @@ public class InstagramAccountQueryService {
 
         String url = String.format("%s/%s?fields=followers_count&access_token=%s",
                 baseUrl, igId, token);
-        log.info("[fetchFollowerCount] API 요청 URL: {}", url); // 실제 토큰이 포함되므로 운영 환경에서는 주의하세요.
+        log.info("[fetchFollowerCount] API 요청 URL: {}", url);
 
         JsonNode root;
         try {
             root = fetchJson(url); // API 호출
-            log.info("[fetchFollowerCount] {} 계정의 API 응답 원본 JSON: {}", igId, root.toString()); // API 응답 전체 로그
+            log.info("[fetchFollowerCount] {} 계정의 API 응답 원본 JSON: {}", igId, root);
         } catch (BusinessException e) {
             log.error("[fetchFollowerCount] 팔로워를 가져오는 중 비즈니스 예외 발생 (igId={}): {}", igId, e.getMessage());
             return 0; // 예외 발생 시 0 반환
@@ -163,7 +163,7 @@ public class InstagramAccountQueryService {
         JsonNode countNode = root.path("followers_count");
 
         if (countNode.isMissingNode() || !countNode.isInt()) {
-            log.warn("[fetchFollowerCount] 응답에서 유효한 'followers_count'를 찾을 수 없습니다 (igId={}). countNode 값: {}", igId, countNode.toString());
+            log.warn("[fetchFollowerCount] 응답에서 유효한 'followers_count'를 찾을 수 없습니다 (igId={}). countNode 값: {}", igId, countNode);
             return 0;
         }
 

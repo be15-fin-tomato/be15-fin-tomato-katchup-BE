@@ -82,7 +82,7 @@ public interface CampaignQueryMapper {
 
     String selectCampaignNotes(Long campaignId);
 
-    List<User> selectCampaignUserList(@Param("clientCompanyId") Long clientCompanyId);
+    List<User> selectCampaignUserList(@Param("campaignId") Long campaignId);
 
     List<Long> selectCampaignCategoryList(@Param("campaignId") Long campaignId);
 
