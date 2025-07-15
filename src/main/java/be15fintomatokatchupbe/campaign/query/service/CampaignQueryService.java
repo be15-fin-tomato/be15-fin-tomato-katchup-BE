@@ -13,6 +13,7 @@ import be15fintomatokatchupbe.common.dto.Pagination;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.influencer.query.dto.response.CategoryDto;
 import be15fintomatokatchupbe.influencer.query.mapper.InfluencerMapper;
+import be15fintomatokatchupbe.infra.redis.AIRecommendCampaignRepository;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -34,6 +35,7 @@ public class CampaignQueryService {
     private final CampaignQueryMapper campaignQueryMapper;
     private final InfluencerMapper influencerQueryMapper;
     private final ChatClient chatClient;
+    private final AIRecommendCampaignRepository cacheRepository;
 
     public ListupSearchResponse getListupList(Long userId, PipelineSearchRequest request) {
         int offset = (request.getPage() - 1) * request.getSize();
@@ -654,8 +656,35 @@ public class CampaignQueryService {
 
 
     public CampaignAiResponse getCampaignWithCategory(Long clientCompanyId, String campaignName, List<Long> tags) {
-        log.info("받은 쿼리 : "+ campaignName + clientCompanyId);
+        boolean isInitialQuery = clientCompanyId == null && campaignName == null && (tags == null || tags.isEmpty());
+        log.info("초기 조회 인가? {}", isInitialQuery);
 
+        if(isInitialQuery){
+            CampaignAiResponse cached = cacheRepository.getInitialCampaignsFromCache();
+            if(cached != null){
+                return cached;
+            }
+            CampaignAiResponse result = queryFromDatabase();
+            cacheRepository.setInitialCampaignsToCache(result);
+            return result;
+        }
+        return queryFromDatabase(clientCompanyId, campaignName, tags);
+    }
+
+    // 초기 조회용
+    private CampaignAiResponse queryFromDatabase() {
+        List<CampaignWithCategoryDTO> responseDto = campaignQueryMapper.findCampaignWithCategory();
+
+        for (CampaignWithCategoryDTO dto : responseDto) {
+            List<CategoryDto> categoryList = campaignQueryMapper.findCategoryByCampaignId(dto.getCampaignId());
+            dto.setCategoryList(categoryList);
+        }
+
+        return CampaignAiResponse.builder().campaignList(responseDto).build();
+    }
+
+    // 조건 검색용
+    private CampaignAiResponse queryFromDatabase(Long clientCompanyId, String campaignName, List<Long> tags) {
         List<CampaignWithCategoryDTO> responseDto = campaignQueryMapper.findCampaignWithCategory(clientCompanyId, campaignName, tags);
 
         for (CampaignWithCategoryDTO dto : responseDto) {

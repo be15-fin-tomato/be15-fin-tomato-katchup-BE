@@ -133,4 +133,6 @@ public interface CampaignQueryMapper {
     RequestCampaign findProductNameByCampaignId(Long campaignId);
 
     List<String> findProductByInfluencerId(Integer influencerId);
+
+    List<CampaignWithCategoryDTO> findCampaignWithCategory();
 }
