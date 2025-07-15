@@ -3,7 +3,6 @@ package be15fintomatokatchupbe.campaign.query.dto.response;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
