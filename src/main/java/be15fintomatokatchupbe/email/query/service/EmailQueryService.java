@@ -8,10 +8,7 @@ import be15fintomatokatchupbe.email.command.domain.aggregate.Satisfaction;
 import be15fintomatokatchupbe.email.command.domain.repository.SatisfactionRepository;
 import be15fintomatokatchupbe.email.exception.EmailErrorCode;
 import be15fintomatokatchupbe.email.query.dto.request.EmailSearchRequest;
-import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionDTO;
-import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionResponse;
-import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionResponseDTO;
-import be15fintomatokatchupbe.email.query.dto.response.SatisfactionAnswerResponse;
+import be15fintomatokatchupbe.email.query.dto.response.*;
 import be15fintomatokatchupbe.email.query.mapper.EmailQueryMapper;
 import com.google.api.services.sheets.v4.Sheets;
 import lombok.RequiredArgsConstructor;
@@ -111,7 +108,7 @@ public class EmailQueryService {
         }
     }
 
-    public double getInfluencerSatisfactionScore(Long influencerId) {
+    public InfluencerSatisfactionResponse getInfluencerSatisfactionScore(Long influencerId) {
         return emailQueryMapper.getInfluencerSatisfactionScore(influencerId);
     }
 }
