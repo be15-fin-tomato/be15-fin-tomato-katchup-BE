@@ -35,7 +35,6 @@ public class RedisConfig {
         return new LettuceConnectionFactory(config);
     }
 
-    /* 커넥션 위에서 조작 목적 */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory){
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
