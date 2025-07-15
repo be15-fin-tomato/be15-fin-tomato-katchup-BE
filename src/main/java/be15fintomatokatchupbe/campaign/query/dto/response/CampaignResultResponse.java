@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CampaignResultResponse {
     private Long pipelineId;
+    private Long InfluencerId;
     private String name;
     private String clientCompanyName;
     private String clientName;
