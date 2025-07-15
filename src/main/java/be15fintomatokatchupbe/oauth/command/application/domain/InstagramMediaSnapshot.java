@@ -1,6 +1,5 @@
 package be15fintomatokatchupbe.oauth.command.application.domain;
 
-import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,11 +18,6 @@ public class InstagramMediaSnapshot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "influencer_id", nullable = false)
-    private Influencer influencer;
-
-    @Transient
     private Long influencerId;
 
     @Column(nullable = false)
