@@ -1296,10 +1296,10 @@
 
     <select id="findInfluencerInfoByPipelineIds" resultType="be15fintomatokatchupbe.campaign.query.dto.response.CampaignInfluencerInfo">
         SELECT
-        picm.pipeline_id AS pipelineId,
-        picm.pipeline_influencer_id AS pipelineInfluencerId,
-        i.influencer_id AS influencerId,
-        i.name AS influencerName
+            picm.pipeline_id AS pipelineId,
+            picm.pipeline_influencer_id AS pipelineInfluencerId,
+            i.influencer_id AS influencerId,
+            i.name AS influencerName
         FROM pipeline_influencer_client_manager picm
         LEFT JOIN influencer i ON picm.influencer_id = i.influencer_id
         WHERE picm.influencer_id IS NOT NULL
