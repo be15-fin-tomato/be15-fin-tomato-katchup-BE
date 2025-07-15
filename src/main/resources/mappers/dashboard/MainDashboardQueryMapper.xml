@@ -159,7 +159,6 @@
             c.campaign_name,
             c.product_name,
             p.name AS quotation_title,
-            picm.ad_price,
             p.expected_revenue,
             p.expected_profit,
             p.presented_at
@@ -168,7 +167,6 @@
         JOIN campaign c ON p.campaign_id = c.campaign_id
         JOIN client_company cc ON c.client_company_id = cc.client_company_id
         JOIN pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
-        LEFT JOIN pipeline_influencer_client_manager picm ON picm.pipeline_id = p.pipeline_id
         WHERE pu.user_id = #{userId}
         AND ps.step_name = '견적'
         AND p.is_deleted = 'N'
