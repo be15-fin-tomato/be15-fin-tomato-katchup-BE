@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.oauth.query.domain;
+package be15fintomatokatchupbe.oauth.command.application.domain;
 
 import jakarta.persistence.*;
 import lombok.*;

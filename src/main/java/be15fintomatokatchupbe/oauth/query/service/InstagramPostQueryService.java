@@ -6,7 +6,7 @@ import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Instagr
 import be15fintomatokatchupbe.influencer.command.domain.repository.InstagramRepository;
 import be15fintomatokatchupbe.infra.redis.InstagramTokenRepository;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
-import be15fintomatokatchupbe.oauth.query.dto.CommentInfo;
+import be15fintomatokatchupbe.oauth.query.dto.InstagramCommentInfo;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramPostInsightResponse;
 import be15fintomatokatchupbe.relation.domain.PipelineInfluencerClientManager;
 import be15fintomatokatchupbe.relation.repository.PipeInfClientManagerRepository;
@@ -75,11 +75,11 @@ public class InstagramPostQueryService {
         String metrics = buildMetrics(mediaType);
         JsonNode insights = fetchInsights(mediaId, accessToken, metrics);
 
-        List<CommentInfo> commentContent = fetchCommentsByMediaId(mediaId, accessToken);
+        List<InstagramCommentInfo> commentContent = fetchCommentsByMediaId(mediaId, accessToken);
         return parseInsightResponse(insights, permalink, commentContent);
     }
 
-    private InstagramPostInsightResponse parseInsightResponse(JsonNode insights, String permalink, List<CommentInfo> commentContent) {
+    private InstagramPostInsightResponse parseInsightResponse(JsonNode insights, String permalink, List<InstagramCommentInfo> commentContent) {
         InstagramPostInsightResponse.InstagramPostInsightResponseBuilder builder = InstagramPostInsightResponse.builder()
                 .permalink(permalink)
                 .commentContent(commentContent);
@@ -156,7 +156,7 @@ public class InstagramPostQueryService {
         }
     }
 
-    public List<CommentInfo> fetchCommentsByMediaId(String mediaId, String accessToken) {
+    public List<InstagramCommentInfo> fetchCommentsByMediaId(String mediaId, String accessToken) {
         String url = String.format("%s/%s/comments?fields=id,text,like_count&access_token=%s", baseUrl, mediaId, accessToken);
         JsonNode response = webClient.get().uri(url).retrieve().bodyToMono(JsonNode.class).block();
 
@@ -165,13 +165,13 @@ public class InstagramPostQueryService {
             return List.of();
         }
 
-        List<CommentInfo> comments = new ArrayList<>();
+        List<InstagramCommentInfo> comments = new ArrayList<>();
         for (JsonNode comment : response.get("data")) {
             String text = comment.path("text").asText("");
             int likeCount = comment.path("like_count").asInt(0);
 
             if (!text.isEmpty()) {
-                comments.add(new CommentInfo(text, likeCount));
+                comments.add(new InstagramCommentInfo(text, likeCount));
             }
         }
 
@@ -210,9 +210,9 @@ public class InstagramPostQueryService {
             throw new BusinessException(OAuthErrorCode.MEDIA_NOT_FOUND);
         }
 
-        List<CommentInfo> commentList = fetchCommentsByMediaId(mediaId, accessToken);
+        List<InstagramCommentInfo> commentList = fetchCommentsByMediaId(mediaId, accessToken);
         List<String> commentTexts = commentList.stream()
-                .map(CommentInfo::getText)
+                .map(InstagramCommentInfo::getText)
                 .toList();
 
         return openAiClient.summarizeComments(commentTexts);

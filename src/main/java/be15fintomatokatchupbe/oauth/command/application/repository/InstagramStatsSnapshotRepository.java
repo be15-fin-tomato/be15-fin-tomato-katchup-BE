@@ -1,7 +1,7 @@
 package be15fintomatokatchupbe.oauth.command.application.repository;
 
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
-import be15fintomatokatchupbe.oauth.query.domain.InstagramStatsSnapshot;
+import be15fintomatokatchupbe.oauth.command.application.domain.InstagramStatsSnapshot;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;

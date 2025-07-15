@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.oauth.query.domain;
+package be15fintomatokatchupbe.oauth.command.application.domain;
 
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramStatsResponse;

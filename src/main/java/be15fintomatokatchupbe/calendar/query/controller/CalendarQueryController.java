@@ -1,4 +1,4 @@
-package be15fintomatokatchupbe.calendar.query.controlller;
+package be15fintomatokatchupbe.calendar.query.controller;
 
 import be15fintomatokatchupbe.calendar.query.dto.pipeline.PipeLineScheduleListResponse;
 import be15fintomatokatchupbe.calendar.query.dto.schedule.ScheduleListResponse;
