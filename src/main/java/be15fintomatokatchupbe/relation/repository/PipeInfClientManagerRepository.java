@@ -15,4 +15,6 @@ public interface PipeInfClientManagerRepository extends JpaRepository<PipelineIn
 
     @Query("SELECT p FROM PipelineInfluencerClientManager p WHERE p.pipeline.pipelineId = :pipelineId")
     PipelineInfluencerClientManager findByPipelineInfluencerId(Long pipelineId);
+
+    List<PipelineInfluencerClientManager> findByPipeline(Pipeline pipeline);
 }

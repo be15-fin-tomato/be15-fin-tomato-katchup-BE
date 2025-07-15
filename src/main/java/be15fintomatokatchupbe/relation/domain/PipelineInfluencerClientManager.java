@@ -19,7 +19,7 @@ public class PipelineInfluencerClientManager {
     private Long pipelineInfluencerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "client_manager_id") // ✅ DB 컬럼명 명시
+    @JoinColumn(name = "client_manager_id")
     private ClientManager clientManager;
 
     @ManyToOne(fetch = FetchType.LAZY)

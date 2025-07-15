@@ -5,6 +5,7 @@ import be15fintomatokatchupbe.campaign.command.application.dto.request.Influence
 import be15fintomatokatchupbe.campaign.command.application.dto.request.UpdateProposalRequest;
 import be15fintomatokatchupbe.campaign.command.domain.aggregate.entity.Pipeline;
 import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManager;
+import be15fintomatokatchupbe.dashboard.command.application.support.DashboardHelperService;
 import be15fintomatokatchupbe.influencer.command.application.support.InfluencerHelperService;
 import be15fintomatokatchupbe.relation.domain.PipelineInfluencerClientManager;
 import be15fintomatokatchupbe.relation.repository.PipeInfClientManagerRepository;
@@ -22,6 +23,7 @@ public class PipeInfClientManagerService {
     private final PipeInfClientManagerRepository pipeInfClientManagerRepository;
 
     private final InfluencerHelperService influencerHelperService;
+    private final DashboardHelperService dashboardHelperService;
 
     @Transactional
     public void saveClientManager(ClientManager clientManager, Pipeline pipeline){
@@ -32,6 +34,11 @@ public class PipeInfClientManagerService {
                 .build();
 
         pipeInfClientManagerRepository.save(pipelineInfluencerClientManager);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PipelineInfluencerClientManager> findPicmByPipeline(Pipeline pipeline){
+        return pipeInfClientManagerRepository.findByPipeline(pipeline);
     }
 
     @Transactional
@@ -47,6 +54,8 @@ public class PipeInfClientManagerService {
                                 .strength(influencer.getStrength())
                                 .build()
                         ).toList();
+
+
 
         pipeInfClientManagerRepository.saveAll(resultList);
     }
@@ -74,8 +83,8 @@ public class PipeInfClientManagerService {
                         .adPrice(influencer.getAdPrice())
                         .build())
                 .toList();
-
         pipeInfClientManagerRepository.saveAll(resultList);
+        dashboardHelperService.assignRandomTrafficToPICM(resultList);
     }
 
     @Transactional
