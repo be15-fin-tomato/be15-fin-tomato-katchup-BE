@@ -160,20 +160,6 @@ public class InstagramTokenService {
         }
     }
 
-    public String refreshLongLivedToken(String currentLongLivedToken) {
-        try {
-            String url = "https://graph.facebook.com/v17.0/refresh_access_token"
-                    + "?grant_type=ig_refresh_token"
-                    + "&access_token=" + currentLongLivedToken;
-
-            String response = webClient.get().uri(url).retrieve().bodyToMono(String.class).block();
-            return objectMapper.readTree(response).path("access_token").asText();
-        } catch (Exception e) {
-            log.error("[InstagramTokenService] 롱 리브 토큰 갱신 실패", e);
-            throw new BusinessException(OAuthErrorCode.LONG_LIVED_TOKEN_REFRESH_FAILED);
-        }
-    }
-
     private InstagramAccountInfo fetchAccountInfo(String token, String igAccountId) {
         String url = String.format("https://graph.facebook.com/v23.0/%s?fields=id,username,followers_count&access_token=%s", igAccountId, token);
         try {

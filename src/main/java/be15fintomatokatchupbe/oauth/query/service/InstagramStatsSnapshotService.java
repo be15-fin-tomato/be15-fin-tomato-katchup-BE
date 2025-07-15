@@ -1,6 +1,5 @@
 package be15fintomatokatchupbe.oauth.query.service;
 
-import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
 import be15fintomatokatchupbe.oauth.command.application.repository.InstagramMediaSnapshotRepository;
 import be15fintomatokatchupbe.oauth.command.application.repository.InstagramStatsSnapshotRepository;
 import be15fintomatokatchupbe.oauth.command.application.domain.InstagramMediaSnapshot;

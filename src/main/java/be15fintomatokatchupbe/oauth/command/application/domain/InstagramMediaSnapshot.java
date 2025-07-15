@@ -1,6 +1,5 @@
 package be15fintomatokatchupbe.oauth.command.application.domain;
 
-import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
 import jakarta.persistence.*;
 import lombok.*;
 
