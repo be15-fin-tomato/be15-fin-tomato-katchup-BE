@@ -29,13 +29,12 @@ public class YoutubeQueryController {
     private final YoutubeAnalyticsQueryService youtubeAnalyticsQueryService;
     private final YoutubeSnapshotQueryService youtubeSnapshotQueryService;
 
-    @GetMapping("/callback")
-    public ResponseEntity<ApiResponse<String>> registerYoutube(
-            @RequestParam("code") String code,
-            @RequestParam("state") Long influencerId
+    @GetMapping("/auth-url/{influencerId}")
+    public ResponseEntity<ApiResponse<String>> getYoutubeAuthUrl(
+            @PathVariable Long influencerId
     ) {
-        youtubeOAuthQueryService.registerYoutubeByOAuth(code, influencerId);
-        return ResponseEntity.ok(ApiResponse.success("✅ 유튜브 계정 연동 완료"));
+        String authUrl = youtubeOAuthQueryService.buildAuthorizationUrl(influencerId);
+        return ResponseEntity.ok(ApiResponse.success(authUrl));
     }
 
     @Operation(summary = "YouTube 통합 통계 조회", description = "YouTube 채널에 대한 통계 정보를 통합 조회합니다. (조회수, 좋아요 수 등)")

@@ -9,9 +9,13 @@ import be15fintomatokatchupbe.influencer.command.domain.repository.YoutubeReposi
 import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class YoutubeHelperService {
@@ -25,6 +29,29 @@ public class YoutubeHelperService {
 
     public void save(Youtube youtube) {
         youtubeRepository.save(youtube);
+    }
+
+    public void saveOrUpdate(Youtube newYoutube) {
+        Optional<Youtube> existingYoutubeOptional = youtubeRepository.findYoutubeByInfluencerId(newYoutube.getInfluencerId());
+
+        if (existingYoutubeOptional.isPresent()) {
+            Youtube existingYoutube = existingYoutubeOptional.get();
+
+            log.info("✅ 유튜브 계정 업데이트 - 기존 influencerId={}, 새로운 channelId={}",
+                    existingYoutube.getInfluencerId(), newYoutube.getChannelId());
+
+            existingYoutube.setChannelId(newYoutube.getChannelId());
+            existingYoutube.setTitle(newYoutube.getTitle());
+            existingYoutube.setThumbnail(newYoutube.getThumbnail());
+            existingYoutube.setRefreshToken(newYoutube.getRefreshToken());
+            existingYoutube.setSubscriber(newYoutube.getSubscriber());
+
+        } else {
+
+            log.info("✅ 유튜브 계정 신규 저장 - influencerId={}, channelId={}",
+                    newYoutube.getInfluencerId(), newYoutube.getChannelId());
+            youtubeRepository.save(newYoutube);
+        }
     }
 
     public Youtube findByInfluencerId(Long influencerId) {

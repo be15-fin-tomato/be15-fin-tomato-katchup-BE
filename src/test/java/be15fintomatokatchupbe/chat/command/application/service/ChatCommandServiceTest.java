@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.chat.command.application.service;
 
+import be15fintomatokatchupbe.chat.command.application.dto.request.ChatInviteRequest;
 import be15fintomatokatchupbe.chat.command.application.dto.request.CreateChatRoomRequest;
 import be15fintomatokatchupbe.chat.command.application.dto.response.CreateChatRoomResponse;
 import be15fintomatokatchupbe.chat.command.application.dto.response.ExitChatRoomResponse;
@@ -71,7 +72,7 @@ class ChatCommandServiceTest {
         CreateChatRoomRequest request = new CreateChatRoomRequest();
         request.setUserId(1L);
         request.setUserIds(Arrays.asList(2L, 3L));
-        request.setChatName(null); // 빈 값
+        request.setChatName(null);
 
         List<UserSimpleDto> userDtos = Arrays.asList(
                 new UserSimpleDto(1L, "철수"),
@@ -130,7 +131,8 @@ class ChatCommandServiceTest {
                 .isDeleted(StatusType.N)
                 .build();
 
-        when(userChatRepository.findByUserIdAndChatId(userId, chatId)).thenReturn(Optional.of(userChat));
+        when(userChatRepository.findByUserIdAndChatIdAndIsDeleted(userId, chatId, StatusType.N))
+                .thenReturn(Optional.of(userChat));
 
         ExitChatRoomResponse response = chatCommandService.exitRoom(userId, chatId);
 
@@ -144,7 +146,8 @@ class ChatCommandServiceTest {
         Long userId = 1L;
         Long chatId = 999L;
 
-        when(userChatRepository.findByUserIdAndChatId(userId, chatId)).thenReturn(Optional.empty());
+        when(userChatRepository.findByUserIdAndChatIdAndIsDeleted(userId, chatId, StatusType.N))
+                .thenReturn(Optional.empty());
 
         BusinessException ex = assertThrows(BusinessException.class,
                 () -> chatCommandService.exitRoom(userId, chatId));
@@ -153,22 +156,79 @@ class ChatCommandServiceTest {
     }
 
     @Test
-    void exitRoom_fail_when_already_exited() {
-        Long userId = 1L;
-        Long chatId = 1L;
-
-        UserChat userChat = UserChat.builder()
-                .userChatId(10L)
-                .userId(userId)
+    void inviteChatMembers_success_new_and_reinvite() {
+        Long chatId = 10L;
+        Chat chat = Chat.builder()
                 .chatId(chatId)
-                .isDeleted(StatusType.Y)
+                .chatName("테스트방")
+                .createdAt(LocalDateTime.now())
                 .build();
 
-        when(userChatRepository.findByUserIdAndChatId(userId, chatId)).thenReturn(Optional.of(userChat));
+        ChatInviteRequest request = new ChatInviteRequest();
+        request.setUserId(1L);
+        request.setInvitedUserIds(Arrays.asList(2L, 3L));
+
+        when(chatRoomRepository.findById(chatId)).thenReturn(Optional.of(chat));
+        when(userQueryMapper.findUserIdsByIds(any())).thenReturn(Arrays.asList(2L, 3L));
+        when(userChatRepository.findByUserIdAndChatId(2L, chatId)).thenReturn(Optional.empty());
+        when(userChatRepository.findByUserIdAndChatId(3L, chatId)).thenReturn(Optional.of(
+                UserChat.builder()
+                        .userId(3L)
+                        .chatId(chatId)
+                        .isDeleted(StatusType.Y)
+                        .build()
+        ));
+
+        chatCommandService.inviteChatMembers(chatId, request);
+
+        verify(userChatRepository, times(2)).save(any(UserChat.class));
+    }
+
+    @Test
+    void inviteChatMembers_fail_when_chat_not_found() {
+        Long chatId = 10L;
+        ChatInviteRequest request = new ChatInviteRequest();
+        request.setUserId(1L);
+        request.setInvitedUserIds(List.of(2L));
+
+        when(chatRoomRepository.findById(chatId)).thenReturn(Optional.empty());
 
         BusinessException ex = assertThrows(BusinessException.class,
-                () -> chatCommandService.exitRoom(userId, chatId));
+                () -> chatCommandService.inviteChatMembers(chatId, request));
 
-        assertEquals(ChatErrorCode.ALREADY_EXITED_CHAT, ex.getErrorCode());
+        assertEquals(ChatErrorCode.CHAT_ROOM_NOT_FOUND, ex.getErrorCode());
+    }
+
+    @Test
+    void inviteChatMembers_fail_when_userIds_empty() {
+        Long chatId = 10L;
+        Chat chat = Chat.builder().chatId(chatId).build();
+        ChatInviteRequest request = new ChatInviteRequest();
+        request.setUserId(1L);
+        request.setInvitedUserIds(List.of());
+
+        when(chatRoomRepository.findById(chatId)).thenReturn(Optional.of(chat));
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> chatCommandService.inviteChatMembers(chatId, request));
+
+        assertEquals(ChatErrorCode.INVALID_CHAT_ROOM_REQUEST, ex.getErrorCode());
+    }
+
+    @Test
+    void inviteChatMembers_fail_when_users_not_found() {
+        Long chatId = 10L;
+        Chat chat = Chat.builder().chatId(chatId).build();
+        ChatInviteRequest request = new ChatInviteRequest();
+        request.setUserId(1L);
+        request.setInvitedUserIds(List.of(999L));
+
+        when(chatRoomRepository.findById(chatId)).thenReturn(Optional.of(chat));
+        when(userQueryMapper.findUserIdsByIds(any())).thenReturn(List.of());
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> chatCommandService.inviteChatMembers(chatId, request));
+
+        assertEquals(ChatErrorCode.USER_NOT_FOUND, ex.getErrorCode());
     }
 }

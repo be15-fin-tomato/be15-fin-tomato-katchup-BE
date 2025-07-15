@@ -134,8 +134,6 @@
         WHERE i_sub.is_deleted = 'N'
         <if test="influencerName != null and influencerName != ''">
             AND i_sub.name LIKE CONCAT('%', #{influencerName}, '%')
-            OR y_sub.name LIKE CONCAT('%', #{influencerName}, '%')
-            OR ig_sub.name LIKE CONCAT('%', #{influencerName}, '%')
         </if>
 
         <if test="categoryIds != null and categoryIds.size > 0">
@@ -334,4 +332,45 @@
         WHERE
         i.influencer_id = #{influencerId}
     </select>
+
+    <resultMap id="InfluencerInfoMap" type="be15fintomatokatchupbe.campaign.query.dto.response.InfluencerInfo">
+        <id property="influencerId" column="influencer_id"/>
+        <result property="name" column="influencer_name"/>
+
+        <association property="youtube" javaType="be15fintomatokatchupbe.campaign.query.dto.response.InfluencerInfo$Youtube">
+            <result property="thumbnailUrl" column="youtube_thumbnail_url"/>
+            <result property="name" column="youtube_name"/>
+            <result property="subscriber" column="subscriber"/>
+        </association>
+
+        <association property="instagram" javaType="be15fintomatokatchupbe.campaign.query.dto.response.InfluencerInfo$Instagram">
+            <result property="name" column="instagram_name"/>
+            <result property="follower" column="follower"/>
+        </association>
+    </resultMap>
+    <select id="findInfluencerInfoList" resultMap="InfluencerInfoMap">
+        SELECT
+        i.influencer_id,
+        i.name AS influencer_name,
+        y.image_url AS youtube_thumbnail_url,
+        y.name AS youtube_name,
+        y.subscriber AS subscriber,
+        ig.name AS instagram_name,
+        ig.follower AS follower
+        FROM influencer i
+        LEFT JOIN youtube y ON i.influencer_id = y.influencer_id
+        LEFT JOIN instagram ig ON i.influencer_id = ig.influencer_id
+        WHERE i.influencer_id IN
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="findInfluencerCategories" resultType="string">
+        SELECT DISTINCT c.category_name
+        FROM hashtag_influencer_campaign hic
+        JOIN category c ON c.category_id = hic.category_id
+        WHERE hic.influencer_id = #{influencerId}
+    </select>
+
 </mapper>
