@@ -1,14 +1,18 @@
 package be15fintomatokatchupbe.common.dto;
 
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Pagination {
-    private final int currentPage;
-    private final int totalPage;
+    private int currentPage;
+    private int totalPage;
     private int totalCount;
-    private final int size;
+    private int size;
 }

@@ -20,10 +20,8 @@ public class AIRecommendCampaignRepository {
 
     public CampaignAiResponse getInitialCampaignsFromCache() {
         try {
-            log.info("캐시 조회 성공 !!");
             return (CampaignAiResponse) redisTemplate.opsForValue().get(CACHE_KEY);
         } catch (Exception e) {
-            log.warn("Redis 캐시 조회 실패: {}", e.getMessage());
             return null;
         }
     }
