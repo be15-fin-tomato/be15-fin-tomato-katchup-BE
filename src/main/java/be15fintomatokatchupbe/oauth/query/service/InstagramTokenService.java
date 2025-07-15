@@ -18,6 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -39,7 +42,29 @@ public class InstagramTokenService {
     @Value("${facebook.redirect-uri}")
     private String redirectUri;
 
+    @Value("${facebook.oauth-base-url}")
+    private String instagramOauthBaseUrl;
+
     private static final int LONG_LIVED_TOKEN_EXPIRE_SECONDS = 60 * 60 * 24 * 60; // 5184000초
+
+    public String buildAuthorizationUrl(Long influencerId) {
+        List<String> scopes = List.of(
+                "instagram_basic",
+                "read_insights",
+                "pages_show_list",
+                "public_profile"
+        );
+
+        return UriComponentsBuilder
+                .fromUriString(instagramOauthBaseUrl)
+                .queryParam("client_id", clientId)
+                .queryParam("redirect_uri", redirectUri)
+                .queryParam("scope", String.join(",", scopes))
+                .queryParam("response_type", "code")
+                .queryParam("state", influencerId)
+                .build()
+                .toUriString();
+    }
 
     public InstagramTokenResponse exchangeCodeForToken(String code, Long influencerId) {
         try {
