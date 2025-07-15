@@ -11,6 +11,7 @@ import be15fintomatokatchupbe.influencer.command.application.dto.response.Influe
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.*;
 import be15fintomatokatchupbe.influencer.command.domain.repository.*;
 import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
+import be15fintomatokatchupbe.infra.redis.InfluencerCachedRepository;
 import be15fintomatokatchupbe.relation.domain.HashtagInfluencerCampaign;
 import be15fintomatokatchupbe.relation.service.HashInfCampService;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class InfluencerCommandServiceImpl implements InfluencerCommandService {
     private final HashtagInfluencerCampaignRepository hashtagRepository;
     private final CategoryRepository categoryRepository;
     private final HashInfCampService hashInfCampService;
+    private final InfluencerCachedRepository cachedRepository;
 
     // 인플루언서 등록
     @Override

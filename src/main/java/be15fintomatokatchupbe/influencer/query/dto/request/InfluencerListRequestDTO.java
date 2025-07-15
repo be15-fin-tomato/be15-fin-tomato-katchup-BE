@@ -33,4 +33,34 @@ public class InfluencerListRequestDTO {
         }
         return 0;
     }
+
+    public boolean isInitialQuery() {
+        return (page == 0 || page == null) &&
+                (size == 6 || size == null) &&
+                (influencerName == null || influencerName.isBlank()) &&
+                minSubscriber == null &&
+                maxSubscriber == null &&
+                minFollower == null &&
+                maxFollower == null &&
+                minPrice == null &&
+                maxPrice == null &&
+                (sortBy == null || sortBy.isBlank()) &&
+                (sortOrder == null || sortOrder.isBlank()) &&
+                (categoryIds == null || categoryIds.isEmpty());
+    }
+
+    public boolean isAiInitialQuery() {
+        return (page == 0 || page == null) &&
+                (size == 50 || size == null) &&
+                (influencerName == null || influencerName.isBlank()) &&
+                minSubscriber == null &&
+                maxSubscriber == null &&
+                minFollower == null &&
+                maxFollower == null &&
+                minPrice == null &&
+                maxPrice == null &&
+                (sortBy == null || sortBy.isBlank()) &&
+                (sortOrder == null || sortOrder.isBlank()) &&
+                (categoryIds == null || categoryIds.isEmpty());
+    }
 }
