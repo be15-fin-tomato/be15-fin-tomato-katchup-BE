@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 public class ClientCompanyResponse {
+    private String id;
     private String clientCompanyName;
     private String telephone;
     private LocalDateTime createdAt;

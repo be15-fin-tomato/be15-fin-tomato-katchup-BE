@@ -124,14 +124,14 @@ public class InstagramTokenService {
             LocalDate today = LocalDate.now();
 
             InstagramStatsResponse stats = instagramAccountQueryService.fetchStats(influencerId);
-            instagramStatsSnapshotService.saveInitialInstagramStatsSnapshot(influencer, today, stats);
+            instagramStatsSnapshotService.saveInitialInstagramStatsSnapshot(influencerId, today, stats);
             log.info("초기 인스타그램 계정 통계 스냅샷 저장 완료: influencer ID={}", influencerId);
 
             instagramStatsSnapshotService.saveInstagramMediaSnapshots(
-                    influencer, today, stats.getTopPosts(), "topPosts"
+                    influencerId, today, stats.getTopPosts(), "topPosts"
             );
             instagramStatsSnapshotService.saveInstagramMediaSnapshots(
-                    influencer, today, stats.getTopVideos(), "topVideos"
+                    influencerId, today, stats.getTopVideos(), "topVideos"
             );
             log.info("초기 인스타그램 미디어 스냅샷 저장 완료: influencer ID={}", influencerId);
 
@@ -157,20 +157,6 @@ public class InstagramTokenService {
         } catch (Exception e) {
             log.error("[InstagramTokenService] 롱 리브 액세스 토큰 발급 실패", e);
             throw new BusinessException(OAuthErrorCode.LONG_LIVED_TOKEN_EXCHANGE_FAILED);
-        }
-    }
-
-    public String refreshLongLivedToken(String currentLongLivedToken) {
-        try {
-            String url = "https://graph.facebook.com/v17.0/refresh_access_token"
-                    + "?grant_type=ig_refresh_token"
-                    + "&access_token=" + currentLongLivedToken;
-
-            String response = webClient.get().uri(url).retrieve().bodyToMono(String.class).block();
-            return objectMapper.readTree(response).path("access_token").asText();
-        } catch (Exception e) {
-            log.error("[InstagramTokenService] 롱 리브 토큰 갱신 실패", e);
-            throw new BusinessException(OAuthErrorCode.LONG_LIVED_TOKEN_REFRESH_FAILED);
         }
     }
 
