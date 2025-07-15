@@ -35,7 +35,7 @@ public class FileService {
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucketName;
 
-    private static final String CLOUD_FRONT_DOMAIN = "https://d3bbrt92r1ojbh.cloudfront.net/";
+    private static final String CLOUD_FRONT_DOMAIN = "https://dlvks1ozf4gp8.cloudfront.net";
 
     private final S3Client s3Client;
     private final FileUtil fileUtil;
