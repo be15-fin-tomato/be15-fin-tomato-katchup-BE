@@ -161,12 +161,14 @@
             p.name AS quotation_title,
             p.expected_revenue,
             p.expected_profit,
+            pss.status_name,
             p.presented_at
         FROM pipeline p
         JOIN pipeline_user pu ON pu.pipeline_id = p.pipeline_id
         JOIN campaign c ON p.campaign_id = c.campaign_id
         JOIN client_company cc ON c.client_company_id = cc.client_company_id
         JOIN pipeline_step ps ON p.pipeline_step_id = ps.pipeline_step_id
+        JOIN pipeline_status pss ON p.pipeline_status_id = pss.pipeline_status_id
         WHERE pu.user_id = #{userId}
         AND ps.step_name = '견적'
         AND p.is_deleted = 'N'

@@ -15,5 +15,6 @@ public class QuotationResponse {
     private String quotationTitle;
     private Long expectedRevenue;
     private Long expectedProfit;
+    private String statusName;
     private LocalDateTime presentedAt;
 }
