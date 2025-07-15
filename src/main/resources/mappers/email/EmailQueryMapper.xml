@@ -131,9 +131,10 @@
         WHERE is_reacted = 'Y';
     </select>
 
-    <select id="getInfluencerSatisfactionScore" resultType="double">
+    <select id="getInfluencerSatisfactionScore" resultType="be15fintomatokatchupbe.email.query.dto.response.InfluencerSatisfactionResponse">
         SELECT
-            IFNULL(ROUND(AVG(score), 1), 0.0)
+            IFNULL(ROUND(AVG(score), 1), 0.0),
+            COUNT(influencer_id) AS count
           FROM satisfaction
         WHERE score IS NOT NULL
           AND influencer_id = #{ influencerId }
