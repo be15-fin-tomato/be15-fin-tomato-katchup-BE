@@ -7,6 +7,7 @@ import be15fintomatokatchupbe.oauth.query.dto.response.InstagramStatsResponse;
 import be15fintomatokatchupbe.oauth.query.service.InstagramPostQueryService;
 import be15fintomatokatchupbe.oauth.query.service.InstagramAccountQueryService;
 import be15fintomatokatchupbe.oauth.query.service.InstagramStatsSnapshotService;
+import be15fintomatokatchupbe.oauth.query.service.InstagramTokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,15 @@ InstagramQueryController {
     private final InstagramPostQueryService instagramPostQueryService;
     private final InstagramAccountQueryService instagramAccountQueryService;
     private final InstagramStatsSnapshotService instagramStatsSnapshotService;
+    private final InstagramTokenService instagramTokenService;
+
+    @GetMapping("/auth-url/{influencerId}")
+    public ResponseEntity<ApiResponse<String>> getYoutubeAuthUrl(
+            @PathVariable Long influencerId
+    ) {
+        String authUrl = instagramTokenService.buildAuthorizationUrl(influencerId);
+        return ResponseEntity.ok(ApiResponse.success(authUrl));
+    }
 
     @Operation(summary = "인스타그램 계정 통계 조회", description = "사용자는 인플루언서의 인스타그램 계정 통계 자료를 조회할 수 있다.")
     @GetMapping("/stats")
