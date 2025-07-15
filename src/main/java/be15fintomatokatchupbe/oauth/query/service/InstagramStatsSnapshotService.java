@@ -3,10 +3,11 @@ package be15fintomatokatchupbe.oauth.query.service;
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
 import be15fintomatokatchupbe.oauth.command.application.repository.InstagramMediaSnapshotRepository;
 import be15fintomatokatchupbe.oauth.command.application.repository.InstagramStatsSnapshotRepository;
-import be15fintomatokatchupbe.oauth.query.domain.InstagramMediaSnapshot;
-import be15fintomatokatchupbe.oauth.query.domain.InstagramStatsSnapshot;
+import be15fintomatokatchupbe.oauth.command.application.domain.InstagramMediaSnapshot;
+import be15fintomatokatchupbe.oauth.command.application.domain.InstagramStatsSnapshot;
 import be15fintomatokatchupbe.oauth.query.dto.InstagramFullSnapshot;
 import be15fintomatokatchupbe.oauth.query.dto.InstagramMediaStats;
+import be15fintomatokatchupbe.oauth.query.dto.response.InstagramStatsResponse;
 import be15fintomatokatchupbe.oauth.query.mapper.InstagramQueryMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -87,5 +88,27 @@ public class InstagramStatsSnapshotService {
         }
 
         return Optional.of(snapshots.get(0));
+    }
+
+    @Transactional
+    public void saveInitialInstagramStatsSnapshot(Influencer influencer, LocalDate snapshotDate, InstagramStatsResponse stats) {
+        Optional<InstagramStatsSnapshot> existingSnapshotOptional =
+                snapshotRepository.findByInfluencerAndSnapshotDate(influencer, snapshotDate);
+
+        InstagramStatsSnapshot snapshot;
+
+        if (existingSnapshotOptional.isPresent()) {
+            snapshot = existingSnapshotOptional.get();
+            snapshot.update(stats);
+            log.info("ℹ️ 초기 스냅샷 업데이트 완료: influencerId={}, snapshotDate={}", influencer.getId(), snapshotDate);
+        } else {
+            snapshot = InstagramStatsSnapshot.builder()
+                    .influencer(influencer)
+                    .snapshotDate(snapshotDate)
+                    .build();
+            snapshot.update(stats);
+            log.info("✨ 새로운 초기 스냅샷 생성 및 저장 완료: influencerId={}, snapshotDate={}", influencer.getId(), snapshotDate);
+        }
+        snapshotRepository.save(snapshot);
     }
 }

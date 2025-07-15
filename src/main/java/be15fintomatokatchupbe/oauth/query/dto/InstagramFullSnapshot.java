@@ -1,6 +1,6 @@
 package be15fintomatokatchupbe.oauth.query.dto;
 
-import be15fintomatokatchupbe.oauth.query.domain.InstagramMediaSnapshot;
+import be15fintomatokatchupbe.oauth.command.application.domain.InstagramMediaSnapshot;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -61,6 +61,7 @@ public class YoutubeQueryController {
         return ResponseEntity.ok(ApiResponse.success(stats));
     }
 
+    @Operation(summary = "YouTube 인기 동영상 조회", description = "YouTube 채널에 대한 상위 5개의 인기 동영상을 조회합니다. (조회수, 좋아요 수 등)")
     @GetMapping("/top-videos")
     public ResponseEntity<ApiResponse<List<YoutubeVideoInfo>>> getTopVideos(
             @AuthenticationPrincipal UserDetails user,

@@ -24,4 +24,10 @@ public class Instagram {
 
     @Column(name = "name", length = 50)
     private String name;
+
+    public void update(String accountId, Long follower, String name) {
+        this.accountId = accountId;
+        this.follower = follower;
+        this.name = name;
+    }
 }

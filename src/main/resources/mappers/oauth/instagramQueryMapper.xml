@@ -33,7 +33,7 @@
         <result property="nonFollowerRatio" column="iss_non_follower_ratio"/>
         <result property="snapshotDate" column="iss_snapshot_date"/>
 
-        <collection property="mediaSnapshots" ofType="be15fintomatokatchupbe.oauth.query.domain.InstagramMediaSnapshot">
+        <collection property="mediaSnapshots" ofType="be15fintomatokatchupbe.oauth.command.application.domain.InstagramMediaSnapshot">
             <id property="id" column="ims_id"/>
             <result property="mediaId" column="ims_media_id"/>
             <result property="mediaType" column="ims_media_type"/>

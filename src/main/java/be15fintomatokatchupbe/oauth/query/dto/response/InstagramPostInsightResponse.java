@@ -1,6 +1,6 @@
 package be15fintomatokatchupbe.oauth.query.dto.response;
 
-import be15fintomatokatchupbe.oauth.query.dto.CommentInfo;
+import be15fintomatokatchupbe.oauth.query.dto.InstagramCommentInfo;
 import lombok.Builder;
 import lombok.Data;
 
@@ -16,5 +16,5 @@ public class InstagramPostInsightResponse {
     private int comments;
     private int shares;
     private int saved;
-    private List<CommentInfo> commentContent;
+    private List<InstagramCommentInfo> commentContent;
 }

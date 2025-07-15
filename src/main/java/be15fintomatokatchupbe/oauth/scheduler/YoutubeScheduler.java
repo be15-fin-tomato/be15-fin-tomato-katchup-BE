@@ -4,7 +4,6 @@ import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Youtube;
 import be15fintomatokatchupbe.influencer.command.domain.repository.YoutubeRepository;
 import be15fintomatokatchupbe.oauth.command.application.Service.YoutubeCommandService;
-import be15fintomatokatchupbe.oauth.query.service.YoutubeAnalyticsQueryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,7 +15,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class YoutubeStatsSnapshotScheduler {
+public class YoutubeScheduler {
 
     private final YoutubeRepository youtubeRepository;
     private final YoutubeCommandService youtubeCommandService;
