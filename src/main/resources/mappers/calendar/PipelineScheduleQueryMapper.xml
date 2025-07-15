@@ -7,6 +7,7 @@
     <select id = "getPipelineScheduleList" resultType = "be15fintomatokatchupbe.calendar.query.dto.pipeline.PipelineScheduleListDTO">
         SELECT    p.pipeline_id
                 , p.campaign_id
+                , p.pipeline_step_id
                 , pu.user_id
                 , p.name
                 , p.started_at

@@ -11,6 +11,7 @@ public class PipelineScheduleListDTO {
 
     private final Long pipelineId;
     private final Long campaignId;
+    private final Long pipelineStepId;
     private final Long userId;
     private final String name;
     private final LocalDate startedAt;
