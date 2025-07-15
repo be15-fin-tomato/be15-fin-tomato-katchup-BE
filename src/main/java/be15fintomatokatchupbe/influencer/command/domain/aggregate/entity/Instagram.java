@@ -16,7 +16,7 @@ public class Instagram {
     @Column(name = "influencer_id")
     private Long influencerId;
 
-    @Column(name = "account_id", length = 255)
+    @Column(name = "account_id")
     private String accountId;
 
     @Column(name = "follower")
