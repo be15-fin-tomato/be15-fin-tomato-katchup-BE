@@ -574,6 +574,7 @@ public class CampaignQueryService {
                         BeanUtils.copyProperties(base, card);
                         card.setInfluencerName(inf.getInfluencerName());
                         card.setPipelineInfluencerId(inf.getPipelineInfluencerId());
+                        card.setInfluencerId(inf.getInfluencerId());
                         finalList.add(card);
                     }
                 }

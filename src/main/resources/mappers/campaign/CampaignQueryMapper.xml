@@ -1272,12 +1272,12 @@
 
     <select id="findCampaignResultList" resultType="be15fintomatokatchupbe.campaign.query.dto.response.CampaignResultResponse">
         SELECT
-        p.pipeline_id AS pipelineId,
-        c.campaign_name AS name,
-        c.product_name AS productName,
-        c.updated_at AS registrationDate,
-        cm.name AS clientName,
-        cc.client_company_name AS clientCompanyName
+            p.pipeline_id AS pipelineId,
+            c.campaign_name AS name,
+            c.product_name AS productName,
+            c.updated_at AS registrationDate,
+            cm.name AS clientName,
+            cc.client_company_name AS clientCompanyName
         FROM campaign c
         LEFT JOIN campaign_status cs ON c.campaign_status_id = cs.campaign_status_id
         LEFT JOIN pipeline p ON c.campaign_id = p.campaign_id
@@ -1285,8 +1285,7 @@
         LEFT JOIN pipeline_influencer_client_manager picm ON p.pipeline_id = picm.pipeline_id
         LEFT JOIN client_manager cm ON picm.client_manager_id = cm.client_manager_id
         LEFT JOIN client_company cc ON cm.client_company_id = cc.client_company_id
-        WHERE
-        picm.client_manager_id IS NOT NULL
+        WHERE picm.client_manager_id IS NOT NULL
         AND cs.campaign_status_id = 5
         AND ps.pipeline_step_id = 7
         <if test="request.name != null and request.name != ''">
@@ -1297,10 +1296,10 @@
 
     <select id="findInfluencerInfoByPipelineIds" resultType="be15fintomatokatchupbe.campaign.query.dto.response.CampaignInfluencerInfo">
         SELECT
-        picm.pipeline_id AS pipelineId,
-        picm.pipeline_influencer_id AS pipelineInfluencerId,
-        i.influencer_id AS influencerId,
-        i.name AS influencerName
+            picm.pipeline_id AS pipelineId,
+            picm.pipeline_influencer_id AS pipelineInfluencerId,
+            i.influencer_id AS influencerId,
+            i.name AS influencerName
         FROM pipeline_influencer_client_manager picm
         LEFT JOIN influencer i ON picm.influencer_id = i.influencer_id
         WHERE picm.influencer_id IS NOT NULL
