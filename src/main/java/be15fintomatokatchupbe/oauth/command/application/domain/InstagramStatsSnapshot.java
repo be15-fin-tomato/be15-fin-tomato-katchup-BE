@@ -1,6 +1,5 @@
 package be15fintomatokatchupbe.oauth.command.application.domain;
 
-import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramStatsResponse;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -22,9 +21,7 @@ public class InstagramStatsSnapshot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "influencer_id")
-    private Influencer influencer;
+    private Long influencerId;
 
     private Integer totalPosts = 0;
     private Integer totalFollowers;

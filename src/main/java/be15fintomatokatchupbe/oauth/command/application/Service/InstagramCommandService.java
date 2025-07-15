@@ -8,8 +8,9 @@ import be15fintomatokatchupbe.influencer.command.domain.repository.InfluencerRep
 import be15fintomatokatchupbe.influencer.command.domain.repository.InstagramRepository;
 import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
 import be15fintomatokatchupbe.infra.redis.InstagramTokenRepository;
+import be15fintomatokatchupbe.oauth.command.application.repository.InstagramMediaSnapshotRepository;
+import be15fintomatokatchupbe.oauth.command.application.repository.InstagramStatsSnapshotRepository;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
-import be15fintomatokatchupbe.oauth.query.service.InstagramTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,8 @@ public class InstagramCommandService {
     private final InstagramRepository instagramRepository;
     private final InstagramTokenRepository instagramTokenRepository;
     private final InfluencerRepository influencerRepository;
+    private final InstagramStatsSnapshotRepository instagramStatsSnapshotRepository;
+    private final InstagramMediaSnapshotRepository instagramMediaSnapshotRepository;
 
     @Transactional
     public void disconnectYoutubeAccount(Long influencerId) {
@@ -35,10 +38,14 @@ public class InstagramCommandService {
         // 2. Redis 토큰 삭제
         instagramTokenRepository.delete(channelId);
 
-        // 3. Youtube 엔티티 삭제 (influencerId 기준)
+        // 3. Instagram 관련 데이터 삭제 (순서 변경: 자식 먼저 삭제)
+        instagramStatsSnapshotRepository.deleteByInfluencerId(influencerId);
+        instagramMediaSnapshotRepository.deleteByInfluencerId(influencerId);
+
+        // 3. Instagram 엔티티 삭제 (influencerId 기준)
         instagramRepository.deleteByInfluencerId(influencerId);
 
-        // 4. Influencer 연동 상태 해제 (isConnected = 'N')
+        // 5. Influencer 연동 상태 해제 (isConnected = 'N')
         disconnectInfluencerInstagram(influencerId);
 
         log.info("🧹 인스타그램 연동 해제 완료 - influencerId={}, channelId={}", influencerId, channelId);

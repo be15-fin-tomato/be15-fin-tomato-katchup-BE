@@ -124,14 +124,14 @@ public class InstagramTokenService {
             LocalDate today = LocalDate.now();
 
             InstagramStatsResponse stats = instagramAccountQueryService.fetchStats(influencerId);
-            instagramStatsSnapshotService.saveInitialInstagramStatsSnapshot(influencer, today, stats);
+            instagramStatsSnapshotService.saveInitialInstagramStatsSnapshot(influencerId, today, stats);
             log.info("초기 인스타그램 계정 통계 스냅샷 저장 완료: influencer ID={}", influencerId);
 
             instagramStatsSnapshotService.saveInstagramMediaSnapshots(
-                    influencer, today, stats.getTopPosts(), "topPosts"
+                    influencerId, today, stats.getTopPosts(), "topPosts"
             );
             instagramStatsSnapshotService.saveInstagramMediaSnapshots(
-                    influencer, today, stats.getTopVideos(), "topVideos"
+                    influencerId, today, stats.getTopVideos(), "topVideos"
             );
             log.info("초기 인스타그램 미디어 스냅샷 저장 완료: influencer ID={}", influencerId);
 

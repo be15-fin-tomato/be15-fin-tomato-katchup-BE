@@ -113,7 +113,7 @@ public class InstagramScheduler {
                 LocalDate today = LocalDate.now();
 
                 Optional<InstagramStatsSnapshot> existingSnapshotOptional =
-                        snapshotRepository.findByInfluencerAndSnapshotDate(influencer, today);
+                        snapshotRepository.findByInfluencerIdAndSnapshotDate(influencerId, today);
 
                 InstagramStatsSnapshot snapshot;
 
@@ -123,7 +123,7 @@ public class InstagramScheduler {
                     log.info("ℹ️ 기존 스냅샷 업데이트 예정: influencerId={}, accountId={}, snapshotDate={}", influencer.getId(), account.getAccountId(), today);
                 } else {
                     snapshot = InstagramStatsSnapshot.builder()
-                            .influencer(influencer)
+                            .influencerId(influencerId)
                             .snapshotDate(today)
                             .build();
                     snapshot.update(stats);
@@ -171,11 +171,11 @@ public class InstagramScheduler {
                 LocalDate today = LocalDate.now();
 
                 snapshotService.saveInstagramMediaSnapshots(
-                        influencer, today, statsResponse.getTopPosts(), "topPosts"
+                        influencerId, today, statsResponse.getTopPosts(), "topPosts"
                 );
 
                 snapshotService.saveInstagramMediaSnapshots(
-                        influencer, today, statsResponse.getTopVideos(), "topVideos"
+                        influencerId, today, statsResponse.getTopVideos(), "topVideos"
                 );
 
                 log.info("✅ 인플루언서 ID {}의 미디어 통계 스냅샷 저장 완료.", influencerId);

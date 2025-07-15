@@ -19,11 +19,6 @@ public class InstagramMediaSnapshot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "influencer_id", nullable = false)
-    private Influencer influencer;
-
-    @Transient
     private Long influencerId;
 
     @Column(nullable = false)
