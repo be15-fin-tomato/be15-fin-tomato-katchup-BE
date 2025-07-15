@@ -77,7 +77,8 @@ facebook:
   client-id: ${FACEBOOK_CLIENT_KEY}
   client-secret: ${FACEBOOK_CLIENT_SECRET}
   redirect-uri: ${FACEBOOK_REDIRECT_URI}
-  base-url: https://graph.facebook.com/v23.0
+  base-url: https://graph.facebook.com/v23.0 # 그래프 API 기본 URL (API 요청용)
+  oauth-base-url: https://www.facebook.com/v18.0/dialog/oauth # OAuth 인증 기본 URL (인증 대화 상자용)
 
 google:
   sheet:
