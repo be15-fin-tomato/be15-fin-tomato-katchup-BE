@@ -8,6 +8,7 @@ import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
 import be15fintomatokatchupbe.influencer.query.dto.request.InfluencerListRequestDTO;
 import be15fintomatokatchupbe.influencer.query.dto.response.*;
 import be15fintomatokatchupbe.influencer.query.mapper.InfluencerMapper;
+import be15fintomatokatchupbe.infra.redis.InfluencerCachedRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,8 +24,42 @@ public class InfluencerQueryService {
     private final InfluencerMapper influencerMapper;
     private final YoutubeService youtubeService;
     private final CampaignQueryMapper campaignMapper;
+    private final InfluencerCachedRepository cachedRepository;
 
     public InfluencerListResponse getInfluencers(InfluencerListRequestDTO request) {
+        // 초기 조회인 경우
+        if(request.isInitialQuery()){
+            // 캐싱 된지 확인
+            InfluencerListResponse cachedResponse = cachedRepository.getInitialInfluencersFromCache();
+            if(cachedResponse != null){
+                return cachedResponse;
+            }
+
+            // 캐싱되지 않은 경우
+            InfluencerListResponse response = queryFromDatabase(request);
+            cachedRepository.setInitialInfluencersToCache(response);
+            return response;
+        }
+
+        // AI 리스트업 초기 조회인 경우
+        if(request.isAiInitialQuery()){
+            // 캐싱 된지 확인
+            InfluencerListResponse cachedResponse = cachedRepository.getInitialAiInfluencersFromCache();
+            if(cachedResponse != null){
+                return cachedResponse;
+            }
+
+            // 캐싱되지 않은 경우
+            InfluencerListResponse response = queryFromDatabase(request);
+            cachedRepository.setInitialAiInfluencersToCache(response);
+            return response;
+        }
+
+        // 초기 조회가 아닌 경우
+        return queryFromDatabase(request);
+    }
+
+    private InfluencerListResponse queryFromDatabase(InfluencerListRequestDTO request){
         // 1. 필터링 조건에 맞는 총 인플루언서 개수 조회
         // 매퍼의 findInfluencersCount 메서드는 이제 DTO를 파라미터로 받습니다.
         int totalCount = influencerMapper.findInfluencersCount(request);

@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.cglib.core.Local;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -162,10 +163,12 @@ public class Pipeline {
         this.deletedAt = LocalDateTime.now();
     }
 
-    public void update(BigDecimal expectedProfitMargin, Long expectedRevenue, String notes) {
+    public void update(BigDecimal expectedProfitMargin, Long expectedRevenue, String notes, LocalDate startedAt, LocalDate endedAt) {
         this.expectedProfitMargin = expectedProfitMargin;
         this.expectedRevenue = expectedRevenue;
         this.notes = notes;
+        this.startedAt = startedAt;
+        this.endedAt = endedAt;
     }
 
     public void updateProposal(

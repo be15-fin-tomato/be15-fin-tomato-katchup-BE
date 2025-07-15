@@ -15,6 +15,7 @@ import be15fintomatokatchupbe.client.command.domain.aggregate.ClientManager;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.contract.command.domain.entity.Contract;
 import be15fintomatokatchupbe.contract.command.domain.repository.ContractRepository;
+import be15fintomatokatchupbe.dashboard.command.application.support.DashboardHelperService;
 import be15fintomatokatchupbe.email.command.domain.aggregate.Satisfaction;
 import be15fintomatokatchupbe.email.command.domain.repository.SatisfactionRepository;
 import be15fintomatokatchupbe.file.domain.File;
@@ -45,6 +46,7 @@ public class RevenueCommandService {
     private final ClientHelperService clientHelperService;
     private final CampaignHelperService campaignHelperService;
     private final UserHelperService userHelperService;
+    private final DashboardHelperService dashboardHelperService;
 
     private final CampaignRepository campaignRepository;
     private final PipelineRepository pipelineRepository;
@@ -204,6 +206,10 @@ public class RevenueCommandService {
             }
         }
 
+
+        /* 관련 picm 찾아 주기 */
+        dashboardHelperService.deleteInfluencerTrafficByPicmId(pipeInfClientManagerService.findPicmByPipeline(foundPipeline));
+
         /* 연관 테이블 지워주기 */
         campaignHelperService.deleteRelationTable(foundPipeline);
 
@@ -258,6 +264,7 @@ public class RevenueCommandService {
         foundPipeline.softDelete();
 
         // 3. 관련 테이블 지워주기
+        dashboardHelperService.deleteInfluencerTrafficByPicmId(pipeInfClientManagerService.findPicmByPipeline(foundPipeline));
         campaignHelperService.deleteRelationTable(foundPipeline);
 
         /* 파일 테이블 지워주기 */
@@ -281,6 +288,7 @@ public class RevenueCommandService {
 
         // 3. 관련 테이블 지워주기
         campaignHelperService.deleteRelationTable(foundPipeline);
+        dashboardHelperService.deleteInfluencerTrafficByPicmId(pipeInfClientManagerService.findPicmByPipeline(foundPipeline));
 
         /* 파일 테이블 지워주기 */
         fileService.deleteByPipeline(foundPipeline);
