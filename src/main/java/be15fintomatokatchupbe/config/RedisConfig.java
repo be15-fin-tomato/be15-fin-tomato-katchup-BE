@@ -25,7 +25,6 @@ public class RedisConfig {
 //    @Value("${spring.data.redis.password}")
 //    public String password;
 
-    /* 아이디 비밀번호로 로그인 하기! */
     @Bean
     public LettuceConnectionFactory redisConnectionFactory(){
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration();
