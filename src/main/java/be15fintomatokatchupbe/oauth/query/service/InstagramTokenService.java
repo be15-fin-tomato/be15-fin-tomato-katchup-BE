@@ -10,6 +10,7 @@ import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
 import be15fintomatokatchupbe.infra.redis.InstagramTokenRepository;
 import be15fintomatokatchupbe.oauth.command.application.dto.InstagramAccountInfo;
 import be15fintomatokatchupbe.oauth.exception.OAuthErrorCode;
+import be15fintomatokatchupbe.oauth.query.dto.response.InstagramStatsResponse;
 import be15fintomatokatchupbe.oauth.query.dto.response.InstagramTokenResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,10 +18,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -32,6 +36,8 @@ public class InstagramTokenService {
     private final InstagramTokenRepository instagramTokenRepository;
     private final InstagramRepository instagramRepository;
     private final InfluencerRepository influencerRepository;
+    private final InstagramAccountQueryService instagramAccountQueryService;
+    private final InstagramStatsSnapshotService instagramStatsSnapshotService;
 
     @Value("${facebook.client-id}")
     private String clientId;
@@ -66,6 +72,7 @@ public class InstagramTokenService {
                 .toUriString();
     }
 
+    @Transactional
     public InstagramTokenResponse exchangeCodeForToken(String code, Long influencerId) {
         try {
             // 1. Short-lived token 발급
@@ -97,19 +104,44 @@ public class InstagramTokenService {
             Influencer influencer = influencerRepository.findByIdAndIsDeleted(influencerId, StatusType.N)
                     .orElseThrow(() -> new BusinessException(InfluencerErrorCode.INFLUENCER_NOT_FOUND));
 
-            Instagram instagram = Instagram.builder()
-                    .accountId(info.getAccountId())
-                    .name(info.getName())
-                    .follower(info.getFollower())
-                    .influencerId(influencer.getId())
-                    .build();
+            Optional<Instagram> existingInstagram = instagramRepository.findByInfluencerIdAndAccountId(influencer.getId(), info.getAccountId());
+            Instagram instagram;
+            if (existingInstagram.isPresent()) {
+                instagram = existingInstagram.get();
+                instagramRepository.save(instagram);
+                log.info("기존 인스타그램 레코드 업데이트 완료: influencerId={}, accountId={}", influencer.getId(), info.getAccountId());
+            } else {
+                instagram = Instagram.builder()
+                        .accountId(info.getAccountId())
+                        .name(info.getName())
+                        .follower(info.getFollower())
+                        .influencerId(influencer.getId())
+                        .build();
+                instagramRepository.save(instagram);
+                log.info("새로운 인스타그램 레코드 생성 완료: influencerId={}, accountId={}", influencer.getId(), info.getAccountId());
+            }
 
-            instagramRepository.save(instagram);
+            LocalDate today = LocalDate.now();
+
+            InstagramStatsResponse stats = instagramAccountQueryService.fetchStats(influencerId);
+            instagramStatsSnapshotService.saveInitialInstagramStatsSnapshot(influencer, today, stats);
+            log.info("초기 인스타그램 계정 통계 스냅샷 저장 완료: influencer ID={}", influencerId);
+
+            instagramStatsSnapshotService.saveInstagramMediaSnapshots(
+                    influencer, today, stats.getTopPosts(), "topPosts"
+            );
+            instagramStatsSnapshotService.saveInstagramMediaSnapshots(
+                    influencer, today, stats.getTopVideos(), "topVideos"
+            );
+            log.info("초기 인스타그램 미디어 스냅샷 저장 완료: influencer ID={}", influencerId);
 
             return new InstagramTokenResponse(longLivedToken, igAccountId);
 
+        } catch (BusinessException e) {
+            log.error("[InstagramTokenService] 인스타그램 토큰 교환 실패: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
-            log.error("[InstagramTokenService] 인스타그램 토큰 교환 실패", e);
+            log.error("[InstagramTokenService] 인스타그램 토큰 교환 중 예상치 못한 오류 발생", e);
             throw new BusinessException(OAuthErrorCode.FAILED_TOKEN_EXCHANGE);
         }
     }
