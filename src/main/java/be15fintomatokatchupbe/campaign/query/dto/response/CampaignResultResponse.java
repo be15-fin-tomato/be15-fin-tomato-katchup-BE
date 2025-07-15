@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class CampaignResultResponse {
     private Long pipelineId;
+    private Long influencerId;
     private String name;
     private String clientCompanyName;
     private String clientName;
