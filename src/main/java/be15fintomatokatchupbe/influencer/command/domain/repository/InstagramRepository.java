@@ -19,4 +19,5 @@ public interface InstagramRepository extends JpaRepository<Instagram, Long> {
 
     Optional<Instagram> findByInfluencerId(Long influencerId);
 
+    Optional<Instagram> findByInfluencerIdAndAccountId(Long id, String accountId);
 }
