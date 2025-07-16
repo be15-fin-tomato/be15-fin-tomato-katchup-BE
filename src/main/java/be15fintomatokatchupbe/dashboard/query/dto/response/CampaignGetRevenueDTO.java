@@ -16,5 +16,6 @@ public class CampaignGetRevenueDTO {
 
     private Long roasPercentage; // p.총수익 / (p.판매수량 * p.상품가격) * 100
 
-    private Double conversionRatePercent;  // c.판매수량 / c.공급가능수량 * 100
+    private Long expectedProfit;
+
 }
