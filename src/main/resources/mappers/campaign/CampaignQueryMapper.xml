@@ -1000,7 +1000,7 @@
         )
         FROM pipeline p
         WHERE p.campaign_id = c.campaign_id
-        AND p.pipeline_step_id != 7
+        AND p.pipeline_step_id != 8
         AND p.is_deleted = 'N'
         ) AS successProbability,
         (
@@ -1092,12 +1092,23 @@
                 SELECT 1
                 FROM pipeline pp
                 WHERE pp.campaign_id = c.campaign_id
-                AND pp.pipeline_step_id &gt;=
-                (
+                AND pp.pipeline_step_id = (
                 SELECT ps_inner.pipeline_step_id
                 FROM pipeline_step ps_inner
                 WHERE ps_inner.step_name = #{request.stepType}
                 )
+                AND pp.is_deleted = 'N'
+                )
+                AND NOT EXISTS (
+                SELECT 1
+                FROM pipeline pp2
+                WHERE pp2.campaign_id = c.campaign_id
+                AND pp2.pipeline_step_id > (
+                SELECT ps_inner.pipeline_step_id
+                FROM pipeline_step ps_inner
+                WHERE ps_inner.step_name = #{request.stepType}
+                )
+                AND pp2.is_deleted = 'N'
                 )
             </if>
 
@@ -1199,11 +1210,23 @@
                 SELECT 1
                 FROM pipeline pp
                 WHERE pp.campaign_id = c.campaign_id
-                AND pp.pipeline_step_id &gt;= (
+                AND pp.pipeline_step_id = (
                 SELECT ps_inner.pipeline_step_id
                 FROM pipeline_step ps_inner
                 WHERE ps_inner.step_name = #{request.stepType}
                 )
+                AND pp.is_deleted = 'N'
+                )
+                AND NOT EXISTS (
+                SELECT 1
+                FROM pipeline pp2
+                WHERE pp2.campaign_id = c.campaign_id
+                AND pp2.pipeline_step_id > (
+                SELECT ps_inner.pipeline_step_id
+                FROM pipeline_step ps_inner
+                WHERE ps_inner.step_name = #{request.stepType}
+                )
+                AND pp2.is_deleted = 'N'
                 )
             </if>
 
@@ -1360,6 +1383,7 @@
     <select id="findPipelineStepsGroupedByCampaignIds" resultType="be15fintomatokatchupbe.campaign.query.dto.response.PipelineStepsDto">
         SELECT
             p.campaign_id AS campaignId,
+            p.pipeline_status_id,
             ps.step_name AS stepType,
             DATE_FORMAT(p.created_at, '%Y-%m-%d') AS createdAt
           FROM pipeline p

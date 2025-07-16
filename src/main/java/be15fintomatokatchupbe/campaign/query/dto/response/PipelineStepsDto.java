@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class PipelineStepsDto {
     private Long campaignId;
+    private Long pipelineStatusId;
     private String stepType;
     private String createdAt;
 
