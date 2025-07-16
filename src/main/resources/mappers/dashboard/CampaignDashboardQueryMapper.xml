@@ -9,7 +9,7 @@
         CAST(c.sales_quantity AS CHAR) AS salesQuantity,
 
         CASE
-        WHEN c.sales_quantity > 0 THEN ROUND(COALESCE(picm.total_profit, 0) / c.sales_quantity, 0)
+        WHEN c.sales_quantity > 0 THEN ROUND(COALESCE(picm.total_profit, 0) / NULLIF(c.sales_quantity, 0), 0)
         ELSE NULL
         END AS averageUnitPrice,
 
@@ -17,11 +17,11 @@
 
         CASE
         WHEN COALESCE(picm.ad_price, 0) > 0 THEN
-        ROUND((COALESCE(picm.total_profit, 0) / picm.ad_price) * 100, 2)
+        ROUND((COALESCE(picm.total_profit, 0) / NULLIF(picm.ad_price, 0)) * 100, 2)
         ELSE NULL
         END AS roasPercentage,
 
-        COALESCE(picm.conversion_rate_percent, 0.0) AS conversionRatePercent
+        COALESCE(p.expected_profit, 0) AS expectedProfit
 
         FROM campaign c
         LEFT JOIN pipeline p ON c.campaign_id = p.campaign_id
