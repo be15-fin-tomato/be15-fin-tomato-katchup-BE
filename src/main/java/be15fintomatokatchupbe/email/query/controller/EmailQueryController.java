@@ -4,6 +4,7 @@ import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.email.query.dto.request.EmailSearchRequest;
 import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionResponse;
 import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionResponseDTO;
+import be15fintomatokatchupbe.email.query.dto.response.InfluencerSatisfactionResponse;
 import be15fintomatokatchupbe.email.query.dto.response.SatisfactionAnswerResponse;
 import be15fintomatokatchupbe.email.query.service.EmailQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -70,12 +71,12 @@ public class EmailQueryController {
     /* 인플루언서 만족도 조사 평균 점수 조회 */
     @GetMapping("/average/{influencerId}")
     @Operation(summary = "인플루언서 만족도 조사 평균 점수 조회 ", description = "해당 인플루언서에 평균 만족도 점수를 조회할 수 있다.")
-    public ResponseEntity<ApiResponse<Double>> getInfluencerSatisfactionScore(
+    public ResponseEntity<ApiResponse<InfluencerSatisfactionResponse>> getInfluencerSatisfactionScore(
             @PathVariable Long influencerId
     ) {
-        double avg = emailQueryService.getInfluencerSatisfactionScore(influencerId);
+        InfluencerSatisfactionResponse response = emailQueryService.getInfluencerSatisfactionScore(influencerId);
 
-        return ResponseEntity.ok(ApiResponse.success(avg));
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 
 

@@ -155,7 +155,9 @@ public class CampaignCommandService {
         pipeline.update(
                 request.getExpectedProfitMargin(),
                 request.getExpectedRevenue(),
-                request.getNotes()
+                request.getNotes(),
+                request.getStartedAt(),
+                request.getEndedAt()
         );
 
         // picm 테이블에서 해당 pipeline_id 를 가진 client_manager_id 찾기

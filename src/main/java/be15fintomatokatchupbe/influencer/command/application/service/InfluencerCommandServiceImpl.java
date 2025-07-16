@@ -11,6 +11,7 @@ import be15fintomatokatchupbe.influencer.command.application.dto.response.Influe
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.*;
 import be15fintomatokatchupbe.influencer.command.domain.repository.*;
 import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
+import be15fintomatokatchupbe.infra.redis.InfluencerCachedRepository;
 import be15fintomatokatchupbe.relation.domain.HashtagInfluencerCampaign;
 import be15fintomatokatchupbe.relation.service.HashInfCampService;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,7 @@ public class InfluencerCommandServiceImpl implements InfluencerCommandService {
     private final HashtagInfluencerCampaignRepository hashtagRepository;
     private final CategoryRepository categoryRepository;
     private final HashInfCampService hashInfCampService;
+    private final InfluencerCachedRepository cachedRepository;
 
     // 인플루언서 등록
     @Override
@@ -48,6 +50,8 @@ public class InfluencerCommandServiceImpl implements InfluencerCommandService {
                 .build();
 
         influencerRepository.save(influencer);
+        cachedRepository.evictInitialAiInfluencers();
+         cachedRepository.evictInitialInfluencers();
 
         // 유튜브 연동 부분 제거
 //        if (dto.isYoutubeConnected()) {
@@ -105,6 +109,8 @@ public class InfluencerCommandServiceImpl implements InfluencerCommandService {
 
         List<Category> categories = hashInfCampService.updateInfluencerTags(dto.getInfluencerId(), dto.getCategoryIds());
         influencer.setUpdatedAt(LocalDateTime.now());
+        cachedRepository.evictInitialAiInfluencers();
+        cachedRepository.evictInitialInfluencers();
 
         return InfluencerEditResponse.builder()
                 .influencerId(influencer.getId())
@@ -139,6 +145,10 @@ public class InfluencerCommandServiceImpl implements InfluencerCommandService {
 
         // 4. 해시태그 매핑 삭제
         hashtagRepository.deleteByInfluencerId(influencerId);
+
+        // 캐싱 삭제
+        cachedRepository.evictInitialAiInfluencers();
+        cachedRepository.evictInitialInfluencers();
 
         // 5. 응답 생성
         return InfluencerDeleteResponse.builder()

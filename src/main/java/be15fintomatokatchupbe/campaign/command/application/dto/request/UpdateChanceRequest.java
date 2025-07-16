@@ -25,5 +25,7 @@ public class UpdateChanceRequest {
     private Long expectedRevenue; // 예상매출
     private BigDecimal expectedProfitMargin; // 예상이익률
     private String notes; // 비고
+    private LocalDate startedAt; // 시작인
+    private LocalDate endedAt; // 마감일
     private List<Long> categoryList; // 카테고리
 }

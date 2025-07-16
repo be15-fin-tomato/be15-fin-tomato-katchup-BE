@@ -13,8 +13,8 @@ public class QuotationResponse {
     private String campaignName;
     private String productName;
     private String quotationTitle;
-    private Long adPrice;
     private Long expectedRevenue;
     private Long expectedProfit;
+    private String statusName;
     private LocalDateTime presentedAt;
 }

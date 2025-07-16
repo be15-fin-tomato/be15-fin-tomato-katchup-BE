@@ -133,7 +133,11 @@
     <sql id="dynamicFiltersForDerivedTable">
         WHERE i_sub.is_deleted = 'N'
         <if test="influencerName != null and influencerName != ''">
-            AND i_sub.name LIKE CONCAT('%', #{influencerName}, '%')
+            AND (
+            i_sub.name LIKE CONCAT('%', #{influencerName}, '%')
+            OR y_sub.name LIKE CONCAT('%', #{influencerName}, '%')
+            OR ig_sub.name LIKE CONCAT('%', #{influencerName}, '%')
+            )
         </if>
 
         <if test="categoryIds != null and categoryIds.size > 0">

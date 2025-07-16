@@ -3,6 +3,7 @@ package be15fintomatokatchupbe.email.query.mapper;
 import be15fintomatokatchupbe.email.query.dto.request.EmailSearchRequest;
 import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionDTO;
 import be15fintomatokatchupbe.email.query.dto.response.CampaignSatisfactionResponseDTO;
+import be15fintomatokatchupbe.email.query.dto.response.InfluencerSatisfactionResponse;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -20,5 +21,5 @@ public interface EmailQueryMapper {
 
     double getCampaignSatisfactionAverage();
 
-    double getInfluencerSatisfactionScore(Long influencerId);
+    InfluencerSatisfactionResponse getInfluencerSatisfactionScore(Long influencerId);
 }

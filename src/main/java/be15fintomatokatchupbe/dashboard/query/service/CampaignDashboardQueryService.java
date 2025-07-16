@@ -5,6 +5,7 @@ import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignContentResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignGetRevenueDTO;
 import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignGetRevenueResponse;
+import be15fintomatokatchupbe.dashboard.query.dto.response.ThumbnailResponse;
 import be15fintomatokatchupbe.dashboard.query.mapper.CampaignDashboardQueryMapper;
 import be15fintomatokatchupbe.influencer.query.service.YoutubeService;
 import lombok.RequiredArgsConstructor;
@@ -65,4 +66,5 @@ public class CampaignDashboardQueryService {
                 .campaignGetRevenue(response)
                 .build();
     }
+
 }

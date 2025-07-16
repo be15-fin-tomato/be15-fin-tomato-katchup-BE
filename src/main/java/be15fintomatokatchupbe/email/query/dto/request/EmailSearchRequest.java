@@ -11,6 +11,8 @@ public class EmailSearchRequest {
     private String searchType; // "campaignName", "clientCompanyName", "clientManagerName", "all"
     private String keyword;
     private String userName;
+    private String isReacted;
+
 
     public int getOffset() {
         return (page - 1) * size;

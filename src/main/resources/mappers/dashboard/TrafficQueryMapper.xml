@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="be15fintomatokatchupbe.dashboard.query.mapper.TrafficQueryMapper">
+
+    <select id="getTrafficByPipelineInfluencer" parameterType="long" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.TrafficResponse">
+        SELECT
+        it.influnecer_traffic_id AS trafficId,
+        t.traffic_name AS trafficName,
+        it.percentage AS percentage
+        FROM influencer_traffic it
+        LEFT JOIN
+        traffic t ON it.traffic_id = t.traffic_id
+        LEFT JOIN
+        pipeline_influencer_client_manager picm ON it.pipeline_influencer_id = picm.pipeline_influencer_id
+        WHERE
+        picm.pipeline_influencer_id = #{pipelineInfluencerId}
+    </select>
+
+</mapper>
