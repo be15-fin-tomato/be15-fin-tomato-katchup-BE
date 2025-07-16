@@ -1362,7 +1362,13 @@
         cm.name AS clientManagerName,
         cm.position AS clientManagerPosition,
         c.product_name AS productName,
-        p.expected_revenue AS expectedRevenue,
+        (
+        SELECT p.expected_revenue
+        FROM pipeline p
+        WHERE p.campaign_id = c.campaign_id
+        AND p.pipeline_step_id = 1
+        AND p.is_deleted = 'N'
+        ) AS expectedRevenue,
         DATE_FORMAT(p.started_at, '%Y-%m-%d') AS startedAt,
         DATE_FORMAT(p.ended_at, '%Y-%m-%d') AS endedAt,
         u.name AS pipelineUserName,
