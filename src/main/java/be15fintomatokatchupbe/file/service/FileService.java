@@ -6,7 +6,8 @@ import be15fintomatokatchupbe.contract.command.domain.repository.ContractFileRep
 import be15fintomatokatchupbe.file.domain.File;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.file.dto.FileDownloadResult;
-import be15fintomatokatchupbe.file.exception.FileErrorCode;
+import be15fintomatokatchupbe.file.exception.FileErrorCode; // FileErrorCode는 여전히 다른 파일 관련 에러에 사용될 수 있습니다.
+import be15fintomatokatchupbe.contract.exception.ContractErrorCode; // <<< 이 줄을 추가!
 import be15fintomatokatchupbe.file.repository.FileRepository;
 import be15fintomatokatchupbe.user.command.application.repository.PicFileRepository;
 import be15fintomatokatchupbe.user.command.domain.aggregate.PicFile;
@@ -43,9 +44,8 @@ public class FileService {
 
     private final String SAVE_FILE_DIR = "file";
     private final String SAVE_IMAGE_DIR= "img";
-    private static final long MAX_FILE_SIZE = 20 * 1024 * 1024;
+    private static final long MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB로 설정되어 있습니다.
 
-    /* 내부 호출용*/
     public List<File> uploadFile(List<MultipartFile> files) {
         List<File> uploadedFiles = new ArrayList<>();
         log.info(bucketName);
@@ -59,7 +59,7 @@ public class FileService {
                 }
 
                 if (file.getSize() > MAX_FILE_SIZE) {
-                    throw new BusinessException(FileErrorCode.FILE_TOO_BIG);
+                    throw new BusinessException(ContractErrorCode.FILE_TOO_BIG); // <<< 수정 부분
                 }
 
                 String originalFilename = file.getOriginalFilename();
@@ -90,9 +90,13 @@ public class FileService {
                         .mimeType(mimeType)
                         .build();
 
-//                fileRepository.save(fileEntity);
+//                fileRepository.save(fileEntity); // 이 부분은 주석 처리되어 있습니다. 필요하면 주석 해제하세요.
                 uploadedFiles.add(fileEntity);
-            } catch (Exception e) {
+            } catch (BusinessException e) { // BusinessException은 그대로 던지도록 수정
+                throw e;
+            }
+            catch (Exception e) { // 그 외의 일반적인 예외는 FILE_FORMAT_ERROR로 래핑
+                log.error("파일 업로드 중 알 수 없는 오류 발생 (uploadFile): {}", e.getMessage(), e);
                 throw new BusinessException(FileErrorCode.FILE_FORMAT_ERROR);
             }
         }
@@ -114,7 +118,7 @@ public class FileService {
                 }
 
                 if (file.getSize() > MAX_FILE_SIZE) {
-                    throw new BusinessException(FileErrorCode.FILE_TOO_BIG);
+                    throw new BusinessException(ContractErrorCode.FILE_TOO_BIG); // <<< 수정 부분
                 }
 
                 String originalFilename = file.getOriginalFilename();
@@ -146,7 +150,11 @@ public class FileService {
                         .build();
 
                 uploadedFiles.add(fileEntity);
-            } catch (Exception e) {
+            } catch (BusinessException e) {
+                throw e;
+            }
+            catch (Exception e) {
+                log.error("파일 업로드 중 알 수 없는 오류 발생 (uploadContractFile): {}", e.getMessage(), e);
                 throw new BusinessException(FileErrorCode.FILE_FORMAT_ERROR);
             }
         }
@@ -200,16 +208,14 @@ public class FileService {
 
         } catch (IOException e) {
             log.error("파일 다운로드 중 오류 발생", e);
-            throw new BusinessException(FileErrorCode.FILE_DOWNLOAD_ERROR); // 새 에러코드 정의 필요
+            throw new BusinessException(FileErrorCode.FILE_DOWNLOAD_ERROR);
         }
     }
 
-    /* 내부 호출용*/
     public void saveFile(List<File> filesList){
         fileRepository.saveAll(filesList);
     }
 
-    /* 내부 호출용*/
     public void saveContractFile(List<ContractFile> filesList, String encryptPassword) {
         for (ContractFile file : filesList) {
             file.passwordUpdate(encryptPassword);
@@ -218,7 +224,6 @@ public class FileService {
         contractFileRepository.saveAll(filesList);
     }
 
-    /* 내부 호출용 */
     public void deleteByPipeline(Pipeline pipeline){
         fileRepository.deleteAllByPipeline(pipeline);
     }
@@ -236,7 +241,7 @@ public class FileService {
         }
 
         if (file.getSize() > MAX_FILE_SIZE) {
-            throw new BusinessException(FileErrorCode.FILE_TOO_BIG);
+            throw new BusinessException(ContractErrorCode.FILE_TOO_BIG); // <<< 수정 부분
         }
 
         try {
@@ -268,10 +273,15 @@ public class FileService {
 
             return picFileRepository.save(profile);
 
-        } catch (IOException e) {
+        } catch (BusinessException e) {
+            throw e;
+        }
+        catch (IOException e) {
+            log.error("프로필 이미지 업로드 중 IO 오류 발생: {}", e.getMessage(), e);
+            throw new BusinessException(FileErrorCode.FILE_FORMAT_ERROR);
+        } catch (Exception e) {
+            log.error("프로필 이미지 업로드 중 알 수 없는 오류 발생: {}", e.getMessage(), e);
             throw new BusinessException(FileErrorCode.FILE_FORMAT_ERROR);
         }
     }
-
-
 }
