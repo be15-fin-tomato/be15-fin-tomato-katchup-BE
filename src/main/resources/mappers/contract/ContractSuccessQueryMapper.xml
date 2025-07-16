@@ -9,7 +9,7 @@
             , b.campaign_name
             , b.product_name
             , c.client_company_name
-            , d.name as influencerName
+            , COALESCE(iy.name, ii.name, d.name) AS influencerName
             , a.updated_at
             , e.file_id
             , e.original_name
@@ -20,6 +20,8 @@
           JOIN client_company c ON b.client_company_id = c.client_company_id
           JOIN influencer d ON a.influencer_id = d.influencer_id
           LEFT JOIN contract_file e ON a.file_id = e.file_id
+          LEFT JOIN youtube iy ON iy.influencer_id = d.influencer_id
+          LEFT JOIN instagram ii ON ii.influencer_id = d.influencer_id
         <where>
             <!-- 검색 조건 -->
             <choose>
@@ -33,14 +35,20 @@
                     AND c.client_company_name LIKE CONCAT('%', #{keyword}, '%')
                 </when>
                 <when test="searchType == 'influencerName' and keyword != null and keyword != ''">
-                    AND d.name LIKE CONCAT('%', #{keyword}, '%')
+                    AND (
+                    iy.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR ii.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR d.name  LIKE CONCAT('%', #{keyword}, '%')
+                    )
                 </when>
                 <when test="searchType == 'all' and keyword != null and keyword != ''">
                     AND (
                     b.campaign_name LIKE CONCAT('%', #{keyword}, '%')
                     OR b.product_name LIKE CONCAT('%', #{keyword}, '%')
                     OR c.client_company_name LIKE CONCAT('%', #{keyword}, '%')
-                    OR d.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR iy.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR ii.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR d.name  LIKE CONCAT('%', #{keyword}, '%')
                     )
                 </when>
             </choose>
@@ -84,6 +92,8 @@
           JOIN client_company c ON b.client_company_id = c.client_company_id
           JOIN influencer d ON a.influencer_id = d.influencer_id
           LEFT JOIN contract_file e ON a.file_id = e.file_id
+          LEFT JOIN youtube iy ON iy.influencer_id = d.influencer_id
+          LEFT JOIN instagram ii ON ii.influencer_id = d.influencer_id
         <where>
             <!-- 검색 조건 -->
             <choose>
@@ -97,14 +107,20 @@
                     AND c.client_company_name LIKE CONCAT('%', #{keyword}, '%')
                 </when>
                 <when test="searchType == 'influencerName' and keyword != null and keyword != ''">
-                    AND d.name LIKE CONCAT('%', #{keyword}, '%')
+                    AND (
+                    iy.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR ii.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR d.name  LIKE CONCAT('%', #{keyword}, '%')
+                    )
                 </when>
                 <when test="searchType == 'all' and keyword != null and keyword != ''">
                     AND (
                     b.campaign_name LIKE CONCAT('%', #{keyword}, '%')
                     OR b.product_name LIKE CONCAT('%', #{keyword}, '%')
                     OR c.client_company_name LIKE CONCAT('%', #{keyword}, '%')
-                    OR d.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR iy.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR ii.name LIKE CONCAT('%', #{keyword}, '%')
+                    OR d.name  LIKE CONCAT('%', #{keyword}, '%')
                     )
                 </when>
             </choose>
