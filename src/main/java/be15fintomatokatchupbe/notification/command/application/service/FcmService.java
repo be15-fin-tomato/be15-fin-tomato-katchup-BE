@@ -1,12 +1,16 @@
 package be15fintomatokatchupbe.notification.command.application.service;
 
+import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.notification.command.application.dto.request.FcmTokenRequest;
+import be15fintomatokatchupbe.notification.exception.NotificationErrorCode;
 import be15fintomatokatchupbe.user.command.application.repository.UserRepository;
 import be15fintomatokatchupbe.user.command.domain.aggregate.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import com.google.firebase.messaging.*;
+
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -17,9 +21,10 @@ public class FcmService {
 
     public void getFcmToken(Long userId, FcmTokenRequest fcmTokenRequest) {
         User user = userRepository.findByUserId(userId);
-
+        if(Objects.equals(user.getFcmToken(), fcmTokenRequest.getFcmToken())) {
+            throw new BusinessException(NotificationErrorCode.TOKEN_ALREADY_EXISTS);
+        }
         user.setFcmToken(fcmTokenRequest.getFcmToken());
-
         userRepository.save(user);
     }
 
