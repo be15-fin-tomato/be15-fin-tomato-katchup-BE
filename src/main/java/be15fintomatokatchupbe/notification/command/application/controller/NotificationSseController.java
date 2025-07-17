@@ -22,7 +22,7 @@ public class NotificationSseController {
     private final SseEmitterRepository sseEmitterRepository;
     private final JwtTokenProvider jwtTokenProvider;
 
-    @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = "/subscribe")
     public SseEmitter subscribe(@RequestHeader("Authorization") String authHeader) {
         // 토큰 파싱
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
