@@ -17,6 +17,7 @@ import java.io.IOException;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/sse")
+@Slf4j
 public class NotificationSseController {
 
     private final SseEmitterRepository  sseEmitterRepository;
@@ -25,6 +26,7 @@ public class NotificationSseController {
     public SseEmitter subscribe(
             @AuthenticationPrincipal CustomUserDetail userDetail
     ) {
+        log.info("구독 요청 유저 ID : {}", userDetail.getUserId());
         Long userId = userDetail.getUserId();
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
         sseEmitterRepository.save(userId, emitter);
@@ -35,6 +37,7 @@ public class NotificationSseController {
         try {
             emitter.send(SseEmitter.event().name("connect").data("connected"));
         } catch (IOException e) {
+            log.error("구독 에러 발생 : {}", (Object) e.getStackTrace());
             sseEmitterRepository.delete(userId);
         }
         return emitter;
