@@ -14,7 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Message { // MongoDB
+public class Message {
 
     @Id
     private String id;
