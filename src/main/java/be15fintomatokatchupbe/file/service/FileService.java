@@ -262,7 +262,7 @@ public class FileService {
                     .metadata(metadata)
                     .build();
 
-            String newFileKey = CLOUD_FRONT_DOMAIN + fileKey;
+            String newFileKey = CLOUD_FRONT_DOMAIN + "/" + fileKey;
 
             s3Client.putObject(putObjectRequest,
                     RequestBody.fromInputStream(file.getInputStream(), file.getSize()));

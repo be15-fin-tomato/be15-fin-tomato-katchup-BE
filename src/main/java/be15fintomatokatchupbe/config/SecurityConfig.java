@@ -74,9 +74,9 @@ public class SecurityConfig {
 //                                        , "/sse/subscribe"
                                 ).permitAll()
                                 /* 유저 권한 */
-//                                .requestMatchers(HttpMethod.POST,
-//                                        "/**"
-//                                ).authenticated()
+                                .requestMatchers(HttpMethod.POST,
+                                        "/sse/subscribe"
+                                ).authenticated()
 //                                .requestMatchers(HttpMethod.GET,
 //                                        "/**"
 //                                ).authenticated()
