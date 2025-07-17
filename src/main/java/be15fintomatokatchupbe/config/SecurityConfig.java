@@ -118,6 +118,7 @@ public class SecurityConfig {
         config.addAllowedOrigin("http://localhost:5173"); // 허용할 도메인
         config.addAllowedOrigin("http://localhost:5174"); // 허용할 도메인
         config.addAllowedOrigin("http://localhost:5175"); // 허용할 도메인
+        config.addAllowedOrigin("https://tomato-katchup.xyz");  // 배포 도메인
         config.addAllowedHeader("*"); // 모든 헤더 허용
         config.addAllowedMethod("*"); // 모든 HTTP 메소드 허용
         config.setAllowCredentials(true);// 자격 증명(쿠키 등) 허용
