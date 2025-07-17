@@ -15,7 +15,8 @@ public enum NotificationErrorCode implements ErrorCode {
     NOT_FOUND_NOTIFICATION("90002", "존재하지 않는 알림입니다.", HttpStatus.BAD_REQUEST ),
     INVALID_USER("90003", "해당 알림을 수신하지 않았습니다.", HttpStatus.FORBIDDEN),
     DELETED_NOTIFICATION("90004", "이미 삭제된 알림입니다.", HttpStatus.BAD_REQUEST),
-    READ_NOTIFICATION("90005", "이미 읽은 알림입니다.", HttpStatus.BAD_REQUEST);
+    READ_NOTIFICATION("90005", "이미 읽은 알림입니다.", HttpStatus.BAD_REQUEST),
+    TOKEN_ALREADY_EXISTS("90006", "이미 등록된 토큰입니다.", HttpStatus.CONFLICT);
 
     private final String code;
     private final String message;
