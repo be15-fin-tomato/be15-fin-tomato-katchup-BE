@@ -33,7 +33,8 @@ public class InstagramCommandController {
             @RequestParam("code") String code,
             @RequestParam("state") Long influencerId
     ) {
-        String frontendRedirectBaseUrl = "http://localhost:5173/oauth2/instagram/callback";
+//        String frontendRedirectBaseUrl = "http://localhost:5173/oauth2/instagram/callback";
+        String frontendRedirectBaseUrl = "https://tomato-katchup.xyz/oauth2/instagram/callback";
         String redirectUrl;
 
         try {
