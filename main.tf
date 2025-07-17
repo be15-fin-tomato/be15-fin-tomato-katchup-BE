@@ -302,7 +302,7 @@ resource "aws_lb_target_group" "spring_tg" {
   target_type = "ip"
 
   health_check {
-    path                = "/"
+    path                = "/api/v1/actuator/health"
     protocol            = "HTTP"
     matcher             = "200-399"
     interval            = 30
