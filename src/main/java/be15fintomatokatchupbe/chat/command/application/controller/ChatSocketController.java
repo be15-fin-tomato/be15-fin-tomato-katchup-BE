@@ -29,6 +29,8 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -68,22 +70,21 @@ public class ChatSocketController {
             throw new BusinessException(ChatErrorCode.NOT_CHAT_MEMBER);
         }
 
+        User senderUser = userRepository.findByUserId(userId);
+        String senderName = (senderUser != null) ? senderUser.getName() : "알 수 없음";
+
         message.setSenderId(userId);
-        message.setSentAt(LocalDateTime.now());
+        message.setSentAt(ZonedDateTime.now(ZoneId.of("Asia/Seoul")).toLocalDateTime());
         message.setReadUserIds(Set.of(userId));
+        message.setSenderName(senderName); // senderName 설정
 
         messageRepository.save(message);
         messagingTemplate.convertAndSend("/topic/room." + message.getChatId(), message);
 
-        User user = userRepository.findByUserId(userId);
-        String userName = user.getName();
-
-        // 메시지 or 첨부파일 미리보기
         String preview = message.getFileUrl() != null ? "[파일 첨부]" : message.getMessage();
-        notifyOtherParticipants(message.getChatId(), message.getSenderId(), preview, userName);
+        notifyOtherParticipants(message.getChatId(), message.getSenderId(), preview, senderName);
     }
 
-    /* fireBase 웹푸시 알림 요청 */
     private void notifyOtherParticipants(Long chatId, Long senderId, String message, String userName) {
         List<ChatResponseDTO> targets  = userChatMapper.findFcmTokensByChatId(chatId, senderId);
 
