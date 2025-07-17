@@ -1,5 +1,6 @@
 package be15fintomatokatchupbe.oauth.command.application.Service;
 
+import be15fintomatokatchupbe.common.domain.StatusType;
 import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.influencer.command.application.support.YoutubeHelperService;
 import be15fintomatokatchupbe.influencer.command.domain.aggregate.entity.Influencer;
@@ -92,7 +93,14 @@ public class YoutubeCommandService {
     @Transactional
     public void registerYoutubeByOAuth(String code, Long influencerId) {
         YoutubeOAuthQueryService.GoogleTokenResponse tokenResponse = youtubeOAuthQueryService.getToken(code);
+
         youtubeOAuthQueryService.saveRefreshTokenByAccess(tokenResponse);
+
+        Influencer influencer = influencerRepository.findById(influencerId)
+                .orElseThrow(() -> new BusinessException(InfluencerErrorCode.INFLUENCER_NOT_FOUND));
+
+        influencer.updateYoutubeStatus(StatusType.Y);
+
         registerYoutubeAccount(influencerId, tokenResponse.getAccessToken(), tokenResponse.getRefreshToken());
     }
 
