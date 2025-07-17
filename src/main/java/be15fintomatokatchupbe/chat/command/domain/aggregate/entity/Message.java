@@ -14,13 +14,12 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Message { // MongoDB
+public class Message {
 
     @Id
     private String id;
     private Long chatId;
     private Long senderId;
-    private String senderName;
 
     private String message;
     private String fileUrl;
