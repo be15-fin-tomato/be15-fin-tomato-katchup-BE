@@ -20,7 +20,6 @@ public class Message { // MongoDB
     private String id;
     private Long chatId;
     private Long senderId;
-    private String senderName;
 
     private String message;
     private String fileUrl;

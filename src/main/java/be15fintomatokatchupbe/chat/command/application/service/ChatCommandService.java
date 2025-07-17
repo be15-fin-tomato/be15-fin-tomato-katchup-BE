@@ -114,6 +114,11 @@ public class ChatCommandService {
                     existingUserChat.setIsDeleted(StatusType.N);
                     userChatRepository.save(existingUserChat);
                 } else {
+                    // This block means the user is already an active member (isDeleted = 'N')
+                    // You can choose to:
+                    // 1. Do nothing (current behavior in this code)
+                    // 2. Throw an exception (e.g., throw new BusinessException(ChatErrorCode.ALREADY_JOINED_CHAT);)
+                    //    If throwing, make sure to consider if inviting multiple users should fail for all if one is a duplicate.
                 }
             } else {
                 UserChat newUserChat = UserChat.builder()
