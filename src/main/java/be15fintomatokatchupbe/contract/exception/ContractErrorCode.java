@@ -18,8 +18,8 @@ public enum ContractErrorCode implements ErrorCode {
     FILE_UPLOAD_FAILED("30006","파일을 찾을 수 없습니다." ,HttpStatus.INTERNAL_SERVER_ERROR ),
     NON_UPLOAD_FILE("30007","파일을 찾을 수 없습니다." ,HttpStatus.INTERNAL_SERVER_ERROR ),
     PASSWORD_ERROR("30008","파일 비밀번호가 틀렸습니다." ,HttpStatus.INTERNAL_SERVER_ERROR ),
-    CONTRACT_NOT_REGISTERED("30009","계약서가 등록되지 않았습니다." ,HttpStatus.INTERNAL_SERVER_ERROR );
-
+    CONTRACT_NOT_REGISTERED("30009","계약서가 등록되지 않았습니다." ,HttpStatus.INTERNAL_SERVER_ERROR ),
+    FILE_TOO_BIG("30010", "파일 용량이 너무 큽니다.", HttpStatus.PAYLOAD_TOO_LARGE);
     private final String code;
     private final String message;
     private final HttpStatus httpStatus;

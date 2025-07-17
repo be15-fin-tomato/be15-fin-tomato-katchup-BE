@@ -61,6 +61,10 @@
             <if test="userName != null and userName != ''">
                 AND f.name LIKE CONCAT('%', #{userName}, '%')
             </if>
+
+            <if test='isReacted != null and (isReacted == "Y" or isReacted == "N")'>
+                AND a.is_reacted = #{isReacted}
+            </if>
         </where>
         GROUP BY a.satisfaction_id
         ORDER BY a.satisfaction_id DESC
@@ -114,6 +118,10 @@
             <!-- 공통 추가 필터: userName -->
             <if test="userName != null and userName != ''">
                 AND f.name LIKE CONCAT('%', #{userName}, '%')
+            </if>
+
+            <if test='isReacted != null and (isReacted == "Y" or isReacted == "N")'>
+                AND a.is_reacted = #{isReacted}
             </if>
         </where>
     </select>

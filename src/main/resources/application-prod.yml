@@ -1,17 +1,12 @@
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health
-  endpoint:
-    health:
-      show-details: always
 server:
   port: 8080
   servlet:
     context-path: /api/v1
 
 spring:
+  config:
+    activate:
+      on-profile: prod
   servlet:
     multipart:
       enabled: true
@@ -39,9 +34,9 @@ spring:
           starttls:
             enable: true
             required: true
-          connectiontimeout: 60000
-          timeout: 60000
-          writetimeout: 60000
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
         debug: true
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
@@ -51,17 +46,11 @@ spring:
   data:
     redis:
       port: ${REDIS_PORT}
-#      username: ${REDIS_USERNAME}
-#      password: ${REDIS_PASSWORD}
+      #      username: ${REDIS_USERNAME}
+      #      password: ${REDIS_PASSWORD}
       host: ${REDIS_HOST}
     mongodb:
       uri: ${MONGODB_URI}
-  ai:
-    openai:
-      chat:
-        options:
-          model: ${OPENAI_RECOMMEND_MODEL_ID}
-      api-key: ${OPENAI_API_KEY}
 
 jwt:
   secret: ${JWT_SECRET}
@@ -85,8 +74,7 @@ facebook:
   client-id: ${FACEBOOK_CLIENT_KEY}
   client-secret: ${FACEBOOK_CLIENT_SECRET}
   redirect-uri: ${FACEBOOK_REDIRECT_URI}
-  base-url: https://graph.facebook.com/v23.0 # 그래프 API 기본 URL (API 요청용)
-  oauth-base-url: https://www.facebook.com/v18.0/dialog/oauth # OAuth 인증 기본 URL (인증 대화 상자용)
+  base-url: https://graph.facebook.com/v23.0
 
 google:
   sheet:
