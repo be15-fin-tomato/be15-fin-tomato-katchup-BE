@@ -22,16 +22,9 @@
     <select id="getMyInfluencer" resultType="be15fintomatokatchupbe.user.query.dto.response.UserInfluencerListDTO">
         SELECT
               i.influencer_id
-            , i.user_id,
-            CASE
-                WHEN i.youtube_is_connected = 'Y' THEN y.name
-                WHEN i.instagram_is_connected = 'Y' THEN ig.name
-                ELSE i.name
-                END AS name,
-            CASE
-                WHEN i.youtube_is_connected = 'Y' THEN y.image_url
-                ELSE NULL
-                END AS image_url
+            , i.user_id
+            , COALESCE(y.name, ig.name, i.name) AS name
+            , COALESCE(y.image_url, NULL) AS image_url
           FROM influencer i
           LEFT JOIN youtube y ON i.influencer_id = y.influencer_id
           LEFT JOIN instagram ig ON i.influencer_id = ig.influencer_id
