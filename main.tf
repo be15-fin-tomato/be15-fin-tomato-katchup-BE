@@ -203,6 +203,7 @@ resource "aws_ecs_task_definition" "spring_task" {
         },
       ],
       environment = [
+        { name = "TZ", value = "Asia/Seoul" },
         { name = "DB_URL", value = "${var.db_url}" },
         { name = "DB_USERNAME", value = "${var.db_username}" },
         { name = "DB_PASSWORD", value = "${var.db_password}" },
