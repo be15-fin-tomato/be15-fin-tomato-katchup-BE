@@ -76,5 +76,13 @@ public class Influencer {
     public enum National {
         국내, 국외
     }
+
+    public void updateYoutubeStatus(StatusType youtubeIsConnected) {
+        this.youtubeIsConnected = youtubeIsConnected;
+    }
+
+    public void updateInstagramStatus(StatusType instagramIsConnected) {
+        this.instagramIsConnected = instagramIsConnected;
+    }
 }
 

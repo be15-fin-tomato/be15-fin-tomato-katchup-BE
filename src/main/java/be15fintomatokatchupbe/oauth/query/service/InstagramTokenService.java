@@ -104,6 +104,8 @@ public class InstagramTokenService {
             Influencer influencer = influencerRepository.findByIdAndIsDeleted(influencerId, StatusType.N)
                     .orElseThrow(() -> new BusinessException(InfluencerErrorCode.INFLUENCER_NOT_FOUND));
 
+            influencer.updateInstagramStatus(StatusType.Y);
+
             Optional<Instagram> existingInstagram = instagramRepository.findByInfluencerIdAndAccountId(influencer.getId(), info.getAccountId());
             Instagram instagram;
             if (existingInstagram.isPresent()) {
