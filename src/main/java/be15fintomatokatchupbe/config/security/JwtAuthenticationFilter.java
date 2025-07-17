@@ -48,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         = new PreAuthenticatedAuthenticationToken(
                         userDetail, null, userDetail.getAuthorities()
                 );
-                log.info("[Jwt Filter] 인증된 유저: userId={}, loginId={}", userId, loginId);
+                log.info("[Jwt Filter] 인증된 유저!: userId={}, loginId={}", userId, loginId);
 
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
