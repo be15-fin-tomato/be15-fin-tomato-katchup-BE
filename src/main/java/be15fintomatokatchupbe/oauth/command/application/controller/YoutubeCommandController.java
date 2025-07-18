@@ -35,7 +35,7 @@ public class YoutubeCommandController {
             @RequestParam("state") Long influencerId
     ) {
 //        String frontendRedirectBaseUrl = "http://localhost:5173/oauth2/youtube/callback";
-        String frontendRedirectBaseUrl = "https://api.tomato-katchup.xyz/api/v1/oauth2/youtube/callback";
+        String frontendRedirectBaseUrl = "https://tomato-katchup.xyz/oauth2/youtube/callback";
         String redirectUrl;
 
         try {
