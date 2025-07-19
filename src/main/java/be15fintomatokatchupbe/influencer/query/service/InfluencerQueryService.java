@@ -60,18 +60,12 @@ public class InfluencerQueryService {
     }
 
     private InfluencerListResponse queryFromDatabase(InfluencerListRequestDTO request){
-        // 1. 필터링 조건에 맞는 총 인플루언서 개수 조회
-        // 매퍼의 findInfluencersCount 메서드는 이제 DTO를 파라미터로 받습니다.
+
         int totalCount = influencerMapper.findInfluencersCount(request);
 
-        // 2. 페이지네이션 정보 계산
         int totalPages = (int) Math.ceil((double) totalCount / request.getSize());
-
-        // 3. 필터링 및 정렬된 인플루언서 목록 조회
-        // 매퍼의 findInfluencers 메서드는 이제 DTO를 파라미터로 받습니다.
         List<InfluencerCardResponse> influencers = influencerMapper.findInfluencers(request);
 
-        // 4. 유튜브 정보 페칭 로직 (기존 로직 유지)
         for (InfluencerCardResponse influencer : influencers) {
             if (influencer.getYoutube() != null && influencer.getYoutube().getAccountId() != null) {
                 try {

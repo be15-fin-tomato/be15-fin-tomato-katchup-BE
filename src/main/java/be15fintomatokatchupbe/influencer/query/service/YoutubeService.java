@@ -31,11 +31,14 @@ import java.util.stream.Collectors;
 public class YoutubeService {
     private final OpenAiClient openAiClient;
 
-
     @Value("${youtube.api.key}")
     private String youtubeApiKey;
 
     private final RestTemplate restTemplate = new RestTemplate();
+
+    public record YoutubeVideoDetails(String videoTitle, String videoDescription, String publishedAt, String channelId) {}
+
+    public record YoutubeChannelInfo(String channelName, String thumbnailUrl, Long subscriberCount) {}
 
     public YoutubeChannelInfo fetchChannelInfo(String channelId) {
         String url = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/channels")
@@ -86,6 +89,47 @@ public class YoutubeService {
         }
     }
 
+    public YoutubeVideoDetails fetchVideoDetails(String videoId) {
+        String url = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/videos")
+                .queryParam("part", "snippet")
+                .queryParam("id", videoId)
+                .queryParam("key", youtubeApiKey)
+                .toUriString();
+
+        try {
+            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+            Map<String, Object> body = response.getBody();
+
+            if (body == null || !body.containsKey("items") || ((List<?>) body.get("items")).isEmpty()) {
+                log.warn("Video ID {} 에 대한 상세 정보를 찾을 수 없습니다: 응답 항목 없음", videoId);
+                throw new BusinessException(InfluencerErrorCode.YOUTUBE_VIDEO_NOT_FOUND);
+            }
+
+            Map<String, Object> item = (Map<String, Object>) ((List<?>) body.get("items")).get(0);
+            Map<String, Object> snippet = (Map<String, Object>) item.get("snippet");
+
+            String videoTitle = (String) snippet.get("title");
+            String videoDescription = (String) snippet.get("description");
+            String publishedAt = (String) snippet.get("publishedAt");
+            String channelId = (String) snippet.get("channelId");
+
+            return new YoutubeVideoDetails(videoTitle, videoDescription, publishedAt, channelId);
+
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("유튜브 영상 상세 정보 조회 실패: {}", videoId, e);
+            throw new BusinessException(InfluencerErrorCode.FAILED_TO_FETCH_YOUTUBE_DATA);
+        }
+    }
+
+    public String getVideoThumbnailUrl(String videoId) {
+        if (videoId == null || videoId.trim().isEmpty()) {
+            return null;
+        }
+        return "https://i.ytimg.com/vi/" + videoId + "/maxresdefault.jpg";
+    }
+
     public String getUploadDate(String videoId) {
         String url = UriComponentsBuilder.fromHttpUrl("https://www.googleapis.com/youtube/v3/videos")
                 .queryParam("part", "snippet")
@@ -111,12 +155,10 @@ public class YoutubeService {
 
             String publishedAt = (String) snippet.get("publishedAt");
 
-            // ISO 8601 형식 문자열을 LocalDateTime으로 변환 후 날짜만 반환
             DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
             LocalDateTime uploadDateTime = LocalDateTime.parse(publishedAt, formatter);
 
-            // Convert LocalDate to String
-            return uploadDateTime.toLocalDate().toString(); // return the date as a string
+            return uploadDateTime.toLocalDate().toString();
 
         } catch (BusinessException e) {
             throw e;
@@ -149,7 +191,6 @@ public class YoutubeService {
             Map<String, Object> item = (Map<String, Object>) items.get(0);
             Map<String, Object> statistics = (Map<String, Object>) item.get("statistics");
 
-            // 원하는 메트릭들 추출
             Map<String, Long> metrics = new HashMap<>();
             metrics.put("commentCount", Long.parseLong((String) statistics.getOrDefault("commentCount", "0")));
             metrics.put("likeCount", Long.parseLong((String) statistics.getOrDefault("likeCount", "0")));
@@ -180,6 +221,7 @@ public class YoutubeService {
         }
         return null;
     }
+
     public List<String> getCommentsByVideoId(String videoId) {
         try {
             log.info("Fetching YouTube comments for videoId: {}", videoId);
@@ -213,6 +255,7 @@ public class YoutubeService {
             throw new BusinessException(InfluencerErrorCode.FAILED_TO_FETCH_YOUTUBE_DATA);
         }
     }
+
     public String summarizeCommentsByVideoId(String videoId) {
         List<String> comments = getCommentsByVideoId(videoId);
 
@@ -227,7 +270,4 @@ public class YoutubeService {
             throw new BusinessException(InfluencerErrorCode.FAILED_TO_FETCH_YOUTUBE_DATA);
         }
     }
-
-
-    public record YoutubeChannelInfo(String channelName, String thumbnailUrl, Long subscriberCount) {}
 }

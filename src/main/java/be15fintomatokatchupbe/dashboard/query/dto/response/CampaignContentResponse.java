@@ -8,5 +8,6 @@ import java.util.Map;
 public record CampaignContentResponse (
         String youtubeVideoId,      // 문자열 타입
         String videoThumbnailUrl,
+        String channelThumbnailUrl,
         Map<String, Long> metrics
 ){}
