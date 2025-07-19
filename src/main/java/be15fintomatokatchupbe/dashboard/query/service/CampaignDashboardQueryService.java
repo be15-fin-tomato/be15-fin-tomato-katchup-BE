@@ -5,7 +5,7 @@ import be15fintomatokatchupbe.common.exception.BusinessException;
 import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignContentResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignGetRevenueDTO;
 import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignGetRevenueResponse;
-import be15fintomatokatchupbe.dashboard.query.dto.response.ThumbnailResponse;
+// import be15fintomatokatchupbe.dashboard.query.dto.response.ThumbnailResponse; // 이 DTO는 사용되지 않는 것 같습니다. 제거해도 됩니다.
 import be15fintomatokatchupbe.dashboard.query.mapper.CampaignDashboardQueryMapper;
 import be15fintomatokatchupbe.influencer.query.service.YoutubeService;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +24,6 @@ public class CampaignDashboardQueryService {
     private final CampaignDashboardQueryMapper mapper;
     private final YoutubeService youtubeService;
 
-    private String buildYoutubeThumbnailUrl(String videoId) {
-        if (videoId == null || videoId.trim().isEmpty()) {
-            return null;
-        }
-        return "https://img.youtube.com/vi/" + videoId + "/maxresdefault.jpg";
-    }
-
     @Transactional(readOnly = true)
     public CampaignContentResponse getCampaignContent(Long pipelineInfluencerId) {
         Long pipelineId = mapper.findPipelineIdByPipelineInfluencerId(pipelineInfluencerId);
@@ -46,13 +39,38 @@ public class CampaignDashboardQueryService {
         }
         String videoId = YoutubeService.extractVideoId(youtubeLink);
         log.info("videoId: {}", videoId);
+
+        // 1. 비디오 메트릭 가져오기
         Map<String, Long> metrics = youtubeService.getVideoMetrics(videoId);
         log.info("metrics: {}", metrics);
-        String videoThumbnailUrl = buildYoutubeThumbnailUrl(videoId);
+
+        // 2. 비디오 상세 정보 (제목, 설명, 발행일, 채널 ID) 가져오기
+        YoutubeService.YoutubeVideoDetails videoDetails = youtubeService.fetchVideoDetails(videoId);
+        String videoTitle = videoDetails != null ? videoDetails.videoTitle() : null;
+        String videoDescription = videoDetails != null ? videoDetails.videoDescription() : null;
+        String publishedAt = videoDetails != null ? videoDetails.publishedAt() : null;
+        String channelId = videoDetails != null ? videoDetails.channelId() : null;
+        log.info("videoTitle: {}, videoDescription: {}, publishedAt: {}, channelId: {}", videoTitle, videoDescription, publishedAt, channelId);
+
+
+        // 3. 비디오 썸네일 URL 가져오기 (YoutubeService의 메서드 사용)
+        String videoThumbnailUrl = youtubeService.getVideoThumbnailUrl(videoId);
         log.info("videoThumbnailUrl: {}", videoThumbnailUrl);
+
+        // 4. 채널 썸네일 URL 가져오기
+        String channelThumbnailUrl = null;
+        if (channelId != null) {
+            YoutubeService.YoutubeChannelInfo channelInfo = youtubeService.fetchChannelInfo(channelId);
+            if (channelInfo != null) {
+                channelThumbnailUrl = channelInfo.thumbnailUrl();
+                log.info("channelThumbnailUrl: {}", channelThumbnailUrl);
+            }
+        }
+
         return CampaignContentResponse.builder()
                 .youtubeVideoId(videoId)
                 .videoThumbnailUrl(videoThumbnailUrl)
+                .channelThumbnailUrl(channelThumbnailUrl)
                 .metrics(metrics)
                 .build();
     }
