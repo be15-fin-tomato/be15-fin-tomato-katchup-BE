@@ -49,7 +49,6 @@ public class ChatSocketController {
     private final UserRepository userRepository;
     private final SseEmitterRepository sseEmitterRepository;
 
-
     @Operation(summary = "채팅 보내기", description = "사용자는 채팅방에서 다른 사용자에게 메시지를 보낼 수 있다.")
     @Transactional
     @MessageMapping("/chat.sendMessage")
@@ -68,28 +67,38 @@ public class ChatSocketController {
             throw new BusinessException(ChatErrorCode.NOT_CHAT_MEMBER);
         }
 
+        User user = userRepository.findByUserId(userId);
+        if (user == null) {
+            throw new BusinessException(ChatErrorCode.USER_NOT_FOUND);
+        }
+        String userName = user.getName();
+
         message.setSenderId(userId);
+        message.setSenderName(userName);
         message.setSentAt(LocalDateTime.now());
         message.setReadUserIds(Set.of(userId));
 
         messageRepository.save(message);
+
+        log.info("### Sending Message to WebSocket Topic ###");
+        log.info("ChatId: {}", message.getChatId());
+        log.info("SenderId: {}", message.getSenderId());
+        log.info("SenderName (from Message object): {}", message.getSenderName());
+        log.info("Message Content: {}", message.getMessage());
+        log.info("----------------------------------------");
+
         messagingTemplate.convertAndSend("/topic/room." + message.getChatId(), message);
 
-        User user = userRepository.findByUserId(userId);
-        String userName = user.getName();
-
-        // 메시지 or 첨부파일 미리보기
         String preview = message.getFileUrl() != null ? "[파일 첨부]" : message.getMessage();
         notifyOtherParticipants(message.getChatId(), message.getSenderId(), preview, userName);
     }
 
-    /* fireBase 웹푸시 알림 요청 */
     private void notifyOtherParticipants(Long chatId, Long senderId, String message, String userName) {
-        List<ChatResponseDTO> targets  = userChatMapper.findFcmTokensByChatId(chatId, senderId);
+        List<ChatResponseDTO> targets = userChatMapper.findFcmTokensByChatId(chatId, senderId);
 
         LocalDateTime now = LocalDateTime.now();
 
-        for (ChatResponseDTO dto : targets ) {
+        for (ChatResponseDTO dto : targets) {
             Long receiverId = dto.getUserId();
             String token = dto.getFcmToken();
 
