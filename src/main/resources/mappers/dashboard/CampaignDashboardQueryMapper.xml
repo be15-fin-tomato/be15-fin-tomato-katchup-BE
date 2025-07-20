@@ -38,7 +38,8 @@
 
     <select id="findInfluencerChannelThumbnailByPipelineInfluencerId" parameterType="long" resultMap="ThumbnailResponseMap">
         SELECT
-        y.channel_id AS channel_id  FROM
+        y.channel_id AS channelId
+        FROM
         pipeline_influencer_client_manage picm
         JOIN
         influencer i ON picm.influencer_id = i.influencer_id
