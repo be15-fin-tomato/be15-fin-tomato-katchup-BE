@@ -2,11 +2,9 @@ package be15fintomatokatchupbe.dashboard.query.service;
 
 import be15fintomatokatchupbe.campaign.exception.CampaignErrorCode;
 import be15fintomatokatchupbe.common.exception.BusinessException;
-import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignContentResponse;
-import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignGetRevenueDTO;
-import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignGetRevenueResponse;
-// import be15fintomatokatchupbe.dashboard.query.dto.response.ThumbnailResponse; // 이 DTO는 사용되지 않는 것 같습니다. 제거해도 됩니다.
+import be15fintomatokatchupbe.dashboard.query.dto.response.*;
 import be15fintomatokatchupbe.dashboard.query.mapper.CampaignDashboardQueryMapper;
+import be15fintomatokatchupbe.influencer.exception.InfluencerErrorCode;
 import be15fintomatokatchupbe.influencer.query.service.YoutubeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -70,7 +68,6 @@ public class CampaignDashboardQueryService {
         return CampaignContentResponse.builder()
                 .youtubeVideoId(videoId)
                 .videoThumbnailUrl(videoThumbnailUrl)
-                .channelThumbnailUrl(channelThumbnailUrl)
                 .metrics(metrics)
                 .build();
     }
@@ -85,4 +82,24 @@ public class CampaignDashboardQueryService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
+    public CampaignContentThumbnail getInfluencerThumbnail(Long pipelineInfluencerId) {
+
+        CampaignContentThumbnail responseFromDb = mapper.findInfluencerChannelThumbnailByPipelineInfluencerId(pipelineInfluencerId);
+
+        if (responseFromDb == null || responseFromDb.getChannelId() == null || responseFromDb.getChannelId().isEmpty()) {
+            throw new BusinessException(InfluencerErrorCode.YOUTUBE_ACCOUNT_NOT_FOUND);
+        }
+
+        YoutubeService.YoutubeChannelInfo channelInfoFromApi = youtubeService.fetchChannelInfo(responseFromDb.getChannelId());
+
+        if (channelInfoFromApi == null || channelInfoFromApi.thumbnailUrl() == null || channelInfoFromApi.thumbnailUrl().isEmpty()) {
+
+            throw new BusinessException(InfluencerErrorCode.FAILED_TO_FETCH_YOUTUBE_DATA);
+        }
+        return CampaignContentThumbnail.builder()
+                .channelId(responseFromDb.getChannelId())
+                .channelThumbnail(channelInfoFromApi.thumbnailUrl())
+                .build();
+    }
 }
