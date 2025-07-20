@@ -32,20 +32,17 @@
         LIMIT 1
     </select>
 
-    <resultMap id="ThumbnailResponseMap" type="be15fintomatokatchupbe.dashboard.query.dto.response.CampaignContentThumbnail">
-        <result property="channelId" column="channel_id"/>
-    </resultMap>
-
-    <select id="findInfluencerChannelThumbnailByPipelineInfluencerId" parameterType="long" resultMap="ThumbnailResponseMap">
+    <select id="findInfluencerChannelThumbnailByPipelineInfluencerId" parameterType="long" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.CampaignContentThumbnail">
         SELECT
-        y.channel_id AS channel_id  FROM
+        y.channel_id AS channelId  FROM
         pipeline_influencer_client_manager picm
-        JOIN
+        LEFT JOIN
         influencer i ON picm.influencer_id = i.influencer_id
-        JOIN
+        LEFT JOIN
         youtube y ON i.influencer_id = y.influencer_id
         WHERE
         picm.pipeline_influencer_id = #{pipelineInfluencerId}
+        AND picm.influencer_id is NOT NULL
     </select>
 
 </mapper>
