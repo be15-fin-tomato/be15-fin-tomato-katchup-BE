@@ -1280,7 +1280,7 @@
             , p.name AS name
         FROM
             pipeline p
-        JOIN campaign c ON c
+        JOIN campaign c ON c.campaign_id = p.campaign_id
         <where>
                 p.pipeline_step_id = #{pipelineStepId}
             AND
