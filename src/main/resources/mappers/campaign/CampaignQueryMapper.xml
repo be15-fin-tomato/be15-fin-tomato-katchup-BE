@@ -914,7 +914,7 @@
         JOIN client_company cc ON c.client_company_id = cc.client_company_id
         WHERE p.campaign_id = #{campaignId}
         AND p.is_deleted = 'N'
-        ORDER BY p.created_at ASC, p.pipeline_step_id DESC
+        ORDER BY p.created_at DESC
     </select>
 
     <!-- 캠페인 목록 조회 -->
