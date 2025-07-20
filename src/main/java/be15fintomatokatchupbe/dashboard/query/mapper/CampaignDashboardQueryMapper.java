@@ -1,6 +1,8 @@
 package be15fintomatokatchupbe.dashboard.query.mapper;
 
+import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignContentThumbnail;
 import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignGetRevenueDTO;
+import be15fintomatokatchupbe.dashboard.query.dto.response.ThumbnailResponse;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
@@ -19,4 +21,6 @@ public interface CampaignDashboardQueryMapper {
     Long findPipelineIdByPipelineInfluencerId(Long pipelineInfluencerId);
 
     List<CampaignGetRevenueDTO> getRevenue(Long pipelineInfluencerId);
+
+    CampaignContentThumbnail findInfluencerChannelThumbnailByPipelineInfluencerId(Long pipelineInfluencerId);
 }

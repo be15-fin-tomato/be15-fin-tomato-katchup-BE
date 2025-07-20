@@ -2,6 +2,7 @@ package be15fintomatokatchupbe.dashboard.query.controller;
 
 import be15fintomatokatchupbe.common.dto.ApiResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignContentResponse;
+import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignContentThumbnail;
 import be15fintomatokatchupbe.dashboard.query.dto.response.CampaignGetRevenueResponse;
 import be15fintomatokatchupbe.dashboard.query.dto.response.ThumbnailResponse;
 import be15fintomatokatchupbe.dashboard.query.service.CampaignDashboardQueryService;
@@ -40,5 +41,16 @@ public class CampaignDashboardQueryController {
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @Operation(summary = "인플루언서 채널 썸네일 조회", description = "특정 파이프라인 인플루언서의 대표 유튜브 채널 썸네일을 조회합니다.")
+    @GetMapping("/influencer-thumbnail/{pipelineInfluencerId}")
+    public ResponseEntity<ApiResponse<CampaignContentThumbnail>> getInfluencerThumbnail(
+            @PathVariable Long pipelineInfluencerId
+    ) {
+
+        CampaignContentThumbnail response = campaignDashboardQueryService.getInfluencerThumbnail(pipelineInfluencerId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
 
 }
