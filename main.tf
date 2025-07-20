@@ -84,6 +84,12 @@ resource "aws_eip" "nat" {
   }
 }
 
+resource "aws_eip" "nat_2" {
+  tags = {
+    Name = "tomato-nat-eip-2"
+  }
+}
+
 // AWS NAT GATEWAY
 resource "aws_nat_gateway" "main" {
   allocation_id = aws_eip.nat.id
@@ -91,6 +97,17 @@ resource "aws_nat_gateway" "main" {
 
   tags = {
     Name = "tomato-nat-gateway"
+  }
+
+  depends_on = [aws_internet_gateway.main]
+}
+
+resource "aws_nat_gateway" "main_2" {
+  allocation_id = aws_eip.nat_2.id
+  subnet_id     = aws_subnet.public_2.id
+
+  tags = {
+    Name = "tomato-nat-gateway-2"
   }
 
   depends_on = [aws_internet_gateway.main]
@@ -107,6 +124,19 @@ resource "aws_route_table" "public" {
 
   tags = {
     Name = "tomato-public-rt"
+  }
+}
+
+resource "aws_route_table" "private_2" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.main_2.id
+  }
+
+  tags = {
+    Name = "tomato-private-rt-2"
   }
 }
 
@@ -143,7 +173,7 @@ resource "aws_route_table_association" "private_1" {
 
 resource "aws_route_table_association" "private_2" {
   subnet_id      = aws_subnet.private_2.id
-  route_table_id = aws_route_table.private.id
+  route_table_id = aws_route_table.private_2.id
 }
 
 
@@ -307,9 +337,9 @@ resource "aws_lb_target_group" "spring_tg" {
     protocol            = "HTTP"
     matcher             = "200-399"
     interval            = 30
-    timeout             = 5
+    timeout             = 15
     healthy_threshold   = 2
-    unhealthy_threshold = 2
+    unhealthy_threshold = 5
   }
 
   tags = {
@@ -351,7 +381,7 @@ resource "aws_ecs_service" "spring_service" {
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.spring_task.arn
   launch_type     = "FARGATE"
-  desired_count   = 1
+  desired_count   = 2
 
   network_configuration {
     subnets          = [

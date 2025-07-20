@@ -1276,19 +1276,22 @@
     </select>
     <select id="getReferenceList" resultType="be15fintomatokatchupbe.campaign.query.dto.mapper.ReferenceDto">
         SELECT
-              pipeline_id AS pipelineId
-            , name AS name
+              p.pipeline_id AS pipelineId
+            , p.name AS name
         FROM
-            pipeline
+            pipeline p
+        JOIN campaign c ON c.
         <where>
-                pipeline_step_id = #{pipelineStepId}
+                p.pipeline_step_id = #{pipelineStepId}
             AND
-                is_deleted = 'N'
+                p.is_deleted = 'N'
+            AND
+                c.campaign_status_id IN (2, 3, 4)
             <if test="pipelineStepId != 2">
-                AND pipeline_status_id = 2
+                AND p.pipeline_status_id = 2
             </if>
             <if test="campaignId != null">
-                AND campaign_id = #{campaignId}
+                AND p.campaign_id = #{campaignId}
             </if>
         </where>
     </select>

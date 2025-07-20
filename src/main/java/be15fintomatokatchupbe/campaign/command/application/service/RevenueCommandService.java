@@ -287,8 +287,8 @@ public class RevenueCommandService {
         foundPipeline.softDelete();
 
         // 3. 관련 테이블 지워주기
-        campaignHelperService.deleteRelationTable(foundPipeline);
         dashboardHelperService.deleteInfluencerTrafficByPicmId(pipeInfClientManagerService.findPicmByPipeline(foundPipeline));
+        campaignHelperService.deleteRelationTable(foundPipeline);
 
         /* 파일 테이블 지워주기 */
         fileService.deleteByPipeline(foundPipeline);
