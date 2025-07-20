@@ -413,7 +413,9 @@
         WHERE
             influencer_id IS NOT NULL
         AND
-            ad_price IS NOT NULL;
+            ad_price IS NOT NULL
+        AND
+            pipeline_id = #{pipelineId}
     </select>
 
     <select id="countListup" resultType="int">
