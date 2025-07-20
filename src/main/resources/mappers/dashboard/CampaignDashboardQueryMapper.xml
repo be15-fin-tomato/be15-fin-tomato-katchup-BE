@@ -4,6 +4,7 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="be15fintomatokatchupbe.dashboard.query.mapper.CampaignDashboardQueryMapper">
+
     <select id="getRevenue" parameterType="long" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.CampaignGetRevenueDTO">
         SELECT
         CAST(c.sales_quantity AS CHAR) AS salesQuantity,
@@ -31,10 +32,13 @@
         LIMIT 1
     </select>
 
+    <resultMap id="ThumbnailResponseMap" type="be15fintomatokatchupbe.dashboard.query.dto.response.CampaignContentThumbnail">
+        <result property="channelId" column="channel_id"/>
+    </resultMap>
+
     <select id="findInfluencerChannelThumbnailByPipelineInfluencerId" parameterType="long" resultMap="ThumbnailResponseMap">
         SELECT
-        y.channel_id AS channelId
-        FROM
+        y.channel_id AS channel_id  FROM
         pipeline_influencer_client_manage picm
         JOIN
         influencer i ON picm.influencer_id = i.influencer_id
@@ -43,4 +47,5 @@
         WHERE
         picm.pipeline_influencer_id = #{pipelineInfluencerId}
     </select>
+
 </mapper>

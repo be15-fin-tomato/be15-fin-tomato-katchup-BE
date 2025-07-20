@@ -51,6 +51,4 @@ public class CampaignDashboardQueryController {
         CampaignContentThumbnail response = campaignDashboardQueryService.getInfluencerThumbnail(pipelineInfluencerId);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
-
-
 }
