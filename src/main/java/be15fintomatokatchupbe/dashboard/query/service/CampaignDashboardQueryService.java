@@ -90,11 +90,12 @@ public class CampaignDashboardQueryService {
         if (responseFromDb == null || responseFromDb.getChannelId() == null || responseFromDb.getChannelId().isEmpty()) {
             throw new BusinessException(InfluencerErrorCode.YOUTUBE_ACCOUNT_NOT_FOUND);
         }
-
+        if (responseFromDb.getChannelThumbnail() != null && !responseFromDb.getChannelThumbnail().isEmpty()) {
+            return responseFromDb;
+        }
         YoutubeService.YoutubeChannelInfo channelInfoFromApi = youtubeService.fetchChannelInfo(responseFromDb.getChannelId());
 
         if (channelInfoFromApi == null || channelInfoFromApi.thumbnailUrl() == null || channelInfoFromApi.thumbnailUrl().isEmpty()) {
-
             throw new BusinessException(InfluencerErrorCode.FAILED_TO_FETCH_YOUTUBE_DATA);
         }
         return CampaignContentThumbnail.builder()
