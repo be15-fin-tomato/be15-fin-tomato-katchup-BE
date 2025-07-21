@@ -87,20 +87,52 @@ public class CampaignDashboardQueryService {
 
         CampaignContentThumbnail responseFromDb = mapper.findInfluencerChannelThumbnailByPipelineInfluencerId(pipelineInfluencerId);
 
-        if (responseFromDb == null || responseFromDb.getChannelId() == null || responseFromDb.getChannelId().isEmpty()) {
-            throw new BusinessException(InfluencerErrorCode.YOUTUBE_ACCOUNT_NOT_FOUND);
+        if (responseFromDb == null ||
+                ((responseFromDb.getChannelId() == null || responseFromDb.getChannelId().isEmpty()) &&
+                        (responseFromDb.getChannelThumbnail() == null || responseFromDb.getChannelThumbnail().isEmpty()))) {
+            return CampaignContentThumbnail.builder()
+                    .channelId(null)
+                    .channelThumbnail(null)
+                    .build();
         }
+
         if (responseFromDb.getChannelThumbnail() != null && !responseFromDb.getChannelThumbnail().isEmpty()) {
             return responseFromDb;
         }
-        YoutubeService.YoutubeChannelInfo channelInfoFromApi = youtubeService.fetchChannelInfo(responseFromDb.getChannelId());
 
-        if (channelInfoFromApi == null || channelInfoFromApi.thumbnailUrl() == null || channelInfoFromApi.thumbnailUrl().isEmpty()) {
-            throw new BusinessException(InfluencerErrorCode.FAILED_TO_FETCH_YOUTUBE_DATA);
+        if (responseFromDb.getChannelId() == null || responseFromDb.getChannelId().isEmpty()) {
+
+            return CampaignContentThumbnail.builder()
+                    .channelId(null)
+                    .channelThumbnail(null)
+                    .build();
         }
-        return CampaignContentThumbnail.builder()
-                .channelId(responseFromDb.getChannelId())
-                .channelThumbnail(channelInfoFromApi.thumbnailUrl())
-                .build();
+
+        try {
+            YoutubeService.YoutubeChannelInfo channelInfoFromApi = youtubeService.fetchChannelInfo(responseFromDb.getChannelId());
+
+            if (channelInfoFromApi == null || channelInfoFromApi.thumbnailUrl() == null || channelInfoFromApi.thumbnailUrl().isEmpty()) {
+                return CampaignContentThumbnail.builder()
+                        .channelId(responseFromDb.getChannelId())
+                        .channelThumbnail(null)
+                        .build();
+            }
+            return CampaignContentThumbnail.builder()
+                    .channelId(responseFromDb.getChannelId())
+                    .channelThumbnail(channelInfoFromApi.thumbnailUrl())
+                    .build();
+        } catch (BusinessException e) {
+            System.err.println("유튜브 API 호출 중 비즈니스 예외 발생: " + e.getMessage());
+            return CampaignContentThumbnail.builder()
+                    .channelId(responseFromDb.getChannelId())
+                    .channelThumbnail(null)
+                    .build();
+        } catch (Exception e) {
+            System.err.println("유튜브 API 호출 중 일반 예외 발생: " + e.getMessage());
+            return CampaignContentThumbnail.builder()
+                    .channelId(responseFromDb.getChannelId())
+                    .channelThumbnail(null)
+                    .build();
+        }
     }
 }
