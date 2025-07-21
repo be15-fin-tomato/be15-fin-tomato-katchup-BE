@@ -34,8 +34,9 @@
 
     <select id="findInfluencerChannelThumbnailByPipelineInfluencerId" parameterType="long" resultType="be15fintomatokatchupbe.dashboard.query.dto.response.CampaignContentThumbnail">
         SELECT
-        y.channel_id AS channelId  FROM
-        pipeline_influencer_client_manager picm
+        y.channel_id AS channelId,
+        y.image_url AS channelThumbnail
+        FROM pipeline_influencer_client_manager picm
         LEFT JOIN
         influencer i ON picm.influencer_id = i.influencer_id
         LEFT JOIN
